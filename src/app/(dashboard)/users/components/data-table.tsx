@@ -22,7 +22,11 @@ import {
   Trash2,
   Download,
   Search,
+  Wallet,
+  Loader2,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -54,73 +58,110 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { UserFormDialog } from "./user-form-dialog"
-
-interface User {
-  id: number
-  name: string
-  email: string
-  avatar: string
-  role: string
-  plan: string
-  billing: string
-  status: string
-  joinedDate: string
-  lastLogin: string
-}
-
-interface UserFormValues {
-  name: string
-  email: string
-  role: string
-  plan: string
-  billing: string
-  status: string
-}
+import { AddBalanceDialog } from "./add-balance-dialog"
+import { EditUserDialog } from "./edit-user-dialog"
+import type { User, UserFormValues } from "../page"
 
 interface DataTableProps {
   users: User[]
-  onDeleteUser: (id: number) => void
+  onDeleteUser: (id: string) => void
   onEditUser: (user: User) => void
-  onAddUser: (userData: UserFormValues) => void
+  onAddUser: (userData: UserFormValues) => Promise<{ success: boolean; error?: string }>
+  onAddBalance: (userId: string, amount: number, type: 'game' | 'invest') => Promise<{ success: boolean; message?: string; error?: string }>
+  onUserUpdated: (user: User) => void
 }
 
-export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTableProps) {
+export function DataTable({ users, onDeleteUser, onEditUser, onAddUser, onAddBalance, onUserUpdated }: DataTableProps) {
+  const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [globalFilter, setGlobalFilter] = useState("")
+  const [selectedUserForBalance, setSelectedUserForBalance] = useState<User | null>(null)
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<User | null>(null)
+  const [impersonatingUserId, setImpersonatingUserId] = useState<string | null>(null)
+
+  // Função para impersonar usuário (entrar como ele na bet)
+  const handleImpersonate = async (user: User) => {
+    setImpersonatingUserId(user.id)
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/impersonate`, {
+        method: 'POST',
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success(`Entrando como ${user.name}...`)
+        // Redirecionar para a home da bet em uma nova aba
+        window.open('/', '_blank')
+      } else {
+        toast.error(data.error || "Erro ao entrar como usuário")
+      }
+    } catch (error) {
+      console.error('Erro ao impersonar:', error)
+      toast.error("Erro ao entrar como usuário")
+    } finally {
+      setImpersonatingUserId(null)
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case "ACTIVE":
         return "text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20"
-      case "Pending":
-        return "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20"
-      case "Error":
+      case "BLOCKED":
         return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
-      case "Inactive":
-        return "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20"
+      case "SUSPENDED":
+        return "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20"
       default:
         return "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20"
     }
   }
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "ACTIVE": return "Ativo"
+      case "BLOCKED": return "Bloqueado"
+      case "SUSPENDED": return "Suspenso"
+      default: return status
+    }
+  }
+
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "Admin":
-        return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
-      case "Editor":
-        return "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
-      case "Author":
-        return "text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20"
-      case "Maintainer":
-        return "text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20"
-      case "Subscriber":
+      case "SUPER_ADMIN":
         return "text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/20"
+      case "ADMIN":
+        return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
+      case "PLAYER":
+        return "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
       default:
         return "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20"
     }
+  }
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "SUPER_ADMIN": return "Super Admin"
+      case "ADMIN": return "Admin"
+      case "PLAYER": return "Jogador"
+      default: return role
+    }
+  }
+
+  const formatCurrency = (value: string) => {
+    const num = parseFloat(value) || 0
+    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  }
+
+  const getAvatar = (name: string) => {
+    const names = name.split(" ")
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
   }
 
   const exactFilter = (row: Row<User>, columnId: string, value: string) => {
@@ -157,14 +198,14 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
     },
     {
       accessorKey: "name",
-      header: "User",
+      header: "Usuário",
       cell: ({ row }) => {
         const user = row.original
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="text-xs font-medium">
-                {user.avatar}
+                {getAvatar(user.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
@@ -177,32 +218,39 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
     },
     {
       accessorKey: "role",
-      header: "Role",
+      header: "Função",
       cell: ({ row }) => {
         const role = row.getValue("role") as string
         return (
           <Badge variant="secondary" className={getRoleColor(role)}>
-            {role}
+            {getRoleLabel(role)}
           </Badge>
         )
       },
       filterFn: exactFilter,
     },
     {
-      accessorKey: "plan",
-      header: "Plan",
+      accessorKey: "balanceGame",
+      header: "Saldo Jogo",
       cell: ({ row }) => {
-        const plan = row.getValue("plan") as string
-        return <span className="font-medium">{plan}</span>
+        const balance = row.getValue("balanceGame") as string
+        return (
+          <span className="font-medium text-green-600 dark:text-green-400">
+            {formatCurrency(balance)}
+          </span>
+        )
       },
-      filterFn: exactFilter,
     },
     {
-      accessorKey: "billing",
-      header: "Billing",
+      accessorKey: "balanceInvest",
+      header: "Saldo Investido",
       cell: ({ row }) => {
-        const billing = row.getValue("billing") as string
-        return <span className="text-sm">{billing}</span>
+        const balance = row.getValue("balanceInvest") as string
+        return (
+          <span className="font-medium text-blue-600 dark:text-blue-400">
+            {formatCurrency(balance)}
+          </span>
+        )
       },
     },
     {
@@ -212,7 +260,7 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
         const status = row.getValue("status") as string
         return (
           <Badge variant="secondary" className={getStatusColor(status)}>
-            {status}
+            {getStatusLabel(status)}
           </Badge>
         )
       },
@@ -220,40 +268,75 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Ações",
       cell: ({ row }) => {
         const user = row.original
+        const isImpersonating = impersonatingUserId === user.id
         return (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
-              <Eye className="size-4" />
-              <span className="sr-only">View user</span>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 cursor-pointer"
+              onClick={() => setSelectedUserForBalance(user)}
+              title="Adicionar Saldo"
+            >
+              <Wallet className="size-4 text-green-600" />
+              <span className="sr-only">Adicionar saldo</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 cursor-pointer"
+              onClick={() => handleImpersonate(user)}
+              disabled={isImpersonating}
+              title="Entrar como este usuário"
+            >
+              {isImpersonating ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Eye className="size-4 text-blue-600" />
+              )}
+              <span className="sr-only">Entrar como usuário</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={() => onEditUser(user)}
+              onClick={() => setSelectedUserForEdit(user)}
+              title="Editar usuário"
             >
-              <Pencil className="size-4" />
-              <span className="sr-only">Edit user</span>
+              <Pencil className="size-4 text-orange-600" />
+              <span className="sr-only">Editar usuário</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
                   <EllipsisVertical className="size-4" />
-                  <span className="sr-only">More actions</span>
+                  <span className="sr-only">Mais ações</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="cursor-pointer">
-                  View Details
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => setSelectedUserForEdit(user)}
+                >
+                  <Pencil className="mr-2 size-4" />
+                  Editar Dados
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  Send Email
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => setSelectedUserForBalance(user)}
+                >
+                  <Wallet className="mr-2 size-4" />
+                  Adicionar Saldo
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  Reset Password
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => handleImpersonate(user)}
+                >
+                  <Eye className="mr-2 size-4" />
+                  Entrar como Usuário
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -262,7 +345,7 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
                   onClick={() => onDeleteUser(user.id)}
                 >
                   <Trash2 className="mr-2 size-4" />
-                  Delete User
+                  Excluir Usuário
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -294,7 +377,6 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
   })
 
   const roleFilter = table.getColumn("role")?.getFilterValue() as string
-  const planFilter = table.getColumn("plan")?.getFilterValue() as string
   const statusFilter = table.getColumn("status")?.getFilterValue() as string
 
   return (
@@ -304,7 +386,7 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search users..."
+              placeholder="Buscar usuários..."
               value={globalFilter ?? ""}
               onChange={(event) => setGlobalFilter(String(event.target.value))}
               className="pl-9"
@@ -314,16 +396,16 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="cursor-pointer">
             <Download className="mr-2 size-4" />
-            Export
+            Exportar
           </Button>
           <UserFormDialog onAddUser={onAddUser} />
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-4 sm:gap-4">
+      <div className="grid gap-2 sm:grid-cols-3 sm:gap-4">
         <div className="space-y-2">
           <Label htmlFor="role-filter" className="text-sm font-medium">
-            Role
+            Função
           </Label>
           <Select
             value={roleFilter || ""}
@@ -332,36 +414,13 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
             }
           >
             <SelectTrigger className="cursor-pointer w-full" id="role-filter">
-              <SelectValue placeholder="Select Role" />
+              <SelectValue placeholder="Selecionar Função" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="Admin">Admin</SelectItem>
-              <SelectItem value="Author">Author</SelectItem>
-              <SelectItem value="Editor">Editor</SelectItem>
-              <SelectItem value="Maintainer">Maintainer</SelectItem>
-              <SelectItem value="Subscriber">Subscriber</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="plan-filter" className="text-sm font-medium">
-            Plan
-          </Label>
-          <Select
-            value={planFilter || ""}
-            onValueChange={(value) =>
-              table.getColumn("plan")?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger className="cursor-pointer w-full" id="plan-filter">
-              <SelectValue placeholder="Select Plan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Plans</SelectItem>
-              <SelectItem value="Basic">Basic</SelectItem>
-              <SelectItem value="Professional">Professional</SelectItem>
-              <SelectItem value="Enterprise">Enterprise</SelectItem>
+              <SelectItem value="all">Todas as Funções</SelectItem>
+              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="PLAYER">Jogador</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -376,26 +435,24 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
             }
           >
             <SelectTrigger className="cursor-pointer w-full" id="status-filter">
-              <SelectValue placeholder="Select Status" />
+              <SelectValue placeholder="Selecionar Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Error">Error</SelectItem>
-              <SelectItem value="Inactive">Inactive</SelectItem>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="ACTIVE">Ativo</SelectItem>
+              <SelectItem value="BLOCKED">Bloqueado</SelectItem>
+              <SelectItem value="SUSPENDED">Suspenso</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-
           <Label htmlFor="column-visibility" className="text-sm font-medium">
-            Column Visibility
+            Colunas
           </Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild id="column-visibility">
               <Button variant="outline" className="cursor-pointer w-full">
-                Columns <ChevronDown className="ml-2 size-4" />
+                Colunas <ChevronDown className="ml-2 size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -464,7 +521,7 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Nenhum resultado.
                 </TableCell>
               </TableRow>
             )}
@@ -473,10 +530,9 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
       </div>
 
       <div className="flex items-center justify-between space-x-2 py-4">
-
         <div className="flex items-center space-x-2">
           <Label htmlFor="page-size" className="text-sm font-medium">
-            Show
+            Mostrar
           </Label>
           <Select
             value={`${table.getState().pagination.pageSize}`}
@@ -497,14 +553,14 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
           </Select>
         </div>
         <div className="flex-1 text-sm text-muted-foreground hidden sm:block">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} de{" "}
+          {table.getFilteredRowModel().rows.length} linha(s) selecionada(s).
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2 hidden sm:block">
-            <p className="text-sm font-medium">Page</p>
+          <div className="hidden sm:flex items-center space-x-2">
+            <p className="text-sm font-medium">Página</p>
             <strong className="text-sm">
-              {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getState().pagination.pageIndex + 1} de{" "}
               {table.getPageCount()}
             </strong>
           </div>
@@ -516,7 +572,7 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              Anterior
             </Button>
             <Button
               variant="outline"
@@ -525,11 +581,30 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser }: DataTa
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              Próximo
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Dialog para adicionar saldo */}
+      <AddBalanceDialog
+        user={selectedUserForBalance}
+        open={!!selectedUserForBalance}
+        onOpenChange={(open: boolean) => !open && setSelectedUserForBalance(null)}
+        onAddBalance={onAddBalance}
+      />
+
+      {/* Dialog para editar usuário */}
+      <EditUserDialog
+        user={selectedUserForEdit}
+        open={!!selectedUserForEdit}
+        onOpenChange={(open: boolean) => !open && setSelectedUserForEdit(null)}
+        onUserUpdated={(updatedUser) => {
+          onUserUpdated(updatedUser)
+          setSelectedUserForEdit(null)
+        }}
+      />
     </div>
   )
 }

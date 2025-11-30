@@ -1,0 +1,64 @@
+{
+  "fortunetiger": {
+    "gameCode": "fortunetiger",
+    "customName": "Fortune Tiger",
+    "customThumbnail": "https://images.ultraself.space/games/1764427624080-fortune-tiger.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [
+      "Todos"
+    ],
+    "enabled": true,
+    "isHot": true
+  },
+  "fortuneox": {
+    "gameCode": "fortuneox",
+    "customName": "Fortune Ox",
+    "customThumbnail": "https://images.ultraself.space/games/1764428760935-fortune-ox.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [],
+    "enabled": true,
+    "isHot": true
+  },
+  "fortunerabbit": {
+    "gameCode": "fortunerabbit",
+    "customName": "Fortune Rabbit",
+    "customThumbnail": "https://images.ultraself.space/games/1764428787212-fortune-rabbit.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [],
+    "enabled": true,
+    "isHot": true
+  },
+  "fortunepanda": {
+    "gameCode": "fortunepanda",
+    "customName": "Fortune Pandas",
+    "customThumbnail": "https://images.ultraself.space/games/1764429725087-fortune-pandas.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [],
+    "enabled": true,
+    "isHot": true
+  },
+  "fortunemouse": {
+    "gameCode": "fortunemouse",
+    "customName": "Fortune Mouse",
+    "customThumbnail": "https://images.ultraself.space/games/1764428811404-fortune-mouse.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [],
+    "enabled": true,
+    "isHot": true
+  },
+  "phoenixrises": {
+    "gameCode": "phoenixrises",
+    "customName": "Phoenix Rises",
+    "customThumbnail": "https://images.ultraself.space/games/1764428849547-phoenix-rises.png",
+    "displayProvider": "PGSoft",
+    "category": "Slots",
+    "tags": [],
+    "enabled": true,
+    "isHot": true
+  }
+}

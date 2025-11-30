@@ -2,23 +2,25 @@
 
 import * as React from "react"
 import {
-  LayoutPanelLeft,
   LayoutDashboard,
-  Mail,
-  CheckSquare,
-  MessageCircle,
-  Calendar,
-  Shield,
-  AlertTriangle,
-  Settings,
-  HelpCircle,
-  CreditCard,
-  LayoutTemplate,
+  Gamepad2,
   Users,
+  Plug,
+  Landmark,
+  Palette,
+  Settings,
+  TrendingUp,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  History,
+  ShieldCheck,
+  BarChart3,
+  PiggyBank,
+  Wallet,
+  FileCheck,
 } from "lucide-react"
 import Link from "next/link"
 import { Logo } from "@/components/logo"
-import { SidebarNotification } from "@/components/sidebar-notification"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -34,175 +36,113 @@ import {
 
 const data = {
   user: {
-    name: "ShadcnStore",
-    email: "store@example.com",
+    name: "Admin",
+    email: "admin@playinvest.com",
     avatar: "",
   },
   navGroups: [
     {
-      label: "Dashboards",
+      label: "Visão Geral",
       items: [
         {
-          title: "Dashboard 1",
+          title: "Dashboard",
           url: "/dashboard",
           icon: LayoutDashboard,
         },
         {
-          title: "Dashboard 2",
-          url: "/dashboard-2",
-          icon: LayoutPanelLeft,
+          title: "Relatórios",
+          url: "/relatorios",
+          icon: BarChart3,
         },
       ],
     },
     {
-      label: "Apps",
+      label: "Financeiro",
       items: [
         {
-          title: "Mail",
-          url: "/mail",
-          icon: Mail,
+          title: "Depósitos",
+          url: "/financeiro/depositos",
+          icon: ArrowDownToLine,
         },
         {
-          title: "Tasks",
-          url: "/tasks",
-          icon: CheckSquare,
+          title: "Saques",
+          url: "/financeiro/saques",
+          icon: ArrowUpFromLine,
         },
         {
-          title: "Chat",
-          url: "/chat",
-          icon: MessageCircle,
+          title: "Extrato Geral",
+          url: "/financeiro/extrato",
+          icon: History,
+        },
+      ],
+    },
+    {
+      label: "Investimentos",
+      items: [
+        {
+          title: "Carteiras",
+          url: "/investimentos/carteiras",
+          icon: PiggyBank,
         },
         {
-          title: "Calendar",
-          url: "/calendar",
-          icon: Calendar,
+          title: "Rendimentos",
+          url: "/investimentos/rendimentos",
+          icon: TrendingUp,
         },
         {
-          title: "Users",
+          title: "Liberações",
+          url: "/investimentos/liberacoes",
+          icon: Wallet,
+        },
+      ],
+    },
+    {
+      label: "Operações",
+      items: [
+        {
+          title: "Jogos",
+          url: "/jogos",
+          icon: Gamepad2,
+        },
+        {
+          title: "Usuários",
           url: "/users",
           icon: Users,
         },
+        {
+          title: "KYC / Verificação",
+          url: "/usuarios/kyc",
+          icon: ShieldCheck,
+        },
+        {
+          title: "Aprovações",
+          url: "/aprovacoes",
+          icon: FileCheck,
+        },
       ],
     },
     {
-      label: "Pages",
+      label: "Sistema",
       items: [
         {
-          title: "Landing",
-          url: "/landing",
-          target: "_blank",
-          icon: LayoutTemplate,
+          title: "Integrações",
+          url: "/integracoes",
+          icon: Plug,
         },
         {
-          title: "Auth Pages",
-          url: "#",
-          icon: Shield,
-          items: [
-            {
-              title: "Sign In 1",
-              url: "/sign-in",
-            },
-            {
-              title: "Sign In 2",
-              url: "/sign-in-2",
-            },
-            {
-              title: "Sign In 3",
-              url: "/sign-in-3",
-            },
-            {
-              title: "Sign Up 1",
-              url: "/sign-up",
-            },
-            {
-              title: "Sign Up 2",
-              url: "/sign-up-2",
-            },
-            {
-              title: "Sign Up 3",
-              url: "/sign-up-3",
-            },
-            {
-              title: "Forgot Password 1",
-              url: "/forgot-password",
-            },
-            {
-              title: "Forgot Password 2",
-              url: "/forgot-password-2",
-            },
-            {
-              title: "Forgot Password 3",
-              url: "/forgot-password-3",
-            }
-          ],
+          title: "Banking (FBSPAY)",
+          url: "/banking",
+          icon: Landmark,
         },
         {
-          title: "Errors",
-          url: "#",
-          icon: AlertTriangle,
-          items: [
-            {
-              title: "Unauthorized",
-              url: "/errors/unauthorized",
-            },
-            {
-              title: "Forbidden",
-              url: "/errors/forbidden",
-            },
-            {
-              title: "Not Found",
-              url: "/errors/not-found",
-            },
-            {
-              title: "Internal Server Error",
-              url: "/errors/internal-server-error",
-            },
-            {
-              title: "Under Maintenance",
-              url: "/errors/under-maintenance",
-            },
-          ],
+          title: "Editor Visual",
+          url: "/editor",
+          icon: Palette,
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Configurações",
+          url: "/configuracoes",
           icon: Settings,
-          items: [
-            {
-              title: "User Settings",
-              url: "/settings/user",
-            },
-            {
-              title: "Account Settings",
-              url: "/settings/account",
-            },
-            {
-              title: "Plans & Billing",
-              url: "/settings/billing",
-            },
-            {
-              title: "Appearance",
-              url: "/settings/appearance",
-            },
-            {
-              title: "Notifications",
-              url: "/settings/notifications",
-            },
-            {
-              title: "Connections",
-              url: "/settings/connections",
-            },
-          ],
-        },
-        {
-          title: "FAQs",
-          url: "/faqs",
-          icon: HelpCircle,
-        },
-        {
-          title: "Pricing",
-          url: "/pricing",
-          icon: CreditCard,
         },
       ],
     },
@@ -221,8 +161,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Logo size={24} className="text-current" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">ShadcnStore</span>
-                  <span className="truncate text-xs">Admin Dashboard</span>
+                  <span className="truncate font-medium">PlayInvest</span>
+                  <span className="truncate text-xs">Painel Administrativo</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -235,7 +175,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <SidebarNotification />
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

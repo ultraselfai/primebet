@@ -1,0 +1,505 @@
+// ============================================
+// PlayInvest - Prisma Schema
+// Casa de Apostas + Fintech de Investimentos
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTENTICAÇÃO (NextAuth)
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// USUÁRIOS
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  phone         String?   @unique
+  cpf           String?   @unique
+  passwordHash  String?   @map("password_hash")
+  role          Role      @default(PLAYER)
+  status        UserStatus @default(ACTIVE)
+  
+  // KYC - Verificação de Identidade
+  kycStatus     KycStatus @default(PENDING)
+  kycVerifiedAt DateTime? @map("kyc_verified_at")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relações
+  accounts      Account[]
+  sessions      Session[]
+  walletGame    WalletGame?
+  walletInvest  WalletInvest?
+  transactions  Transaction[]
+  bets          Bet[]
+  withdrawals   Withdrawal[]
+
+  @@map("users")
+}
+
+enum Role {
+  PLAYER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  SUSPENDED
+}
+
+enum KycStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+}
+
+// ============================================
+// CARTEIRAS
+// ============================================
+
+model WalletGame {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  balance   Decimal  @default(0) @db.Decimal(18, 2)
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets_game")
+}
+
+model WalletInvest {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  
+  // Capital principal (bloqueado)
+  principal       Decimal   @default(0) @db.Decimal(18, 2)
+  
+  // Rendimentos acumulados (sacáveis mensalmente)
+  yields          Decimal   @default(0) @db.Decimal(18, 2)
+  
+  // Data de bloqueio do capital
+  lockedUntil     DateTime? @map("locked_until")
+  
+  // Último cálculo de rendimentos
+  lastYieldCalc   DateTime? @map("last_yield_calc")
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  yieldHistory YieldHistory[]
+
+  @@map("wallets_invest")
+}
+
+model YieldHistory {
+  id              String   @id @default(cuid())
+  walletInvestId  String   @map("wallet_invest_id")
+  
+  principal       Decimal  @db.Decimal(18, 2)
+  rate            Decimal  @db.Decimal(5, 4) // Ex: 0.03 = 3%
+  yieldAmount     Decimal  @db.Decimal(18, 2) @map("yield_amount")
+  
+  calculatedAt    DateTime @default(now()) @map("calculated_at")
+
+  walletInvest WalletInvest @relation(fields: [walletInvestId], references: [id], onDelete: Cascade)
+
+  @@map("yield_history")
+}
+
+// ============================================
+// TRANSAÇÕES
+// ============================================
+
+model Transaction {
+  id          String            @id @default(cuid())
+  userId      String            @map("user_id")
+  
+  type        TransactionType
+  amount      Decimal           @db.Decimal(18, 2)
+  status      TransactionStatus @default(PENDING)
+  
+  // Referência do gateway de pagamento
+  gatewayRef  String?           @map("gateway_ref")
+  gatewayId   String?           @map("gateway_id")
+  
+  // PIX
+  pixKey      String?           @map("pix_key")
+  pixQrCode   String?           @map("pix_qr_code") @db.Text
+  pixCopyPaste String?          @map("pix_copy_paste") @db.Text
+  
+  // Metadados extras
+  metadata    Json?
+  
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  completedAt DateTime?         @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([status])
+  @@index([gatewayRef])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW_GAME
+  WITHDRAW_YIELDS
+  BET_PLACED
+  BET_WIN
+  BET_REFUND
+  BONUS
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+// ============================================
+// SAQUES (Fila de Aprovação)
+// ============================================
+
+model Withdrawal {
+  id          String           @id @default(cuid())
+  userId      String           @map("user_id")
+  
+  amount      Decimal          @db.Decimal(18, 2)
+  type        WithdrawType
+  
+  // Dados PIX
+  pixKeyType  PixKeyType       @map("pix_key_type")
+  pixKey      String           @map("pix_key")
+  
+  status      WithdrawalStatus @default(PENDING)
+  
+  // Aprovação
+  approvedBy  String?          @map("approved_by")
+  approvedAt  DateTime?        @map("approved_at")
+  rejectedBy  String?          @map("rejected_by")
+  rejectedAt  DateTime?        @map("rejected_at")
+  rejectReason String?         @map("reject_reason")
+  
+  // Pagamento
+  paidAt      DateTime?        @map("paid_at")
+  gatewayRef  String?          @map("gateway_ref")
+  
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId])
+  @@map("withdrawals")
+}
+
+enum WithdrawType {
+  GAME_BALANCE
+  YIELDS
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  PAID
+  FAILED
+}
+
+enum PixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  RANDOM
+}
+
+// ============================================
+// JOGOS
+// ============================================
+
+model Game {
+  id          String   @id @default(cuid())
+  
+  // ID do provider externo
+  providerId  String   @unique @map("provider_id")
+  providerName String  @map("provider_name")
+  
+  name        String
+  slug        String   @unique
+  thumbnail   String?
+  description String?  @db.Text
+  
+  // Categorização
+  category    GameCategory
+  tags        String[]
+  
+  // Configurações
+  active      Boolean  @default(true)
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  
+  // RTP e volatilidade
+  rtp         Decimal? @db.Decimal(5, 2)
+  volatility  Volatility?
+  
+  // Estatísticas
+  totalBets   Int      @default(0) @map("total_bets")
+  totalPlayers Int     @default(0) @map("total_players")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  bets Bet[]
+
+  @@index([category])
+  @@index([active, featured])
+  @@map("games")
+}
+
+enum GameCategory {
+  SLOTS
+  LIVE_CASINO
+  TABLE_GAMES
+  CRASH
+  SPORTS
+  VIRTUAL
+  OTHER
+}
+
+enum Volatility {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// ============================================
+// APOSTAS
+// ============================================
+
+model Bet {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  gameId    String    @map("game_id")
+  
+  amount    Decimal   @db.Decimal(18, 2)
+  result    Decimal?  @db.Decimal(18, 2) // Valor ganho/perdido
+  
+  status    BetStatus @default(ACTIVE)
+  
+  // Referência da sessão do jogo
+  sessionId String?   @map("session_id")
+  roundId   String?   @map("round_id")
+  
+  createdAt DateTime  @default(now()) @map("created_at")
+  settledAt DateTime? @map("settled_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id])
+
+  @@index([userId, status])
+  @@index([gameId])
+  @@map("bets")
+}
+
+enum BetStatus {
+  ACTIVE
+  WON
+  LOST
+  CANCELLED
+  REFUNDED
+}
+
+// ============================================
+// GATEWAYS DE PAGAMENTO
+// ============================================
+
+model Gateway {
+  id          String        @id @default(cuid())
+  
+  name        String
+  type        GatewayType
+  
+  // Credenciais (criptografadas)
+  apiUrl      String        @map("api_url")
+  credentials Json          // Encrypted JSON
+  
+  // Status
+  active      Boolean       @default(false)
+  primary     Boolean       @default(false)
+  
+  // Configurações
+  minDeposit  Decimal       @default(10) @db.Decimal(18, 2) @map("min_deposit")
+  maxDeposit  Decimal       @default(50000) @db.Decimal(18, 2) @map("max_deposit")
+  minWithdraw Decimal       @default(20) @db.Decimal(18, 2) @map("min_withdraw")
+  maxWithdraw Decimal       @default(50000) @db.Decimal(18, 2) @map("max_withdraw")
+  
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("gateways")
+}
+
+enum GatewayType {
+  FBSPAY
+  PIXUP
+  QUACK
+  BSPAY
+  OTHER
+}
+
+// ============================================
+// CONFIGURAÇÕES DO SITE (CMS)
+// ============================================
+
+model SiteConfig {
+  id              String   @id @default(cuid())
+  
+  // Branding
+  siteName        String   @default("PlayInvest") @map("site_name")
+  primaryColor    String   @default("#00faff") @map("primary_color")
+  secondaryColor  String   @default("#00020e") @map("secondary_color")
+  accentColor     String   @default("#10b981") @map("accent_color")
+  
+  // Logos
+  logo            String?
+  logoDark        String?  @map("logo_dark")
+  favicon         String?
+  
+  // Textos
+  welcomeTitle    String?  @map("welcome_title")
+  welcomeSubtitle String?  @map("welcome_subtitle")
+  
+  // SEO
+  metaTitle       String?  @map("meta_title")
+  metaDescription String?  @map("meta_description") @db.Text
+  
+  // Configurações de negócio
+  investmentRate  Decimal  @default(0.03) @db.Decimal(5, 4) @map("investment_rate")
+  lockMonths      Int      @default(12) @map("lock_months")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  banners Banner[]
+
+  @@map("site_config")
+}
+
+model Banner {
+  id           String   @id @default(cuid())
+  siteConfigId String   @map("site_config_id")
+  
+  title        String?
+  subtitle     String?
+  imageUrl     String   @map("image_url")
+  linkUrl      String?  @map("link_url")
+  
+  active       Boolean  @default(true)
+  order        Int      @default(0)
+  
+  // Período de exibição
+  startAt      DateTime? @map("start_at")
+  endAt        DateTime? @map("end_at")
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  siteConfig SiteConfig @relation(fields: [siteConfigId], references: [id], onDelete: Cascade)
+
+  @@index([active, order])
+  @@map("banners")
+}
+
+// ============================================
+// LOGS E AUDITORIA
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  
+  userId    String?  @map("user_id")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  
+  oldData   Json?    @map("old_data")
+  newData   Json?    @map("new_data")
+  
+  ip        String?
+  userAgent String?  @map("user_agent")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

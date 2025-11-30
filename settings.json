@@ -1,0 +1,116 @@
+{
+  "general": {
+    "siteName": "PlayInvest",
+    "timezone": "America/Sao_Paulo",
+    "currency": "BRL",
+    "language": "pt-BR",
+    "maintenanceMode": false,
+    "allowRegistration": true,
+    "requireEmailVerification": true,
+    "requireKYC": false,
+    "minAge": 18,
+    "gameColumns": 2
+  },
+  "branding": {
+    "logoUrl": "/logo-horizontal.png",
+    "mobileBannerUrl": "https://images.ultraself.space/branding/banner/1764511827646-banner-1.png"
+  },
+  "experience": {
+    "identity": {
+      "siteName": "PlayInvest",
+      "tagline": "Aposte e Invista",
+      "footerText": "© 2024 PlayInvest. Todos os direitos reservados.",
+      "supportEmail": "suporte@playinvest.com",
+      "whatsapp": "5511999999999",
+      "socialLinks": {
+        "instagram": "https://instagram.com/playinvest",
+        "telegram": "https://t.me/playinvest",
+        "youtube": ""
+      }
+    },
+    "seo": {
+      "title": "PlayInvest - Apostas e Investimentos",
+      "description": "A melhor plataforma de apostas e investimentos do Brasil",
+      "keywords": "apostas, investimentos, jogos, cassino, slots"
+    },
+    "theme": {
+      "primaryColor": "#00faff",
+      "secondaryColor": "#0a1628",
+      "accentColor": "#00ff88",
+      "preset": "cyan"
+    },
+    "media": {
+      "logo": {
+        "url": "/logo-horizontal.png",
+        "alt": "Logotipo PlayInvest"
+      },
+      "favicon": {
+        "url": "/favicon.ico"
+      },
+      "banners": [
+        {
+          "id": "hero",
+          "title": "Promoções exclusivas",
+          "subtitle": "Bônus dobrado no primeiro depósito",
+          "ctaLabel": "Quero participar",
+          "ctaLink": "/depositar",
+          "imageUrl": "https://images.ultraself.space/branding/banner/1764511827646-banner-1.png",
+          "active": true
+        }
+      ]
+    },
+    "features": {
+      "showChat": true,
+      "showSupport": true,
+      "showPromoBar": true,
+      "enableInvestments": true,
+      "maintenanceMode": false
+    }
+  },
+  "fees": {
+    "depositFee": 0,
+    "withdrawalFee": 2.5,
+    "minWithdrawal": 20,
+    "maxWithdrawal": 50000,
+    "minDeposit": 10,
+    "maxDeposit": 100000,
+    "pixFee": 0,
+    "transferFee": 0
+  },
+  "investments": {
+    "enabled": true,
+    "yieldRate": 1,
+    "yieldFrequency": "monthly",
+    "minInvestment": 100,
+    "maxInvestment": 1000000,
+    "lockPeriod": 30,
+    "autoReinvest": false,
+    "compoundYield": true
+  },
+  "security": {
+    "twoFactorEnabled": false,
+    "sessionTimeout": 60,
+    "maxLoginAttempts": 5,
+    "lockoutDuration": 30,
+    "ipWhitelist": false,
+    "requireStrongPassword": true,
+    "passwordMinLength": 8
+  },
+  "notifications": {
+    "emailNotifications": true,
+    "depositConfirmation": true,
+    "withdrawalConfirmation": true,
+    "yieldNotification": true,
+    "marketingEmails": false,
+    "adminAlerts": true,
+    "lowBalanceAlert": 1000
+  },
+  "system": {
+    "databaseUrl": "postgresql://***@db.playinvest.com:5432/playinvest",
+    "redisUrl": "redis://***@redis.playinvest.com:6379",
+    "apiRateLimit": 100,
+    "cacheEnabled": true,
+    "logLevel": "info",
+    "debugMode": false
+  }
+}

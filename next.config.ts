@@ -3,19 +3,28 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
   
   // Image optimization
   images: {
-    domains: ['ui.shadcn.com', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ui.shadcn.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.ultraself.space',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.ultraself.space',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   

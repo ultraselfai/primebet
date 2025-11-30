@@ -1,0 +1,142 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+
+interface RouteParams {
+  params: Promise<{ id: string }>
+}
+
+// GET - Buscar usuário específico
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        walletGame: true,
+        walletInvest: true,
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Usuário não encontrado' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        status: user.status,
+        kycStatus: user.kycStatus,
+        balanceGame: user.walletGame?.balance?.toString() || '0',
+        balanceInvest: user.walletInvest?.principal?.toString() || '0',
+        balanceYields: user.walletInvest?.yields?.toString() || '0',
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+    })
+  } catch (error) {
+    console.error('Erro ao buscar usuário:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro ao buscar usuário' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT - Atualizar usuário
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const { name, email, phone, cpf, role, status, password } = body
+
+    // Preparar dados para atualização
+    const updateData: {
+      name?: string
+      email?: string
+      phone?: string | null
+      cpf?: string | null
+      role?: string
+      status?: string
+      passwordHash?: string
+    } = {}
+
+    if (name !== undefined) updateData.name = name
+    if (email !== undefined) updateData.email = email
+    if (phone !== undefined) updateData.phone = phone || null
+    if (cpf !== undefined) updateData.cpf = cpf || null
+    if (role !== undefined) updateData.role = role
+    if (status !== undefined) updateData.status = status
+
+    // Se senha foi fornecida, fazer hash
+    if (password && password.length >= 6) {
+      updateData.passwordHash = await bcrypt.hash(password, 10)
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      include: {
+        walletGame: true,
+        walletInvest: true,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        status: user.status,
+        balanceGame: user.walletGame?.balance?.toString() || '0',
+        balanceInvest: user.walletInvest?.principal?.toString() || '0',
+        balanceYields: user.walletInvest?.yields?.toString() || '0',
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+      message: password ? 'Usuário e senha atualizados com sucesso' : 'Usuário atualizado com sucesso',
+    })
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro ao atualizar usuário' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE - Excluir usuário
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+
+    await prisma.user.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuário excluído com sucesso',
+    })
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro ao excluir usuário' },
+      { status: 500 }
+    )
+  }
+}
