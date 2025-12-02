@@ -11,8 +11,6 @@ import {
   AlertTriangle,
   Gamepad2,
   Wallet,
-  Database,
-  MessageSquare,
   Eye,
   EyeOff,
   Loader2,
@@ -165,26 +163,6 @@ export default function IntegracoesPage() {
       description: "Gateway de pagamentos PIX - Depósitos e Saques",
       category: "Pagamentos",
       icon: <Wallet className="w-6 h-6" />,
-      status: "disconnected",
-      lastSync: null,
-      stats: null,
-    },
-    {
-      id: "sms",
-      name: "SMS Gateway",
-      description: "Envio de SMS para verificação e notificações",
-      category: "Comunicação",
-      icon: <MessageSquare className="w-6 h-6" />,
-      status: "disconnected",
-      lastSync: null,
-      stats: null,
-    },
-    {
-      id: "analytics",
-      name: "Analytics",
-      description: "Monitoramento e métricas de performance",
-      category: "Dados",
-      icon: <Database className="w-6 h-6" />,
       status: "disconnected",
       lastSync: null,
       stats: null,
@@ -360,7 +338,13 @@ export default function IntegracoesPage() {
                       </Button>
                     </>
                   )}
-                  {integration.status === "disconnected" && (
+                  {integration.status === "disconnected" && integration.id === "fbspay" && (
+                    <Button size="sm" variant="secondary" disabled className="gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Em Manutenção
+                    </Button>
+                  )}
+                  {integration.status === "disconnected" && integration.id !== "fbspay" && (
                     <Button size="sm" onClick={() => openConfigModal(integration.id)}>
                       <Plug className="w-4 h-4 mr-2" />
                       Conectar
@@ -411,8 +395,8 @@ export default function IntegracoesPage() {
           <p className="text-sm text-muted-foreground mb-4 text-center">
             Configure integrações com outros serviços
           </p>
-          <Button variant="outline">
-            Ver Integrações Disponíveis
+          <Button variant="outline" disabled>
+            Em Breve
           </Button>
         </CardContent>
       </Card>
