@@ -59,7 +59,14 @@ export async function middleware(request: NextRequest) {
     "/mail",
     "/tasks",
     "/pricing",
-    "/faqs"
+    "/faqs",
+    "/gerenciar-promocoes",
+    "/associados",
+    "/aprovacoes",
+    "/usuarios",
+    "/relatorios",
+    "/configuracoes",
+    "/investimentos",
   ];
   
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route)) ||

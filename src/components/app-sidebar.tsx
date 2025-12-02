@@ -140,7 +140,7 @@ const data = {
         },
         {
           title: "Promoções",
-          url: "/promocoes",
+          url: "/gerenciar-promocoes",
           icon: Gift,
         },
         {
