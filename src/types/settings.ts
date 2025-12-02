@@ -27,6 +27,8 @@ export interface BottomNavItem {
   id: string;
   label: string;
   icon: string;
+  customIconUrl?: string;
+  customActiveIconUrl?: string;
   href: string;
   enabled: boolean;
   isMandatory: boolean;
@@ -41,6 +43,8 @@ export interface ThemeSettings {
   favoriteIconColor?: string;
   loaderBackgroundColor: string;
   loaderSpinnerColor: string;
+  navLabelColor?: string;
+  navActiveLabelColor?: string;
   preset?: string;
 }
 
@@ -57,6 +61,19 @@ export interface BannerItem {
   badge?: string;
 }
 
+export interface CustomIcons {
+  trophyIconUrl?: string;
+  highlightIconUrl?: string;
+  favoriteIconUrl?: string;
+  balanceCoinIconUrl?: string;
+  categoryAllIconUrl?: string;
+  categoryHotIconUrl?: string;
+  categorySlotsIconUrl?: string;
+  categoryCrashIconUrl?: string;
+  categoryLiveIconUrl?: string;
+  categoryFavoritesIconUrl?: string;
+}
+
 export interface MediaSettings {
   logo: {
     url: string;
@@ -68,6 +85,7 @@ export interface MediaSettings {
   banners: BannerItem[];
   loaderGifUrl?: string;
   telegramButtonImageUrl?: string;
+  icons?: CustomIcons;
 }
 
 export interface FeatureToggles {

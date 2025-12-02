@@ -25,6 +25,9 @@ export function BetHeader() {
   const theme = publicSettings?.experience.theme;
   const primaryColor = theme?.primaryColor ?? "#00faff";
   const secondaryColor = theme?.secondaryColor ?? "#050f1f";
+  
+  // Ícone de moeda personalizado
+  const balanceCoinIconUrl = publicSettings?.experience?.media?.icons?.balanceCoinIconUrl;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -81,11 +84,11 @@ export function BetHeader() {
             <>
               <div className="flex h-7 items-center gap-1.5 rounded-lg border border-white/10 bg-[#0d1f3c] px-2.5">
                 <Image
-                  src="/coin.svg"
+                  src={balanceCoinIconUrl || "/coin.svg"}
                   alt="Saldo"
                   width={24}
                   height={16}
-                  className="h-4 w-6"
+                  className="h-4 w-6 object-contain"
                 />
                 <span className="text-xs font-semibold text-white">
                   {balanceLoading ? "..." : formatCurrency(balance)}
@@ -109,7 +112,7 @@ export function BetHeader() {
               {/* Profile */}
               <Link href="/perfil">
                 <Avatar className="h-7 w-7 border border-[#00faff]/30">
-                  <AvatarImage src="" />
+                  <AvatarImage src={user?.avatarUrl || ""} />
                   <AvatarFallback className="bg-[#0d1f3c] text-[#00faff] text-[10px] font-medium">
                     {getInitials(user?.name || null)}
                   </AvatarFallback>

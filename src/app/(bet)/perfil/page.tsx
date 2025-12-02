@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { 
   ArrowLeft, User, Mail, Phone, Shield, Bell, LogOut, 
-  ChevronRight, Camera, Settings, HelpCircle, FileText,
+  ChevronRight, Settings, HelpCircle, FileText,
   Verified,
   Edit2,
   Loader2
@@ -17,10 +17,34 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useBetAuth } from "@/contexts/bet-auth-context";
 
+interface UserProfile {
+  name: string;
+  email: string;
+  phone: string | null;
+  cpf: string | null;
+  isKycVerified: boolean;
+  createdAt: string;
+}
+
+// Formatar telefone para exibição
+function formatPhone(phone: string | null): string | null {
+  if (!phone) return null;
+  const cleaned = phone.replace(/\D/g, "");
+  if (cleaned.length === 11) {
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+  }
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+  }
+  return phone;
+}
+
 export default function PerfilPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user, openAuthModal } = useBetAuth();
-  const [notifications, setNotifications] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [pushEnabled, setPushEnabled] = useState(true);
 
   // Redirecionar se não estiver autenticado
   useEffect(() => {
@@ -30,8 +54,38 @@ export default function PerfilPage() {
     }
   }, [isLoading, isAuthenticated, openAuthModal, router]);
 
+  // Buscar dados do perfil atualizados
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/user/profile");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) {
+            setProfile({
+              name: data.user.name,
+              email: data.user.email,
+              phone: data.user.phone,
+              cpf: data.user.cpf,
+              isKycVerified: data.user.kycStatus === "APPROVED",
+              createdAt: data.user.createdAt,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao buscar perfil:", error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [isAuthenticated, isLoading]);
+
   // Loading state
-  if (isLoading || !user) {
+  if (isLoading || !user || profileLoading) {
     return (
       <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#00faff]" />
@@ -39,15 +93,15 @@ export default function PerfilPage() {
     );
   }
 
-  // Dados do usuário vindo do contexto
+  // Dados do usuário combinando contexto + API
   const userData = {
-    name: user.name || "Usuário",
-    email: user.email || "",
-    phone: "(Não cadastrado)",
-    cpf: "***.***.***-**",
-    avatar: null, // TODO: Adicionar avatar ao User model
-    verified: false, // TODO: Implementar verificação de conta
-    createdAt: new Date().toISOString(),
+    name: profile?.name || user.name || "Usuário",
+    email: profile?.email || user.email || "",
+    phone: formatPhone(profile?.phone || null),
+    cpf: profile?.cpf ? `***.***.***-${profile.cpf.slice(-2)}` : null,
+    avatar: user.avatarUrl || null,
+    verified: profile?.isKycVerified || false,
+    createdAt: profile?.createdAt || new Date().toISOString(),
   };
 
   const menuItems = [
@@ -111,43 +165,58 @@ export default function PerfilPage() {
 
       {/* Profile Card */}
       <div className="p-4">
-        <div className="bg-gradient-to-br from-[#00faff]/10 to-[#00a8ff]/5 rounded-2xl p-5 border border-white/10">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar className="w-20 h-20 border-2 border-[#00faff]">
-                <AvatarImage src={userData.avatar || undefined} />
-                <AvatarFallback className="bg-[#00faff]/20 text-[#00faff] text-xl font-bold">
-                  {userData.name.split(" ").map(n => n[0]).join("").toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#00faff] flex items-center justify-center">
-                <Camera className="w-4 h-4 text-[#0a1628]" />
-              </button>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">{userData.name}</h2>
-                {userData.verified && (
-                  <Verified className="w-5 h-5 text-[#00faff]" />
-                )}
-              </div>
-              <p className="text-white/60 text-sm">{userData.email}</p>
-              <p className="text-white/40 text-xs mt-1">
-                Membro desde {new Date(userData.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-              </p>
-            </div>
-          </div>
+        <div className="relative rounded-2xl overflow-hidden border border-[#00faff]/20">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/teste.jpg')" }}
+          />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628]/60 via-transparent to-[#00faff]/10" />
+          {/* Glow Effect on Border */}
+          <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-[#00faff]/30" />
           
-          <Link href="/perfil/dados">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="mt-4 w-full border-[#00faff]/50 text-[#00faff] bg-[#00faff]/10 hover:bg-[#00faff]/20 hover:text-[#00faff]"
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              Editar Perfil
-            </Button>
-          </Link>
+          {/* Content */}
+          <div className="relative z-10 p-5">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar className="w-20 h-20 border-2 border-[#00faff] shadow-lg shadow-[#00faff]/20">
+                  <AvatarImage src={userData.avatar || undefined} />
+                  <AvatarFallback className="bg-[#00faff]/20 text-[#00faff] text-xl font-bold">
+                    {userData.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-white drop-shadow-sm">{userData.name}</h2>
+                  {userData.verified && (
+                    <Verified className="w-5 h-5 text-[#00faff]" />
+                  )}
+                </div>
+                <p className="text-white/70 text-sm">{userData.email}</p>
+                {user.playerId && (
+                  <p className="text-[#00faff] font-mono text-sm mt-1 drop-shadow-sm">
+                    ID: {user.playerId}
+                  </p>
+                )}
+                <p className="text-white/50 text-xs mt-1">
+                  Membro desde {new Date(userData.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                </p>
+              </div>
+            </div>
+            
+            <Link href="/perfil/dados">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="mt-4 w-full border-[#00faff]/50 text-[#00faff] bg-[#00faff]/10 hover:bg-[#00faff]/20 hover:text-[#00faff] backdrop-blur-sm"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                Editar Perfil
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -166,7 +235,12 @@ export default function PerfilPage() {
               <Phone className="w-4 h-4" />
               <span className="text-xs">Telefone</span>
             </div>
-            <p className="text-white text-sm">{userData.phone}</p>
+            <p className={cn(
+              "text-sm",
+              userData.phone ? "text-white" : "text-white/40"
+            )}>
+              {userData.phone || "(Não cadastrado)"}
+            </p>
           </div>
         </div>
       </div>
@@ -201,20 +275,17 @@ export default function PerfilPage() {
       {/* Notifications */}
       <div className="px-4 mb-4">
         <h3 className="text-white/40 text-xs font-medium uppercase mb-2 px-1">Preferências</h3>
-        <div className="bg-white/5 rounded-xl border border-white/10 p-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-white/5 rounded-xl border border-white/10">
+          <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <span className="text-white/60">
                 <Bell className="w-5 h-5" />
               </span>
-              <div>
-                <p className="text-white">Notificações Push</p>
-                <p className="text-white/40 text-sm">Promoções e atualizações</p>
-              </div>
+              <p className="text-white">Notificações Push</p>
             </div>
             <Switch
-              checked={notifications}
-              onCheckedChange={setNotifications}
+              checked={pushEnabled}
+              onCheckedChange={setPushEnabled}
               className="data-[state=checked]:bg-[#00faff]"
             />
           </div>

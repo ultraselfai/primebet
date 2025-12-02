@@ -195,3 +195,22 @@ html {
 .animate-banner-slide-in {
   animation: banner-slide-in 500ms ease-out forwards;
 }
+
+/* Marquee Animation - Vitórias Recentes */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover,
+.pause-animation {
+  animation-play-state: paused;
+}

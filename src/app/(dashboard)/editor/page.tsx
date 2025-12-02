@@ -34,6 +34,15 @@ import {
   Wallet2,
   UserRound,
   Send,
+  UserCircle,
+  Bell,
+  Upload,
+  X,
+  Flame,
+  Star,
+  Trophy,
+  Dices,
+  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -75,6 +84,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PushNotificationsTab } from "@/components/push-notifications-tab";
 import { usePublicSettings } from "@/contexts/public-settings-context";
 import { defaultExperience, defaultSettings } from "@/lib/settings/defaults";
 import { cn } from "@/lib/utils";
@@ -254,6 +264,7 @@ const ensureExperience = (incoming?: Partial<ExperienceSettings>): ExperienceSet
       ...(incoming?.media?.favicon ?? {}),
     },
     loaderGifUrl: incoming?.media?.loaderGifUrl ?? defaultExperience.media.loaderGifUrl,
+    telegramButtonImageUrl: incoming?.media?.telegramButtonImageUrl ?? defaultExperience.media.telegramButtonImageUrl,
     banners:
       incoming?.media?.banners?.length
         ? incoming.media.banners.map((banner, index) => ({
@@ -262,6 +273,10 @@ const ensureExperience = (incoming?: Partial<ExperienceSettings>): ExperienceSet
             active: banner.active !== false,
           }))
         : defaultExperience.media.banners,
+    icons: {
+      ...defaultExperience.media.icons,
+      ...(incoming?.media?.icons ?? {}),
+    },
   },
   features: {
     ...defaultExperience.features,
@@ -397,7 +412,11 @@ function BottomNavPreview({ items, themeSecondary }: BottomNavPreviewProps) {
 
       {centerItem && (
         <div className="absolute left-1/2 top-[-8px] z-20 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-[#0b1624] text-white shadow-lg">
-          {React.createElement(getNavIconComponent(centerItem.icon), { className: "h-6 w-6" })}
+          {centerItem.customIconUrl ? (
+            <img src={centerItem.customIconUrl} alt={centerItem.label} className="h-6 w-6 object-contain" />
+          ) : (
+            React.createElement(getNavIconComponent(centerItem.icon), { className: "h-6 w-6" })
+          )}
         </div>
       )}
     </div>
@@ -408,7 +427,11 @@ function PreviewNavButton({ item }: { item: BottomNavItem }) {
   const Icon = getNavIconComponent(item.icon);
   return (
     <div className="flex flex-col items-center gap-1 text-white/70">
-      <Icon className="h-4 w-4" />
+      {item.customIconUrl ? (
+        <img src={item.customIconUrl} alt={item.label} className="h-4 w-4 object-contain" />
+      ) : (
+        <Icon className="h-4 w-4" />
+      )}
       <span className="text-[11px] font-medium">{item.label}</span>
     </div>
   );
@@ -545,6 +568,11 @@ export default function EditorPage() {
   const previewRef = useRef<HTMLDivElement | null>(null);
   const { refresh: refreshPublicSettings, updateCache } = usePublicSettings();
 
+  // Estados para Avatares
+  const [avatars, setAvatars] = useState<Array<{ id: string; imageUrl: string; name?: string; isActive: boolean; _count: { users: number } }>>([]);
+  const [loadingAvatars, setLoadingAvatars] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   const experience = settings?.experience ?? ensureExperience(defaultExperience);
   const bottomNavItems = experience.navigation.bottomNav;
   const [activeBottomNavId, setActiveBottomNavId] = useState<string>(bottomNavItems[0]?.id ?? "");
@@ -594,6 +622,75 @@ export default function EditorPage() {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  // Funções para gerenciar Avatares
+  const fetchAvatars = useCallback(async () => {
+    try {
+      setLoadingAvatars(true);
+      const response = await fetch("/api/admin/avatars");
+      if (response.ok) {
+        const data = await response.json();
+        setAvatars(data.avatars || []);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar avatares:", error);
+    } finally {
+      setLoadingAvatars(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAvatars();
+  }, [fetchAvatars]);
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAvatar(true);
+      const imageUrl = await uploadAsset(file, "avatars");
+      
+      // Criar avatar no banco
+      const response = await fetch("/api/admin/avatars", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl, name: file.name }),
+      });
+
+      if (response.ok) {
+        toast.success("Avatar adicionado com sucesso!");
+        fetchAvatars();
+      } else {
+        throw new Error("Falha ao salvar avatar");
+      }
+    } catch (error) {
+      console.error("Erro ao fazer upload do avatar:", error);
+      toast.error("Erro ao adicionar avatar");
+    } finally {
+      setUploadingAvatar(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleDeleteAvatar = async (id: string) => {
+    try {
+      const response = await fetch(`/api/admin/avatars?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Avatar removido!");
+        fetchAvatars();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Erro ao remover avatar");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar avatar:", error);
+      toast.error("Erro ao remover avatar");
+    }
+  };
 
   const updateExperience = useCallback(
     (updater: (prev: ExperienceSettings) => ExperienceSettings) => {
@@ -1050,7 +1147,7 @@ export default function EditorPage() {
                 </TabsTrigger>
                 <TabsTrigger value="media" className="gap-2">
                   <ImageIcon className="h-4 w-4" />
-                  Mídia
+                  Mídias & Ícones
                 </TabsTrigger>
                 <TabsTrigger value="identity" className="gap-2">
                   <Type className="h-4 w-4" />
@@ -1059,6 +1156,14 @@ export default function EditorPage() {
                 <TabsTrigger value="navigation" className="gap-2">
                   <LayoutGrid className="h-4 w-4" />
                   Menu inferior
+                </TabsTrigger>
+                <TabsTrigger value="avatars" className="gap-2">
+                  <UserCircle className="h-4 w-4" />
+                  Avatares
+                </TabsTrigger>
+                <TabsTrigger value="push" className="gap-2">
+                  <Bell className="h-4 w-4" />
+                  Push
                 </TabsTrigger>
                 <TabsTrigger value="features" className="gap-2">
                   <Settings2 className="h-4 w-4" />
@@ -1428,7 +1533,7 @@ export default function EditorPage() {
                     <div>
                       <CardTitle className="text-base">Banners do Carrossel</CardTitle>
                       <CardDescription>
-                        Imagens que aparecem no topo da home. Use imagens de <strong>960×400px</strong> para melhor qualidade.
+                        Imagens que aparecem no topo da home. Use imagens de <strong>1400×445px</strong> para melhor qualidade.
                       </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" onClick={addBanner}>
@@ -1469,7 +1574,7 @@ export default function EditorPage() {
                         </div>
                         <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
                           <div className="rounded-2xl border border-white/10 bg-zinc-900 p-2">
-                            <div className="relative aspect-[320/140] overflow-hidden rounded-xl bg-black/20">
+                            <div className="relative aspect-[280/89] overflow-hidden rounded-xl bg-black/20">
                               {banner.imageUrl ? (
                                 <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: `url(${banner.imageUrl})` }} />
                               ) : (
@@ -1489,7 +1594,7 @@ export default function EditorPage() {
                                 onChange={(event) => handleBannerUpload(banner.id, event.target.files?.[0] ?? null)}
                                 disabled={uploadingBannerId === banner.id}
                               />
-                              <p className="text-xs text-muted-foreground">Recomendado: 960×400px · PNG/JPG</p>
+                              <p className="text-xs text-muted-foreground">Recomendado: 1400×445px · PNG/JPG</p>
                             </div>
                             {uploadingBannerId === banner.id && (
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1509,6 +1614,518 @@ export default function EditorPage() {
                         </div>
                       </div>
                     ))}
+                  </CardContent>
+                </Card>
+
+                {/* Card: Ícones Personalizados */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Ícones Personalizados</CardTitle>
+                    <CardDescription>Substitua os ícones padrão do sistema por imagens personalizadas. Use PNG/SVG com fundo transparente (recomendado: 48×48px).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Ícone de Troféu - Grandes Vitórias */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="space-y-3 rounded-xl border p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Troféu (Vitórias)</Label>
+                            <p className="text-xs text-muted-foreground">Seção "Grandes Vitórias Recentes"</p>
+                          </div>
+                          {experience.media.icons?.trophyIconUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateExperience((prev) => ({
+                                ...prev,
+                                media: { ...prev.media, icons: { ...prev.media.icons, trophyIconUrl: "" } },
+                              }))}
+                              className="text-xs text-destructive hover:underline"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.media.icons?.trophyIconUrl ? (
+                              <img src={experience.media.icons.trophyIconUrl} alt="Troféu" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Trophy className="h-6 w-6 text-muted-foreground" />
+                            )}
+                          </div>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="flex-1"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                              try {
+                                const url = await uploadAsset(file, "icons");
+                                updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, trophyIconUrl: url } },
+                                }));
+                              } catch { alert("Erro no upload"); }
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Ícone de Destaque (Foguinho) */}
+                      <div className="space-y-3 rounded-xl border p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Destaque (🔥)</Label>
+                            <p className="text-xs text-muted-foreground">Badge nos cards de jogos em alta</p>
+                          </div>
+                          {experience.media.icons?.highlightIconUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateExperience((prev) => ({
+                                ...prev,
+                                media: { ...prev.media, icons: { ...prev.media.icons, highlightIconUrl: "" } },
+                              }))}
+                              className="text-xs text-destructive hover:underline"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.media.icons?.highlightIconUrl ? (
+                              <img src={experience.media.icons.highlightIconUrl} alt="Destaque" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Flame className="h-6 w-6 text-orange-500" />
+                            )}
+                          </div>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="flex-1"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                              try {
+                                const url = await uploadAsset(file, "icons");
+                                updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, highlightIconUrl: url } },
+                                }));
+                              } catch { alert("Erro no upload"); }
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Ícone de Favorito (Estrela) */}
+                      <div className="space-y-3 rounded-xl border p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Favorito (⭐)</Label>
+                            <p className="text-xs text-muted-foreground">Botão de favoritar nos jogos</p>
+                          </div>
+                          {experience.media.icons?.favoriteIconUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateExperience((prev) => ({
+                                ...prev,
+                                media: { ...prev.media, icons: { ...prev.media.icons, favoriteIconUrl: "" } },
+                              }))}
+                              className="text-xs text-destructive hover:underline"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.media.icons?.favoriteIconUrl ? (
+                              <img src={experience.media.icons.favoriteIconUrl} alt="Favorito" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Star className="h-6 w-6 text-yellow-500" />
+                            )}
+                          </div>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="flex-1"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                              try {
+                                const url = await uploadAsset(file, "icons");
+                                updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, favoriteIconUrl: url } },
+                                }));
+                              } catch { alert("Erro no upload"); }
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Ícone de Moeda (Saldo) */}
+                      <div className="space-y-3 rounded-xl border p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Moeda (Saldo)</Label>
+                            <p className="text-xs text-muted-foreground">Ícone no campo de saldo do header</p>
+                          </div>
+                          {experience.media.icons?.balanceCoinIconUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateExperience((prev) => ({
+                                ...prev,
+                                media: { ...prev.media, icons: { ...prev.media.icons, balanceCoinIconUrl: "" } },
+                              }))}
+                              className="text-xs text-destructive hover:underline"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.media.icons?.balanceCoinIconUrl ? (
+                              <img src={experience.media.icons.balanceCoinIconUrl} alt="Moeda" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Coins className="h-6 w-6 text-yellow-400" />
+                            )}
+                          </div>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="flex-1"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                              try {
+                                const url = await uploadAsset(file, "icons");
+                                updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, balanceCoinIconUrl: url } },
+                                }));
+                              } catch { alert("Erro no upload"); }
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Separador */}
+                    <Separator />
+
+                    {/* Ícones das Categorias */}
+                    <div>
+                      <Label className="text-sm font-medium">Ícones das Categorias de Jogos</Label>
+                      <p className="text-xs text-muted-foreground mb-4">Menu de navegação: Todos, Em Alta, Slots, Crash, Ao Vivo, Favoritos</p>
+                      
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {/* Categoria: Todos */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Todos</Label>
+                              <p className="text-xs text-muted-foreground">Categoria geral</p>
+                            </div>
+                            {experience.media.icons?.categoryAllIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categoryAllIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categoryAllIconUrl ? (
+                                <img src={experience.media.icons.categoryAllIconUrl} alt="Todos" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Sparkles className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categoryAllIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categoria: Em Alta */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Em Alta</Label>
+                              <p className="text-xs text-muted-foreground">Jogos populares</p>
+                            </div>
+                            {experience.media.icons?.categoryHotIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categoryHotIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categoryHotIconUrl ? (
+                                <img src={experience.media.icons.categoryHotIconUrl} alt="Em Alta" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Flame className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categoryHotIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categoria: Slots */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Slots</Label>
+                              <p className="text-xs text-muted-foreground">Jogos de caça-níquel</p>
+                            </div>
+                            {experience.media.icons?.categorySlotsIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categorySlotsIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categorySlotsIconUrl ? (
+                                <img src={experience.media.icons.categorySlotsIconUrl} alt="Slots" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Dices className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categorySlotsIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categoria: Crash */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Crash</Label>
+                              <p className="text-xs text-muted-foreground">Jogos crash / aviator</p>
+                            </div>
+                            {experience.media.icons?.categoryCrashIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categoryCrashIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categoryCrashIconUrl ? (
+                                <img src={experience.media.icons.categoryCrashIconUrl} alt="Crash" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Zap className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categoryCrashIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categoria: Ao Vivo */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Ao Vivo</Label>
+                              <p className="text-xs text-muted-foreground">Jogos com dealer real</p>
+                            </div>
+                            {experience.media.icons?.categoryLiveIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categoryLiveIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categoryLiveIconUrl ? (
+                                <img src={experience.media.icons.categoryLiveIconUrl} alt="Ao Vivo" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Trophy className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categoryLiveIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categoria: Favoritos */}
+                        <div className="space-y-3 rounded-xl border p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm font-medium">Favoritos</Label>
+                              <p className="text-xs text-muted-foreground">Jogos salvos pelo usuário</p>
+                            </div>
+                            {experience.media.icons?.categoryFavoritesIconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  media: { ...prev.media, icons: { ...prev.media.icons, categoryFavoritesIconUrl: "" } },
+                                }))}
+                                className="text-xs text-destructive hover:underline"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                              {experience.media.icons?.categoryFavoritesIconUrl ? (
+                                <img src={experience.media.icons.categoryFavoritesIconUrl} alt="Favoritos" className="h-8 w-8 object-contain" />
+                              ) : (
+                                <Star className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 500 * 1024) { alert("Máximo: 500KB"); return; }
+                                try {
+                                  const url = await uploadAsset(file, "icons");
+                                  updateExperience((prev) => ({
+                                    ...prev,
+                                    media: { ...prev.media, icons: { ...prev.media.icons, categoryFavoritesIconUrl: url } },
+                                  }));
+                                } catch { alert("Erro no upload"); }
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1626,8 +2243,6 @@ export default function EditorPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
-
                 {experience.features.showTelegramButton && (
                   <Card>
                     <CardHeader>
@@ -1694,6 +2309,7 @@ export default function EditorPage() {
                     </CardContent>
                   </Card>
                 )}
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Grid de jogos</CardTitle>
                     <CardDescription>Quantas colunas mostrar na home mobile</CardDescription>
@@ -1740,6 +2356,54 @@ export default function EditorPage() {
                     <p className="mt-4 text-xs text-muted-foreground">
                       Arraste horizontalmente para definir a ordem exata que aparecerá no app.
                     </p>
+                  </CardContent>
+                </Card>
+
+                {/* Card: Cor da fonte dos títulos */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Cor dos títulos</CardTitle>
+                    <CardDescription>Defina as cores dos rótulos exibidos no menu inferior.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Cor normal</Label>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="color" 
+                          value={experience.theme.navLabelColor || "#9ca3af"} 
+                          onChange={(event) => handleThemeChange("navLabelColor", event.target.value)} 
+                          className="h-12 w-16 cursor-pointer rounded-xl p-1" 
+                        />
+                        <Input 
+                          type="text"
+                          value={experience.theme.navLabelColor || "#9ca3af"}
+                          onChange={(event) => handleThemeChange("navLabelColor", event.target.value)}
+                          className="flex-1 font-mono text-sm"
+                          placeholder="#9ca3af"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Cor dos textos quando não selecionados</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor quando selecionado</Label>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="color" 
+                          value={experience.theme.navActiveLabelColor || "#00E0FF"} 
+                          onChange={(event) => handleThemeChange("navActiveLabelColor", event.target.value)} 
+                          className="h-12 w-16 cursor-pointer rounded-xl p-1" 
+                        />
+                        <Input 
+                          type="text"
+                          value={experience.theme.navActiveLabelColor || "#00E0FF"}
+                          onChange={(event) => handleThemeChange("navActiveLabelColor", event.target.value)}
+                          className="flex-1 font-mono text-sm"
+                          placeholder="#00E0FF"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Cor dos textos do item ativo/selecionado</p>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -1807,19 +2471,236 @@ export default function EditorPage() {
                           Este botão é obrigatório. Você pode mudar título, link e ícone, mas não é possível desativá-lo.
                         </div>
                       )}
+
+                      {/* Upload de ícone personalizado */}
+                      <div className="space-y-3 md:col-span-2">
+                        <Label>Ícones personalizados (opcional)</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Faça upload de ícones próprios para o estado normal e selecionado. PNG ou SVG com fundo transparente recomendado.
+                        </p>
+                        
+                        <div className="grid gap-4 md:grid-cols-2">
+                          {/* Ícone Normal */}
+                          <div className="space-y-2 rounded-xl border p-4">
+                            <Label className="text-sm font-medium">Ícone Normal</Label>
+                            <p className="text-xs text-muted-foreground">Quando o item não está selecionado</p>
+                            <div className="flex items-center gap-3 mt-2">
+                              {activeBottomNavItem.customIconUrl ? (
+                                <div className="relative">
+                                  <div className="h-14 w-14 rounded-xl border bg-[#0f172a] flex items-center justify-center p-2">
+                                    <img 
+                                      src={activeBottomNavItem.customIconUrl} 
+                                      alt="Ícone normal"
+                                      className="max-h-full max-w-full object-contain"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleBottomNavItemChange(activeBottomNavItem.id, { customIconUrl: undefined })}
+                                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/80"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <Label
+                                  htmlFor={`nav-icon-upload-${activeBottomNavItem.id}`}
+                                  className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-colors hover:border-primary hover:bg-primary/5"
+                                >
+                                  <Upload className="h-5 w-5 text-muted-foreground" />
+                                  <input
+                                    id={`nav-icon-upload-${activeBottomNavItem.id}`}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      if (file.size > 500 * 1024) {
+                                        alert("Arquivo muito grande. Máximo: 500KB");
+                                        return;
+                                      }
+                                      try {
+                                        const url = await uploadAsset(file, "nav-icons");
+                                        handleBottomNavItemChange(activeBottomNavItem.id, { customIconUrl: url });
+                                      } catch (error) {
+                                        console.error("Erro ao fazer upload:", error);
+                                        alert("Erro ao fazer upload do ícone.");
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </Label>
+                              )}
+                              <p className="text-xs text-muted-foreground flex-1">48×48px</p>
+                            </div>
+                          </div>
+
+                          {/* Ícone Selecionado/Ativo */}
+                          <div className="space-y-2 rounded-xl border p-4">
+                            <Label className="text-sm font-medium">Ícone Selecionado</Label>
+                            <p className="text-xs text-muted-foreground">Quando o item está ativo/clicado</p>
+                            <div className="flex items-center gap-3 mt-2">
+                              {activeBottomNavItem.customActiveIconUrl ? (
+                                <div className="relative">
+                                  <div className="h-14 w-14 rounded-xl border bg-[#0f172a] flex items-center justify-center p-2" style={{ borderColor: experience.theme.navActiveLabelColor || "#00E0FF" }}>
+                                    <img 
+                                      src={activeBottomNavItem.customActiveIconUrl} 
+                                      alt="Ícone selecionado"
+                                      className="max-h-full max-w-full object-contain"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleBottomNavItemChange(activeBottomNavItem.id, { customActiveIconUrl: undefined })}
+                                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/80"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <Label
+                                  htmlFor={`nav-icon-active-upload-${activeBottomNavItem.id}`}
+                                  className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-colors hover:border-primary hover:bg-primary/5"
+                                >
+                                  <Upload className="h-5 w-5 text-muted-foreground" />
+                                  <input
+                                    id={`nav-icon-active-upload-${activeBottomNavItem.id}`}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      if (file.size > 500 * 1024) {
+                                        alert("Arquivo muito grande. Máximo: 500KB");
+                                        return;
+                                      }
+                                      try {
+                                        const url = await uploadAsset(file, "nav-icons");
+                                        handleBottomNavItemChange(activeBottomNavItem.id, { customActiveIconUrl: url });
+                                      } catch (error) {
+                                        console.error("Erro ao fazer upload:", error);
+                                        alert("Erro ao fazer upload do ícone.");
+                                      }
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </Label>
+                              )}
+                              <p className="text-xs text-muted-foreground flex-1">48×48px</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
 
+              {/* Tab: Avatares */}
+              <TabsContent value="avatars" className="mt-4 space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Preview rápido</CardTitle>
-                    <CardDescription>Veja como o layout curvado ficará com a ordem atual.</CardDescription>
+                    <CardTitle className="text-base">Avatares dos Usuários</CardTitle>
+                    <CardDescription>
+                      Gerencie os avatares disponíveis para novos usuários. Cada novo cadastro recebe um avatar aleatório desta lista.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <BottomNavPreview items={bottomNavItems} themeSecondary={experience.theme.secondaryColor} />
+                  <CardContent className="space-y-4">
+                    {/* Upload de novo avatar */}
+                    <div className="flex items-center gap-4">
+                      <Label
+                        htmlFor="avatar-upload"
+                        className={cn(
+                          "flex h-24 w-24 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+                          uploadingAvatar ? "opacity-50" : "hover:border-primary hover:bg-primary/5"
+                        )}
+                      >
+                        {uploadingAvatar ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Plus className="h-6 w-6 text-muted-foreground" />
+                        )}
+                        <input
+                          id="avatar-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarUpload}
+                          disabled={uploadingAvatar}
+                        />
+                      </Label>
+                      <div>
+                        <p className="text-sm font-medium">Adicionar novo avatar</p>
+                        <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 500KB</p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Lista de avatares */}
+                    <div>
+                      <p className="text-sm font-medium mb-3">
+                        Avatares disponíveis ({avatars.filter(a => a.isActive).length})
+                      </p>
+                      
+                      {loadingAvatars ? (
+                        <div className="flex gap-3">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <Skeleton key={i} className="h-20 w-20 rounded-xl" />
+                          ))}
+                        </div>
+                      ) : avatars.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-8 text-center">
+                          Nenhum avatar cadastrado. Adicione avatares para que novos usuários recebam fotos de perfil automáticas.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                          {avatars.map((avatar) => (
+                            <div
+                              key={avatar.id}
+                              className={cn(
+                                "relative group rounded-xl overflow-hidden border",
+                                avatar.isActive ? "border-border" : "border-destructive/50 opacity-50"
+                              )}
+                            >
+                              <img
+                                src={avatar.imageUrl}
+                                alt={avatar.name || "Avatar"}
+                                className="w-full aspect-square object-cover"
+                              />
+                              {/* Badge de usuários usando este avatar */}
+                              {avatar._count.users > 0 && (
+                                <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                                  {avatar._count.users}
+                                </div>
+                              )}
+                              {/* Botão de deletar */}
+                              <button
+                                onClick={() => handleDeleteAvatar(avatar.id)}
+                                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                              >
+                                <Trash2 className="h-5 w-5 text-white" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {avatars.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        💡 Avatares em uso por usuários serão apenas desativados, não deletados.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Tab: Push Notifications */}
+              <TabsContent value="push" className="mt-4 space-y-4">
+                <PushNotificationsTab />
               </TabsContent>
 
               {/* Tab: Features */}

@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react"
 
 export interface User {
   id: string
+  playerId: string
   name: string
   email: string
   phone: string | null

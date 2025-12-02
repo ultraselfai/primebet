@@ -9,6 +9,8 @@ declare module "next-auth" {
   interface User {
     role: Role;
     phone?: string | null;
+    playerId?: string | null;
+    avatarUrl?: string | null;
   }
 
   interface Session {
@@ -19,6 +21,8 @@ declare module "next-auth" {
       image?: string | null;
       role: Role;
       phone?: string | null;
+      playerId?: string | null;
+      avatarUrl?: string | null;
     };
   }
 }
@@ -28,6 +32,8 @@ declare module "next-auth/jwt" {
     id: string;
     role: Role;
     phone?: string | null;
+    playerId?: string | null;
+    avatarUrl?: string | null;
   }
 }
 
@@ -71,8 +77,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             image: true,
             role: true,
             phone: true,
+            playerId: true,
             status: true,
             passwordHash: true,
+            avatar: {
+              select: { imageUrl: true }
+            },
           },
         });
 
@@ -100,6 +110,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: user.image,
           role: user.role,
           phone: user.phone,
+          playerId: user.playerId,
+          avatarUrl: user.avatar?.imageUrl || null,
         };
       },
     }),
@@ -111,17 +123,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id!;
         token.role = user.role;
         token.phone = user.phone;
+        token.playerId = user.playerId;
+        token.avatarUrl = user.avatarUrl;
       }
       // Atualizar dados do usuário se solicitado
       if (trigger === "update") {
         const freshUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, phone: true, name: true },
+          select: { 
+            role: true, 
+            phone: true, 
+            name: true, 
+            playerId: true,
+            avatar: { select: { imageUrl: true } }
+          },
         });
         if (freshUser) {
           token.role = freshUser.role;
           token.phone = freshUser.phone;
           token.name = freshUser.name;
+          token.playerId = freshUser.playerId;
+          token.avatarUrl = freshUser.avatar?.imageUrl || null;
         }
       }
       return token;
@@ -131,6 +153,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
         session.user.phone = token.phone as string | null | undefined;
+        session.user.playerId = token.playerId as string | null | undefined;
+        session.user.avatarUrl = token.avatarUrl as string | null | undefined;
       }
       return session;
     },

@@ -217,6 +217,18 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser, onAddBal
       },
     },
     {
+      accessorKey: "playerId",
+      header: "ID Jogador",
+      cell: ({ row }) => {
+        const playerId = row.getValue("playerId") as string | null
+        return (
+          <span className="font-mono text-sm text-muted-foreground">
+            {playerId || "—"}
+          </span>
+        )
+      },
+    },
+    {
       accessorKey: "role",
       header: "Função",
       cell: ({ row }) => {

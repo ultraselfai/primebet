@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { getRandomAvatarId } from "@/lib/utils/avatar";
+
+// Gerar Player ID único de 8 dígitos
+async function generateUniquePlayerId(): Promise<string> {
+  let playerId: string;
+  let exists = true;
+  
+  while (exists) {
+    // Gera número entre 10000000 e 99999999
+    playerId = String(Math.floor(10000000 + Math.random() * 90000000));
+    const existing = await prisma.user.findUnique({
+      where: { playerId },
+    });
+    exists = !!existing;
+  }
+  
+  return playerId!;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +90,12 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Gerar Player ID único
+    const playerId = await generateUniquePlayerId();
+
+    // Buscar avatar aleatório
+    const avatarId = await getRandomAvatarId();
+
     // Criar usuário com carteiras
     const user = await prisma.user.create({
       data: {
@@ -80,6 +104,8 @@ export async function POST(request: NextRequest) {
         phone: phoneClean,
         cpf: cpfClean,
         passwordHash,
+        playerId,
+        avatarId,
         role: "PLAYER",
         status: "ACTIVE",
         walletGame: {

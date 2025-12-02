@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { usePublicSettings } from "@/contexts/public-settings-context";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalProps) {
   const router = useRouter();
+  const { settings: publicSettings } = usePublicSettings();
+  const logoUrl = publicSettings?.experience.media.logo.url || publicSettings?.branding.logoUrl || "/logo-horizontal.png";
   const [activeTab, setActiveTab] = useState<"login" | "cadastro">(defaultTab);
 
   // Sincronizar com defaultTab quando mudar
@@ -193,8 +196,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
         {/* Header com Logo */}
         <div className="pt-8 pb-4 px-6 text-center border-b border-white/10">
           <Image
-            src="/logo-horizontal.png"
-            alt="PrimeBet"
+            src={logoUrl}
+            alt="Logo"
             width={140}
             height={32}
             className="h-8 w-auto mx-auto mb-4"

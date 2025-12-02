@@ -9,15 +9,20 @@ export interface MenuItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  activeIcon?: React.ReactNode;
+  iconLarge?: React.ReactNode;
+  activeIconLarge?: React.ReactNode;
   href: string;
   onClick?: (e: React.MouseEvent) => void;
 }
 
 interface CasinoNavBarProps {
   items: MenuItem[];
+  labelColor?: string;
+  activeLabelColor?: string;
 }
 
-export function CasinoNavBar({ items }: CasinoNavBarProps) {
+export function CasinoNavBar({ items, labelColor = "#9ca3af", activeLabelColor = "#00E0FF" }: CasinoNavBarProps) {
   const [width, setWidth] = useState(0);
   const pathname = usePathname();
 
@@ -35,9 +40,9 @@ export function CasinoNavBar({ items }: CasinoNavBarProps) {
   const rightItems = items.slice(middleIndex + 1);
 
   const height = 60;
-  const curveStart = 65;
-  const curveDepth = 35;
-  const tension = 35;
+  const curveStart = 38;    // Reduzido de 65 para 50 - curva começa mais perto do centro
+  const curveDepth = 37;    // Reduzido de 35 para 32 - curva menos profunda
+  const tension = 35;       // Reduzido de 35 para 28 - curva mais fechada/apertada
   const center = width / 2;
 
   const path = `
@@ -58,16 +63,17 @@ export function CasinoNavBar({ items }: CasinoNavBarProps) {
       
       {/* 1. O BOTÃO FLUTUANTE (FAB) - CARTEIRA */}
       {fabItem && (
-        <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50">
+        <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50 transition-transform duration-150 ease-out active:scale-110">
+          {/* Anel neon ao redor do botão */}
+          <div className="absolute inset-0 rounded-full border shadow-[0_0_8px_var(--ring-color),0_0_12px_var(--ring-color-50)] pointer-events-none" style={{ borderColor: activeLabelColor, "--ring-color": activeLabelColor, "--ring-color-50": `${activeLabelColor}50` } as React.CSSProperties} />
           <Link 
             href={fabItem.href}
             onClick={fabItem.onClick}
-            className="w-14 h-14 rounded-full flex items-center justify-center 
-                       bg-[#0f172a] border-4 border-[#00E0FF] text-white 
-                       shadow-[0_0_15px_#00E0FF] transition-transform hover:scale-105 active:scale-95"
+            className="relative w-14 h-14 rounded-full flex items-center justify-center 
+                       bg-gradient-to-b from-[#0a1628] to-[#050d18] text-white"
           >
-            <span className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
-              {fabItem.icon}
+            <span className="text-white">
+              {fabItem.activeIconLarge || fabItem.iconLarge || fabItem.activeIcon || fabItem.icon}
             </span>
           </Link>
         </div>
@@ -82,7 +88,27 @@ export function CasinoNavBar({ items }: CasinoNavBarProps) {
           className="absolute top-0 left-0 w-full h-full"
           preserveAspectRatio="none"
         >
-          <path d={path} fill="#0f172a" fillOpacity="0.95" />
+          <defs>
+            <linearGradient id="navBarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#0246FF" stopOpacity="0.95" />
+              <stop offset="50%" stopColor="#0235cc" stopOpacity="0.92" />
+              <stop offset="100%" stopColor="#0246FF" stopOpacity="0.95" />
+            </linearGradient>
+            <linearGradient id="navBarOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#0a1628" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+          {/* Main bar - cor sólida azul */}
+          <path d={path} fill="url(#navBarGradient)" />
+          {/* Overlay escuro sutil para dar profundidade */}
+          <path d={path} fill="url(#navBarOverlay)" />
+          {/* Glow nas pontas */}
+          <ellipse cx={width * 0.05} cy="30" rx="60" ry="35" fill="#00d4ff" fillOpacity="0.15" />
+          <ellipse cx={width * 0.95} cy="30" rx="60" ry="35" fill="#00d4ff" fillOpacity="0.15" />
+          {/* Top edge highlight */}
+          <path d={`M0,0 L${center - curveStart},0`} stroke="#00d4ff" strokeOpacity="0.4" strokeWidth="1" fill="none" />
+          <path d={`M${center + curveStart},0 L${width},0`} stroke="#00d4ff" strokeOpacity="0.4" strokeWidth="1" fill="none" />
         </svg>
 
         {/* 3. CONTEÚDO DOS ÍCONES (LAYOUT) */}
@@ -99,16 +125,19 @@ export function CasinoNavBar({ items }: CasinoNavBarProps) {
                   onClick={item.onClick}
                   className="flex flex-col items-center gap-1 group"
                 >
-                  <div className={cn(
-                    "transition-all duration-300",
-                    isActive ? "text-[#00E0FF] drop-shadow-[0_0_8px_#00E0FF]" : "text-gray-400 group-hover:text-white"
-                  )}>
-                    {item.icon}
+                  <div 
+                    className={cn(
+                      "transition-all duration-300",
+                      !isActive && "text-gray-400 group-hover:text-white"
+                    )}
+                    style={isActive ? { color: activeLabelColor, filter: `drop-shadow(0 0 8px ${activeLabelColor})` } : undefined}
+                  >
+                    {isActive ? (item.activeIcon || item.icon) : item.icon}
                   </div>
-                  <span className={cn(
-                    "text-[10px] font-medium",
-                    isActive ? "text-[#00E0FF]" : "text-gray-500"
-                  )}>
+                  <span 
+                    className="text-[10px] font-medium"
+                    style={{ color: isActive ? activeLabelColor : labelColor }}
+                  >
                     {item.label}
                   </span>
                 </Link>
@@ -130,16 +159,19 @@ export function CasinoNavBar({ items }: CasinoNavBarProps) {
                    onClick={item.onClick}
                    className="flex flex-col items-center gap-1 group"
                  >
-                  <div className={cn(
-                    "transition-all duration-300",
-                    isActive ? "text-[#00E0FF] drop-shadow-[0_0_8px_#00E0FF]" : "text-gray-400 group-hover:text-white"
-                  )}>
-                    {item.icon}
+                  <div 
+                    className={cn(
+                      "transition-all duration-300",
+                      !isActive && "text-gray-400 group-hover:text-white"
+                    )}
+                    style={isActive ? { color: activeLabelColor, filter: `drop-shadow(0 0 8px ${activeLabelColor})` } : undefined}
+                  >
+                    {isActive ? (item.activeIcon || item.icon) : item.icon}
                   </div>
-                  <span className={cn(
-                    "text-[10px] font-medium",
-                    isActive ? "text-[#00E0FF]" : "text-gray-500"
-                  )}>
+                  <span 
+                    className="text-[10px] font-medium"
+                    style={{ color: isActive ? activeLabelColor : labelColor }}
+                  >
                     {item.label}
                   </span>
                 </Link>

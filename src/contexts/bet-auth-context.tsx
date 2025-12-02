@@ -13,6 +13,8 @@ interface ImpersonatedUser {
   id: string;
   name: string | null;
   email: string;
+  playerId?: string | null;
+  avatarUrl?: string | null;
 }
 
 interface BetAuthContextType {
@@ -32,6 +34,8 @@ interface BetAuthContextType {
     id: string;
     name: string | null;
     email: string;
+    playerId?: string | null;
+    avatarUrl?: string | null;
   } | null;
   
   // Saldo
@@ -134,6 +138,8 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
           id: (session.user as { id?: string }).id || "",
           name: session.user.name || null,
           email: session.user.email || "",
+          playerId: (session.user as { playerId?: string | null }).playerId || null,
+          avatarUrl: (session.user as { avatarUrl?: string | null }).avatarUrl || null,
         }
       : null;
 

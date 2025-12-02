@@ -26,6 +26,8 @@ export const defaultExperience = {
     favoriteIconColor: "#facc15",
     loaderBackgroundColor: "#050f1f",
     loaderSpinnerColor: "#00faff",
+    navLabelColor: "#9ca3af",
+    navActiveLabelColor: "#00E0FF",
     preset: "cyan",
   },
   media: {
@@ -49,6 +51,18 @@ export const defaultExperience = {
         active: true,
       },
     ],
+    icons: {
+      trophyIconUrl: "",
+      highlightIconUrl: "",
+      favoriteIconUrl: "",
+      balanceCoinIconUrl: "",
+      categoryAllIconUrl: "",
+      categoryHotIconUrl: "",
+      categorySlotsIconUrl: "",
+      categoryCrashIconUrl: "",
+      categoryLiveIconUrl: "",
+      categoryFavoritesIconUrl: "",
+    },
   },
   features: {
     showTelegramButton: true,

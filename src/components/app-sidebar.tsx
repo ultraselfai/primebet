@@ -20,7 +20,9 @@ import {
   FileCheck,
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Logo } from "@/components/logo"
+import { usePublicSettings } from "@/contexts/public-settings-context"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -150,6 +152,12 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { settings } = usePublicSettings();
+  
+  // Usar favicon ou logo das configurações
+  const sidebarIconUrl = settings?.experience?.media?.favicon?.url || settings?.experience?.media?.logo?.url;
+  const siteName = settings?.experience?.identity?.siteName || "PrimeBet";
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -157,11 +165,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Logo size={24} className="text-current" />
+                <div className="flex size-8 items-center justify-center shrink-0">
+                  {sidebarIconUrl ? (
+                    <Image
+                      src={sidebarIconUrl}
+                      alt={siteName}
+                      width={32}
+                      height={32}
+                      className="object-contain w-8 h-8"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center rounded-lg bg-primary text-primary-foreground size-8">
+                      <Logo size={24} className="text-current" />
+                    </div>
+                  )}
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">PrimeBet</span>
+                  <span className="truncate font-medium">{siteName}</span>
                   <span className="truncate text-xs">Painel Administrativo</span>
                 </div>
               </Link>

@@ -35,6 +35,10 @@ export function GameCard({
   // Cores dos ícones personalizáveis
   const highlightIconColor = publicSettings?.experience?.theme?.highlightIconColor || "#f97316";
   const favoriteIconColor = publicSettings?.experience?.theme?.favoriteIconColor || "#facc15";
+  
+  // Ícones personalizados
+  const highlightIconUrl = publicSettings?.experience?.media?.icons?.highlightIconUrl;
+  const favoriteIconUrl = publicSettings?.experience?.media?.icons?.favoriteIconUrl;
 
   const handleClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
@@ -70,7 +74,11 @@ export function GameCard({
               className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white"
               style={{ backgroundColor: `${highlightIconColor}e6` }}
             >
-              <Flame className="w-3 h-3" />
+              {highlightIconUrl ? (
+                <Image src={highlightIconUrl} alt="Destaque" width={12} height={12} className="w-3 h-3 object-contain" />
+              ) : (
+                <Flame className="w-3 h-3" />
+              )}
             </span>
           )}
           {isNew && (
@@ -104,13 +112,24 @@ export function GameCard({
           } : undefined}
           aria-label={isFavorite ? "Remover jogo dos favoritos" : "Adicionar jogo aos favoritos"}
         >
-          <Star 
-            className="h-4 w-4"
-            style={isFavorite ? { 
-              fill: favoriteIconColor, 
-              color: favoriteIconColor,
-            } : undefined}
-          />
+          {favoriteIconUrl ? (
+            <Image 
+              src={favoriteIconUrl} 
+              alt="Favorito" 
+              width={16} 
+              height={16} 
+              className="h-4 w-4 object-contain"
+              style={isFavorite ? { filter: "brightness(1.2)" } : { opacity: 0.7 }}
+            />
+          ) : (
+            <Star 
+              className="h-4 w-4"
+              style={isFavorite ? { 
+                fill: favoriteIconColor, 
+                color: favoriteIconColor,
+              } : undefined}
+            />
+          )}
         </button>
 
         {/* Provider badge */}

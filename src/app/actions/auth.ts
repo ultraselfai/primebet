@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
 import { z } from "zod";
 import { redirect } from "next/navigation";
+import { generateUniquePlayerId } from "@/lib/utils/generate-player-id";
+import { getRandomAvatarId } from "@/lib/utils/avatar";
 
 // ============================================
 // SCHEMAS DE VALIDAÇÃO
@@ -93,14 +95,22 @@ export async function registerUser(
     // Hash da senha
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Gerar Player ID único
+    const playerId = await generateUniquePlayerId();
+
+    // Buscar avatar aleatório
+    const avatarId = await getRandomAvatarId();
+
     // Criar usuário
     const user = await prisma.user.create({
       data: {
+        playerId,
         name,
         email,
         phone: phone || null,
         passwordHash,
         role: "PLAYER",
+        avatarId,
       },
     });
 

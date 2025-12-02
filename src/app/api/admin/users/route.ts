@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateUniquePlayerId } from '@/lib/utils/generate-player-id'
 
 // GET - Lista todos os usuários com saldo
 export async function GET() {
@@ -17,6 +18,7 @@ export async function GET() {
 
     const formattedUsers = users.map((user) => ({
       id: user.id,
+      playerId: user.playerId,
       name: user.name || 'Sem nome',
       email: user.email,
       phone: user.phone,
@@ -65,9 +67,13 @@ export async function POST(request: NextRequest) {
     // Hash da senha se fornecida
     const passwordHash = password ? await bcrypt.hash(password, 10) : null
 
+    // Gerar Player ID único
+    const playerId = await generateUniquePlayerId()
+
     // Criar usuário com carteiras
     const user = await prisma.user.create({
       data: {
+        playerId,
         name,
         email,
         phone,
@@ -97,6 +103,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         id: user.id,
+        playerId: user.playerId,
         name: user.name,
         email: user.email,
         phone: user.phone,

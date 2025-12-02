@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   ShieldCheck,
   ShieldX,
@@ -10,11 +11,7 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  Image,
-  User,
-  Calendar,
-  AlertTriangle,
-  Download,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,113 +47,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-// Mock KYC data
-const mockKycRequests = [
-  {
-    id: "1",
-    userId: "user_1",
-    userName: "João Silva",
-    userEmail: "joao@email.com",
-    status: "pending",
-    submittedAt: "2024-11-28T10:30:00",
-    documents: {
-      selfie: "/kyc/selfie_1.jpg",
-      documentFront: "/kyc/doc_front_1.jpg",
-      documentBack: "/kyc/doc_back_1.jpg",
-      proofOfAddress: "/kyc/address_1.jpg",
-    },
-    personalData: {
-      fullName: "João Pedro Silva",
-      cpf: "123.456.789-00",
-      birthDate: "1990-05-15",
-      phone: "(11) 99999-1234",
-      address: "Rua das Flores, 123 - São Paulo/SP",
-    },
-  },
-  {
-    id: "2",
-    userId: "user_2",
-    userName: "Maria Santos",
-    userEmail: "maria@email.com",
-    status: "pending",
-    submittedAt: "2024-11-28T09:15:00",
-    documents: {
-      selfie: "/kyc/selfie_2.jpg",
-      documentFront: "/kyc/doc_front_2.jpg",
-      documentBack: "/kyc/doc_back_2.jpg",
-      proofOfAddress: null,
-    },
-    personalData: {
-      fullName: "Maria Clara Santos",
-      cpf: "987.654.321-00",
-      birthDate: "1985-08-22",
-      phone: "(21) 98888-5678",
-      address: "Av. Brasil, 456 - Rio de Janeiro/RJ",
-    },
-  },
-  {
-    id: "3",
-    userId: "user_3",
-    userName: "Carlos Oliveira",
-    userEmail: "carlos@email.com",
-    status: "rejected",
-    submittedAt: "2024-11-27T14:00:00",
-    reviewedAt: "2024-11-27T16:30:00",
-    rejectionReason: "Documento ilegível. Por favor, envie uma foto mais clara.",
-    documents: {
-      selfie: "/kyc/selfie_3.jpg",
-      documentFront: "/kyc/doc_front_3.jpg",
-      documentBack: "/kyc/doc_back_3.jpg",
-      proofOfAddress: "/kyc/address_3.jpg",
-    },
-    personalData: {
-      fullName: "Carlos Alberto Oliveira",
-      cpf: "456.789.123-00",
-      birthDate: "1978-12-01",
-      phone: "(31) 97777-9012",
-      address: "Rua Minas Gerais, 789 - Belo Horizonte/MG",
-    },
-  },
-  {
-    id: "4",
-    userId: "user_4",
-    userName: "Ana Costa",
-    userEmail: "ana@email.com",
-    status: "approved",
-    submittedAt: "2024-11-26T11:00:00",
-    reviewedAt: "2024-11-26T14:00:00",
-    documents: {
-      selfie: "/kyc/selfie_4.jpg",
-      documentFront: "/kyc/doc_front_4.jpg",
-      documentBack: "/kyc/doc_back_4.jpg",
-      proofOfAddress: "/kyc/address_4.jpg",
-    },
-    personalData: {
-      fullName: "Ana Paula Costa",
-      cpf: "321.654.987-00",
-      birthDate: "1992-03-10",
-      phone: "(41) 96666-3456",
-      address: "Rua Paraná, 321 - Curitiba/PR",
-    },
-  },
-];
+interface KycDocument {
+  id: string;
+  userId: string;
+  documentType: string;
+  selfieUrl: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  rejectReason: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  user: {
+    name: string;
+    email: string;
+    cpf: string;
+    phone: string;
+    playerId: string | null;
+  };
+}
 
 const statusConfig = {
-  pending: { label: "Pendente", variant: "secondary" as const, icon: Clock },
-  approved: { label: "Aprovado", variant: "default" as const, icon: ShieldCheck },
-  rejected: { label: "Rejeitado", variant: "destructive" as const, icon: ShieldX },
+  PENDING: { label: "Pendente", variant: "secondary" as const, icon: Clock },
+  APPROVED: { label: "Aprovado", variant: "default" as const, icon: ShieldCheck },
+  REJECTED: { label: "Rejeitado", variant: "destructive" as const, icon: ShieldX },
 };
 
 export default function KycPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [documents, setDocuments] = useState<KycDocument[]>([]);
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("pending");
-  const [selectedKyc, setSelectedKyc] = useState<typeof mockKycRequests[0] | null>(null);
+  const [statusFilter, setStatusFilter] = useState("PENDING");
+  const [selectedKyc, setSelectedKyc] = useState<KycDocument | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadDocuments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/kyc?status=${statusFilter}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        setDocuments(data.documents);
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar documentos:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
 
   const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -168,7 +115,8 @@ export default function KycPage() {
     }).format(new Date(dateString));
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null) => {
+    if (!name) return "??";
     return name
       .split(" ")
       .map((n) => n[0])
@@ -177,34 +125,74 @@ export default function KycPage() {
       .slice(0, 2);
   };
 
-  // Stats
-  const pendingCount = mockKycRequests.filter((k) => k.status === "pending").length;
-  const approvedCount = mockKycRequests.filter((k) => k.status === "approved").length;
-  const rejectedCount = mockKycRequests.filter((k) => k.status === "rejected").length;
-
-  // Filter
-  const filteredRequests = mockKycRequests.filter((kyc) => {
+  const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
-      kyc.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      kyc.userEmail.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || kyc.status === statusFilter;
-    return matchesSearch && matchesStatus;
+      doc.user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
-  const handleApprove = () => {
-    // TODO: API call to approve KYC
-    console.log("Approving KYC:", selectedKyc?.id);
-    setReviewDialogOpen(false);
-    setSelectedKyc(null);
+  const handleApprove = async () => {
+    if (!selectedKyc) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/admin/kyc", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId: selectedKyc.id,
+          action: "approve",
+        }),
+      });
+
+      if (res.ok) {
+        setReviewDialogOpen(false);
+        setSelectedKyc(null);
+        loadDocuments();
+      }
+    } catch (error) {
+      console.error("Erro ao aprovar:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleReject = () => {
-    // TODO: API call to reject KYC
-    console.log("Rejecting KYC:", selectedKyc?.id, "Reason:", rejectionReason);
-    setReviewDialogOpen(false);
-    setSelectedKyc(null);
-    setRejectionReason("");
+  const handleReject = async () => {
+    if (!selectedKyc || !rejectionReason) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/admin/kyc", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId: selectedKyc.id,
+          action: "reject",
+          reason: rejectionReason,
+        }),
+      });
+
+      if (res.ok) {
+        setReviewDialogOpen(false);
+        setSelectedKyc(null);
+        setRejectionReason("");
+        loadDocuments();
+      }
+    } catch (error) {
+      console.error("Erro ao rejeitar:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-4 lg:px-6">
@@ -226,7 +214,7 @@ export default function KycPage() {
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
+            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
             <p className="text-xs text-muted-foreground">Aguardando revisão</p>
           </CardContent>
         </Card>
@@ -236,8 +224,8 @@ export default function KycPage() {
             <ShieldCheck className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-            <p className="text-xs text-muted-foreground">Este mês</p>
+            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+            <p className="text-xs text-muted-foreground">Total</p>
           </CardContent>
         </Card>
         <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
@@ -246,8 +234,8 @@ export default function KycPage() {
             <ShieldX className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
-            <p className="text-xs text-muted-foreground">Este mês</p>
+            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+            <p className="text-xs text-muted-foreground">Total</p>
           </CardContent>
         </Card>
       </div>
@@ -276,10 +264,10 @@ export default function KycPage() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-                <SelectItem value="approved">Aprovados</SelectItem>
-                <SelectItem value="rejected">Rejeitados</SelectItem>
+                <SelectItem value="ALL">Todos</SelectItem>
+                <SelectItem value="PENDING">Pendentes</SelectItem>
+                <SelectItem value="APPROVED">Aprovados</SelectItem>
+                <SelectItem value="REJECTED">Rejeitados</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -290,63 +278,70 @@ export default function KycPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Usuário</TableHead>
+                  <TableHead>Documento</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Documentos</TableHead>
                   <TableHead>Data de Envio</TableHead>
                   <TableHead className="w-[100px]">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRequests.map((kyc) => {
-                  const status = statusConfig[kyc.status as keyof typeof statusConfig];
-                  const docCount = Object.values(kyc.documents).filter(Boolean).length;
+                {filteredDocuments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Nenhuma solicitação encontrada
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredDocuments.map((doc) => {
+                    const status = statusConfig[doc.status];
 
-                  return (
-                    <TableRow key={kyc.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9">
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {getInitials(kyc.userName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{kyc.userName}</p>
-                            <p className="text-sm text-muted-foreground">{kyc.userEmail}</p>
+                    return (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9">
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {getInitials(doc.user.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{doc.user.name || "Sem nome"}</p>
+                              <p className="text-sm text-muted-foreground">{doc.user.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={status.variant} className="gap-1">
-                          <status.icon className="h-3 w-3" />
-                          {status.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{docCount}/4 docs</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(kyc.submittedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedKyc(kyc);
-                            setReviewDialogOpen(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Revisar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{doc.documentType}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={status.variant} className="gap-1">
+                            <status.icon className="h-3 w-3" />
+                            {status.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(doc.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedKyc(doc);
+                              setReviewDialogOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Revisar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </div>
@@ -357,114 +352,70 @@ export default function KycPage() {
       <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Revisar KYC - {selectedKyc?.userName}</DialogTitle>
+            <DialogTitle>Revisar KYC - {selectedKyc?.user.name}</DialogTitle>
             <DialogDescription>
-              Verifique os documentos e dados pessoais do usuário
+              Verifique a selfie com documento do usuário
             </DialogDescription>
           </DialogHeader>
 
           {selectedKyc && (
-            <Tabs defaultValue="documents" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="documents">Documentos</TabsTrigger>
-                <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="documents" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Selfie */}
-                  <div className="space-y-2">
-                    <Label>Selfie com Documento</Label>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      <div className="text-center">
-                        <Image className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mt-2">Selfie</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Document Front */}
-                  <div className="space-y-2">
-                    <Label>Documento (Frente)</Label>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      <div className="text-center">
-                        <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mt-2">Doc. Frente</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Document Back */}
-                  <div className="space-y-2">
-                    <Label>Documento (Verso)</Label>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      <div className="text-center">
-                        <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mt-2">Doc. Verso</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Proof of Address */}
-                  <div className="space-y-2">
-                    <Label>Comprovante de Endereço</Label>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      {selectedKyc.documents.proofOfAddress ? (
-                        <div className="text-center">
-                          <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mt-2">Comprovante</p>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          <AlertTriangle className="h-8 w-8 mx-auto text-yellow-500" />
-                          <p className="text-sm text-yellow-600 mt-2">Não enviado</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            <div className="space-y-6">
+              {/* Dados do usuário */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <Label className="text-muted-foreground text-xs">Nome</Label>
+                  <p className="font-medium">{selectedKyc.user.name}</p>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="personal" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Nome Completo</Label>
-                    <Input value={selectedKyc.personalData.fullName} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>CPF</Label>
-                    <Input value={selectedKyc.personalData.cpf} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Data de Nascimento</Label>
-                    <Input value={selectedKyc.personalData.birthDate} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Telefone</Label>
-                    <Input value={selectedKyc.personalData.phone} disabled />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>Endereço</Label>
-                    <Input value={selectedKyc.personalData.address} disabled />
-                  </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">E-mail</Label>
+                  <p className="font-medium">{selectedKyc.user.email}</p>
                 </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">CPF</Label>
+                  <p className="font-medium">{selectedKyc.user.cpf || "Não informado"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Telefone</Label>
+                  <p className="font-medium">{selectedKyc.user.phone || "Não informado"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Player ID</Label>
+                  <p className="font-medium font-mono">{selectedKyc.user.playerId || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Tipo de Documento</Label>
+                  <p className="font-medium">{selectedKyc.documentType}</p>
+                </div>
+              </div>
 
-                {selectedKyc.status === "rejected" && selectedKyc.rejectionReason && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    <Label className="text-red-600">Motivo da Rejeição:</Label>
-                    <p className="text-sm text-red-600 mt-1">{selectedKyc.rejectionReason}</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+              {/* Imagem */}
+              <div className="space-y-2">
+                <Label>Selfie com Documento</Label>
+                <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden border">
+                  <Image
+                    src={selectedKyc.selfieUrl}
+                    alt="Selfie com documento"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+
+              {selectedKyc.status === "REJECTED" && selectedKyc.rejectReason && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <Label className="text-red-600">Motivo da Rejeição:</Label>
+                  <p className="text-sm text-red-600 mt-1">{selectedKyc.rejectReason}</p>
+                </div>
+              )}
+            </div>
           )}
 
-          {selectedKyc?.status === "pending" && (
+          {selectedKyc?.status === "PENDING" && (
             <>
               <div className="space-y-2">
-                <Label>Motivo da Rejeição (opcional)</Label>
+                <Label>Motivo da Rejeição (obrigatório para rejeitar)</Label>
                 <Textarea
-                  placeholder="Descreva o motivo caso rejeite a solicitação..."
+                  placeholder="Ex: Documento ilegível, foto cortada, etc..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                 />
@@ -477,20 +428,28 @@ export default function KycPage() {
                 <Button
                   variant="destructive"
                   onClick={handleReject}
-                  disabled={!rejectionReason}
+                  disabled={!rejectionReason || isSubmitting}
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <XCircle className="h-4 w-4 mr-2" />
+                  )}
                   Rejeitar
                 </Button>
-                <Button onClick={handleApprove}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                <Button onClick={handleApprove} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                  )}
                   Aprovar
                 </Button>
               </DialogFooter>
             </>
           )}
 
-          {selectedKyc?.status !== "pending" && (
+          {selectedKyc?.status !== "PENDING" && (
             <DialogFooter>
               <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
                 Fechar

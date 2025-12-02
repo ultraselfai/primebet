@@ -166,14 +166,58 @@ export function BetLayout({ children }: BetLayoutProps) {
   };
 
   const menuItems: MenuItem[] = React.useMemo(() => {
-    return navItems.map((item) => ({
-      id: item.id,
-      label: item.label,
-      href: item.href,
-      icon: React.createElement(getNavIconComponent(item.icon), { className: "h-6 w-6" }),
-      onClick: (e) => handleNavClick(e, item),
-    }));
-  }, [navItems, isAuthenticated]); // Re-create if auth state changes to ensure closures are correct if needed, though handleNavClick uses current scope.
+    return navItems.map((item, index) => {
+      const isCenterItem = index === centerIndex;
+      return {
+        id: item.id,
+        label: item.label,
+        href: item.href,
+        // Ícone normal
+        icon: item.customIconUrl ? (
+          <img 
+            src={item.customIconUrl} 
+            alt={item.label} 
+            className="h-6 w-6 object-contain"
+          />
+        ) : (
+          React.createElement(getNavIconComponent(item.icon), { className: "h-6 w-6" })
+        ),
+        // Ícone quando selecionado/ativo
+        activeIcon: item.customActiveIconUrl ? (
+          <img 
+            src={item.customActiveIconUrl} 
+            alt={item.label} 
+            className="h-6 w-6 object-contain"
+          />
+        ) : item.customIconUrl ? (
+          <img 
+            src={item.customIconUrl} 
+            alt={item.label} 
+            className="h-6 w-6 object-contain"
+          />
+        ) : (
+          React.createElement(getNavIconComponent(item.icon), { className: "h-6 w-6" })
+        ),
+        // Ícone grande (para o botão central)
+        iconLarge: isCenterItem && item.customIconUrl ? (
+          <img 
+            src={item.customIconUrl} 
+            alt={item.label} 
+            className="h-9 w-9 object-contain"
+          />
+        ) : undefined,
+        // Ícone grande quando selecionado (para o botão central)
+        activeIconLarge: isCenterItem && (item.customActiveIconUrl || item.customIconUrl) ? (
+          <img 
+            src={item.customActiveIconUrl || item.customIconUrl} 
+            alt={item.label} 
+            className="h-9 w-9 object-contain"
+          />
+        ) : undefined,
+        onClick: (e) => handleNavClick(e, item),
+      };
+    });
+  }, [navItems, isAuthenticated, centerIndex]); // Re-create if auth state changes to ensure closures are correct if needed, though handleNavClick uses current scope.
 
   return (
     <div
@@ -225,8 +269,52 @@ export function BetLayout({ children }: BetLayoutProps) {
         {children}
 
         {/* Footer */}
-        <footer className="mt-auto px-4 pb-32 pt-8">
-          <div className="mx-auto max-w-lg space-y-6">
+        <footer className="mt-auto px-4 pb-10 pt-8">
+          <div className="mx-auto max-w-2xl space-y-8">
+            {/* Links de Navegação */}
+            <div className="grid grid-cols-3 gap-6 text-center">
+              {/* Cassino */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-white">Cassino</h4>
+                <nav className="flex flex-col gap-2">
+                  <a href="/convidar" className="text-xs text-white/60 hover:text-white transition">Convidar</a>
+                  <a href="/eventos" className="text-xs text-white/60 hover:text-white transition">Eventos</a>
+                  <a href="/vip" className="text-xs text-white/60 hover:text-white transition">VIP</a>
+                  <a href="/afiliado" className="text-xs text-white/60 hover:text-white transition">Afiliado</a>
+                </nav>
+              </div>
+
+              {/* Jogos */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-white">Jogos</h4>
+                <nav className="flex flex-col gap-2">
+                  <a href="/?categoria=all" className="text-xs text-white/60 hover:text-white transition">Todos</a>
+                  <a href="/?categoria=hot" className="text-xs text-white/60 hover:text-white transition">Em Alta</a>
+                  <a href="/?categoria=slots" className="text-xs text-white/60 hover:text-white transition">Slots</a>
+                  <a href="/?categoria=crash" className="text-xs text-white/60 hover:text-white transition">Crash</a>
+                  <a href="/?categoria=live" className="text-xs text-white/60 hover:text-white transition">Ao Vivo</a>
+                </nav>
+              </div>
+
+              {/* Suporte */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-white">Suporte</h4>
+                <nav className="flex flex-col gap-2">
+                  <a href="/suporte" className="text-xs text-white/60 hover:text-white transition">Suporte Online</a>
+                  <a href="/ajuda" className="text-xs text-white/60 hover:text-white transition">Central de Ajuda</a>
+                  <a href="/termos" className="text-xs text-white/60 hover:text-white transition">Termos de Uso</a>
+                  <a href="/privacidade" className="text-xs text-white/60 hover:text-white transition">Privacidade</a>
+                </nav>
+              </div>
+            </div>
+
+            {/* Descrição / Legislação */}
+            {publicSettings?.experience?.identity?.footerDescription && (
+              <p className="text-center text-xs leading-relaxed text-white/50">
+                {publicSettings.experience.identity.footerDescription}
+              </p>
+            )}
+
             {/* Redes sociais */}
             {publicSettings?.experience?.identity?.socialLinks && (
               <div className="flex justify-center gap-4">
@@ -273,13 +361,6 @@ export function BetLayout({ children }: BetLayoutProps) {
               </div>
             )}
 
-            {/* Descrição / Legislação */}
-            {publicSettings?.experience?.identity?.footerDescription && (
-              <p className="text-center text-xs leading-relaxed text-white/50">
-                {publicSettings.experience.identity.footerDescription}
-              </p>
-            )}
-
             {/* Copyright */}
             {publicSettings?.experience?.identity?.footerText && (
               <p className="text-center text-xs text-white/40">
@@ -292,7 +373,11 @@ export function BetLayout({ children }: BetLayoutProps) {
 
       {/* Bottom Navigation */}
       {!isGameFullscreen && navItems.length > 0 && (
-        <CasinoNavBar items={menuItems} />
+        <CasinoNavBar 
+          items={menuItems} 
+          labelColor={theme?.navLabelColor}
+          activeLabelColor={theme?.navActiveLabelColor}
+        />
       )}
 
       {/* Auth Modal */}

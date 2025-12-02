@@ -4,12 +4,13 @@ import React, { useState, useEffect, Suspense, useCallback, useMemo } from "reac
 import Image from "next/image";
 import { BetLayout } from "@/components/bet/bet-layout";
 import { SearchBar, CategoryTabs, GameGrid } from "@/components/bet";
+import { RecentWinsMarquee } from "@/components/bet/recent-wins-marquee";
 import { BetAuthProvider } from "@/contexts/bet-auth-context";
 import { Flame, Star as StarIcon, Sparkles, Dices, Trophy, Zap, RadioTower } from "lucide-react";
 import { useBetAuth } from "@/contexts/bet-auth-context";
 import Link from "next/link";
 import { usePublicSettings } from "@/contexts/public-settings-context";
-import type { BannerItem } from "@/types/settings";
+import type { BannerItem, CustomIcons } from "@/types/settings";
 
 interface Game {
   id: string;
@@ -22,14 +23,25 @@ interface Game {
   category?: string;
 }
 
-const categories = [
-  { id: "all", label: "Todos", icon: <Sparkles className="w-4 h-4" /> },
-  { id: "hot", label: "Em Alta", icon: <Flame className="w-4 h-4" /> },
-  { id: "slots", label: "Slots", icon: <Dices className="w-4 h-4" /> },
-  { id: "crash", label: "Crash", icon: <Zap className="w-4 h-4" /> },
-  { id: "live", label: "Ao Vivo", icon: <Trophy className="w-4 h-4" /> },
-  { id: "favorites", label: "Favoritos", icon: <StarIcon className="w-4 h-4" /> },
-];
+// Função helper para criar ícone de categoria
+function CategoryIcon({ iconUrl, fallback, className }: { iconUrl?: string; fallback: React.ReactNode; className?: string }) {
+  if (iconUrl) {
+    return <Image src={iconUrl} alt="" width={16} height={16} className={className || "w-4 h-4 object-contain"} />;
+  }
+  return <>{fallback}</>;
+}
+
+// Gera as categorias com ícones personalizados
+function getCategories(icons?: CustomIcons) {
+  return [
+    { id: "all", label: "Todos", icon: <CategoryIcon iconUrl={icons?.categoryAllIconUrl} fallback={<Sparkles className="w-4 h-4" />} /> },
+    { id: "hot", label: "Em Alta", icon: <CategoryIcon iconUrl={icons?.categoryHotIconUrl} fallback={<Flame className="w-4 h-4" />} /> },
+    { id: "slots", label: "Slots", icon: <CategoryIcon iconUrl={icons?.categorySlotsIconUrl} fallback={<Dices className="w-4 h-4" />} /> },
+    { id: "crash", label: "Crash", icon: <CategoryIcon iconUrl={icons?.categoryCrashIconUrl} fallback={<Zap className="w-4 h-4" />} /> },
+    { id: "live", label: "Ao Vivo", icon: <CategoryIcon iconUrl={icons?.categoryLiveIconUrl} fallback={<Trophy className="w-4 h-4" />} /> },
+    { id: "favorites", label: "Favoritos", icon: <CategoryIcon iconUrl={icons?.categoryFavoritesIconUrl} fallback={<StarIcon className="w-4 h-4" />} /> },
+  ];
+}
 
 function HomeContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,6 +58,9 @@ function HomeContent() {
   const primaryColor = theme?.primaryColor ?? "#00faff";
   const secondaryColor = theme?.secondaryColor ?? "#0a1628";
   const { showToast } = useBetAuth();
+  
+  // Categorias com ícones personalizados
+  const categories = useMemo(() => getCategories(publicSettings?.experience?.media?.icons), [publicSettings?.experience?.media?.icons]);
 
   const heroBanners = useMemo<BannerItem[]>(() => {
     const banners = publicSettings?.experience.media.banners ?? [];
@@ -226,7 +241,7 @@ function HomeContent() {
       >
         <div className="mx-auto w-full max-w-sm px-4">
           {extendedBanners.length ? (
-            <div className="relative aspect-[320/131] overflow-hidden rounded-[28px]">
+            <div className="relative aspect-[1400/445] overflow-hidden rounded-2xl">
               <div
                 className="flex h-full"
                 style={{
@@ -242,7 +257,7 @@ function HomeContent() {
                     style={{ width: `${100 / extendedBanners.length}%` }}
                   >
                     <div
-                      className="relative h-full rounded-[28px] border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)]"
+                      className="relative h-full rounded-2xl border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)]"
                       style={{
                         borderColor: `${primaryColor}33`,
                         backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${secondaryColor})`,
@@ -264,7 +279,7 @@ function HomeContent() {
           ) : (
             /* Skeleton placeholder - igual aos cards de jogos */
             <div 
-              className="aspect-[320/131] overflow-hidden rounded-[28px] border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)] animate-pulse"
+              className="aspect-[1400/445] overflow-hidden rounded-2xl border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)] animate-pulse"
               style={{
                 borderColor: `${primaryColor}33`,
                 backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${secondaryColor})`,
@@ -273,6 +288,15 @@ function HomeContent() {
           )}
         </div>
       </section>
+
+      {/* Recent Wins Marquee */}
+      <RecentWinsMarquee 
+        games={games.filter(g => g.thumbnail).slice(0, 10).map(g => ({
+          id: g.id,
+          name: g.name,
+          thumbnail: g.thumbnail,
+        }))} 
+      />
 
       {/* Search */}
       <SearchBar 

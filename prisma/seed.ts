@@ -3,6 +3,34 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// Função para gerar Player ID único de 8 dígitos
+function generatePlayerId(): string {
+  const firstDigit = Math.floor(Math.random() * 9) + 1;
+  let remaining = "";
+  for (let i = 0; i < 7; i++) {
+    remaining += Math.floor(Math.random() * 10);
+  }
+  return `${firstDigit}${remaining}`;
+}
+
+async function getUniquePlayerId(): Promise<string> {
+  let playerId: string;
+  let attempts = 0;
+
+  do {
+    playerId = generatePlayerId();
+    const existing = await prisma.user.findUnique({
+      where: { playerId },
+      select: { id: true },
+    });
+
+    if (!existing) return playerId;
+    attempts++;
+  } while (attempts < 10);
+
+  return `${generatePlayerId().slice(0, 4)}${Date.now().toString().slice(-4)}`;
+}
+
 async function main() {
   console.log("🌱 Iniciando seed do banco de dados...\n");
 
@@ -18,9 +46,11 @@ async function main() {
     console.log("✅ Admin já existe:", adminEmail);
   } else {
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
+    const playerId = await getUniquePlayerId();
 
     const admin = await prisma.user.create({
       data: {
+        playerId,
         email: adminEmail,
         name: "Administrador",
         passwordHash: hashedPassword,
@@ -44,6 +74,7 @@ async function main() {
     console.log("✅ Admin criado com sucesso!");
     console.log("   📧 Email:", adminEmail);
     console.log("   🔑 Senha:", adminPassword);
+    console.log("   🎮 Player ID:", playerId);
     console.log("   👤 ID:", admin.id);
   }
 
@@ -78,9 +109,11 @@ async function main() {
       console.log(`⏭️  Usuário já existe: ${userData.email}`);
     } else {
       const hashedPassword = await bcrypt.hash(userData.password, 12);
+      const playerId = await getUniquePlayerId();
 
       const user = await prisma.user.create({
         data: {
+          playerId,
           email: userData.email,
           name: userData.name,
           passwordHash: hashedPassword,
@@ -101,7 +134,7 @@ async function main() {
         },
       });
 
-      console.log(`✅ Usuário criado: ${userData.email} (${userData.name})`);
+      console.log(`✅ Usuário criado: ${userData.email} (${userData.name}) - ID: ${playerId}`);
     }
   }
 
