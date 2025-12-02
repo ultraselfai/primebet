@@ -63,7 +63,7 @@ export function BetHeader() {
         <Link href="/" className="flex items-center">
           <Image
             src={logoUrl || "/logo-horizontal.png"}
-            alt="PlayInvest"
+            alt="PrimeBet"
             width={168}
             height={38}
             className="h-9 w-auto"

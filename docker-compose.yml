@@ -1,18 +1,18 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: playinvest-db
+    container_name: primebet-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: playinvest
-      POSTGRES_PASSWORD: playinvest_dev_2025
-      POSTGRES_DB: playinvest
+      POSTGRES_USER: primebet
+      POSTGRES_PASSWORD: primebet_dev_2025
+      POSTGRES_DB: primebet
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U playinvest -d playinvest"]
+      test: ["CMD-SHELL", "pg_isready -U primebet -d primebet"]
       interval: 10s
       timeout: 5s
       retries: 5

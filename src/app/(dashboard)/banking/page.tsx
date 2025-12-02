@@ -34,9 +34,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 const fbspayConfig = {
   isConnected: true,
   apiUrl: "https://api.dinpayz.com.br",
-  clientId: "pi_****_****_1234",
+  clientId: "pb_****_****_1234",
   environment: "production",
-  webhookUrl: "https://playinvest.com/api/webhooks/fbspay",
+  webhookUrl: "https://primebet.com/api/webhooks/fbspay",
   lastSync: "2024-11-28T14:30:00",
 };
 

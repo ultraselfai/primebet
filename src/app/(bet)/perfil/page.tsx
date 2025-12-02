@@ -255,7 +255,7 @@ export default function PerfilPage() {
 
       {/* Version */}
       <p className="text-center text-white/30 text-xs mt-6">
-        PlayInvest v1.0.0
+        PrimeBet v1.0.0
       </p>
     </div>
   );

@@ -194,7 +194,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
         <div className="pt-8 pb-4 px-6 text-center border-b border-white/10">
           <Image
             src="/logo-horizontal.png"
-            alt="PlayInvest"
+            alt="PrimeBet"
             width={140}
             height={32}
             className="h-8 w-auto mx-auto mb-4"

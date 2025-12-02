@@ -58,7 +58,7 @@ import { Separator } from "@/components/ui/separator";
 const initialSettings = {
   // Geral
   general: {
-    siteName: "PlayInvest",
+    siteName: "PrimeBet",
     timezone: "America/Sao_Paulo",
     currency: "BRL",
     language: "pt-BR",
@@ -117,8 +117,8 @@ const initialSettings = {
   },
   // Sistema
   system: {
-    databaseUrl: "postgresql://***@db.playinvest.com:5432/playinvest",
-    redisUrl: "redis://***@redis.playinvest.com:6379",
+    databaseUrl: "postgresql://***@db.primebet.com:5432/primebet",
+    redisUrl: "redis://***@redis.primebet.com:6379",
     apiRateLimit: 100,
     cacheEnabled: true,
     logLevel: "info",

@@ -137,7 +137,7 @@ function HomeContent() {
   // carregar favoritos do localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("playinvest:favorites");
+    const stored = window.localStorage.getItem("primebet:favorites");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -153,7 +153,7 @@ function HomeContent() {
   // persistir favoritos
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("playinvest:favorites", JSON.stringify(favoriteIds));
+    window.localStorage.setItem("primebet:favorites", JSON.stringify(favoriteIds));
   }, [favoriteIds]);
 
   const handleToggleFavorite = useCallback((gameId: string, nextValue: boolean) => {

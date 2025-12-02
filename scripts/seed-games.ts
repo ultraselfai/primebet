@@ -131,8 +131,8 @@ async function main() {
       volatility: 'MEDIUM' as const,
     },
     {
-      providerId: 'playinvest-double',
-      providerName: 'PlayInvest',
+      providerId: 'primebet-double',
+      providerName: 'PrimeBet',
       name: 'Double',
       slug: 'double',
       description: 'Aposte na cor e dobre seus ganhos!',

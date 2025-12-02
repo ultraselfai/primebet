@@ -10,7 +10,7 @@ import { inter } from "@/lib/fonts";
 import { loadPublicSettings } from "@/lib/settings/load-public-settings";
 
 export const metadata: Metadata = {
-  title: "PlayInvest - Casa de Apostas & Investimentos",
+  title: "PrimeBet - Casa de Apostas & Investimentos",
   description: "Plataforma híbrida de apostas e investimentos com rendimentos automáticos",
 };
 

@@ -1324,7 +1324,7 @@ export default function EditorPage() {
                               },
                             }))
                           }
-                          placeholder="PlayInvest"
+                          placeholder="PrimeBet"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -1540,7 +1540,7 @@ export default function EditorPage() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label>Copyright</Label>
-                      <Input value={experience.identity.footerText} onChange={(event) => handleIdentityChange("footerText", event.target.value)} placeholder="© 2024 PlayInvest..." />
+                      <Input value={experience.identity.footerText} onChange={(event) => handleIdentityChange("footerText", event.target.value)} placeholder="© 2024 PrimeBet..." />
                     </div>
                     <div className="space-y-2">
                       <Label>Descrição do rodapé (legislação)</Label>
@@ -1548,7 +1548,7 @@ export default function EditorPage() {
                         rows={4} 
                         value={experience.identity.footerDescription || ""} 
                         onChange={(event) => handleIdentityChange("footerDescription", event.target.value)} 
-                        placeholder="O grupo PLAYINVEST é uma das mais renomadas empresas..." 
+                        placeholder="O grupo PRIMEBET é uma das mais renomadas empresas..." 
                       />
                       <p className="text-xs text-muted-foreground">Texto sobre a empresa, licença e regulamentação</p>
                     </div>

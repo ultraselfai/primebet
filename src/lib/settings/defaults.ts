@@ -1,20 +1,20 @@
 export const defaultExperience = {
   identity: {
-    siteName: "PlayInvest",
+    siteName: "PrimeBet",
     tagline: "Aposte e Invista",
-    footerText: "© 2024 PlayInvest. Todos os direitos reservados.",
-    footerDescription: "O grupo PLAYINVEST é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
-    supportEmail: "suporte@playinvest.com",
+    footerText: "© 2024 PrimeBet. Todos os direitos reservados.",
+    footerDescription: "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
+    supportEmail: "suporte@primebet.com",
     whatsapp: "5511999999999",
     telegramButtonLink: "",
     socialLinks: {
-      instagram: "https://instagram.com/playinvest",
-      telegram: "https://t.me/playinvest",
+      instagram: "https://instagram.com/primebet",
+      telegram: "https://t.me/primebet",
       youtube: "",
     },
   },
   seo: {
-    title: "PlayInvest - Apostas e Investimentos",
+    title: "PrimeBet - Apostas e Investimentos",
     description: "A melhor plataforma de apostas e investimentos do Brasil",
     keywords: "apostas, investimentos, jogos, cassino, slots",
   },
@@ -31,7 +31,7 @@ export const defaultExperience = {
   media: {
     logo: {
       url: "/logo-horizontal.png",
-      alt: "Logotipo PlayInvest",
+      alt: "Logotipo PrimeBet",
     },
     favicon: {
       url: "/favicon.ico",
@@ -107,7 +107,7 @@ export const defaultExperience = {
 
 export const defaultSettings = {
   general: {
-    siteName: "PlayInvest",
+    siteName: "PrimeBet",
     timezone: "America/Sao_Paulo",
     currency: "BRL",
     language: "pt-BR",

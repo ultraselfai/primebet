@@ -1,5 +1,5 @@
 // ============================================
-// PlayInvest - Prisma Schema
+// PrimeBet - Prisma Schema
 // Casa de Apostas + Fintech de Investimentos
 // ============================================
 
@@ -423,7 +423,7 @@ model SiteConfig {
   id              String   @id @default(cuid())
   
   // Branding
-  siteName        String   @default("PlayInvest") @map("site_name")
+  siteName        String   @default("PrimeBet") @map("site_name")
   primaryColor    String   @default("#00faff") @map("primary_color")
   secondaryColor  String   @default("#00020e") @map("secondary_color")
   accentColor     String   @default("#10b981") @map("accent_color")
