@@ -18,9 +18,10 @@ export default function AssociadoBetPage() {
 
       {/* Empty State */}
       <div className="flex flex-col items-center justify-center px-6 py-20">
-        <p className="text-white/70 text-lg text-center mb-8 max-w-xs">
-          Em breve! Grandes recompensas para associados estão por vir.
-        </p>
+        <div className="text-center mb-8 max-w-xs">
+          <p className="text-white text-xl font-bold mb-2">Em breve!</p>
+          <p className="text-white/60 text-base">Grandes recompensas para associados estão por vir.</p>
+        </div>
         
         <Image
           src="/no-data.png"
