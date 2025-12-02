@@ -66,16 +66,6 @@ const summaryData = {
     previous: 11234,
     change: 10.9,
   },
-  ggr: {
-    current: 89543.67,
-    previous: 78234.56,
-    change: 14.5,
-  },
-  ngr: {
-    current: 67234.45,
-    previous: 58765.43,
-    change: 14.4,
-  },
 };
 
 const dailyReport = [
@@ -198,7 +188,7 @@ export default function RelatoriosPage() {
       </div>
 
       {/* Summary Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Receita Total"
           icon={DollarSign}
@@ -223,18 +213,6 @@ export default function RelatoriosPage() {
           current={summaryData.users.current}
           change={summaryData.users.change}
           format="number"
-        />
-        <MetricCard
-          title="GGR"
-          icon={BarChart3}
-          current={summaryData.ggr.current}
-          change={summaryData.ggr.change}
-        />
-        <MetricCard
-          title="NGR"
-          icon={LineChart}
-          current={summaryData.ngr.current}
-          change={summaryData.ngr.change}
         />
       </div>
 

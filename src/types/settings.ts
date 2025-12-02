@@ -10,8 +10,10 @@ export interface IdentitySettings {
   siteName: string;
   tagline: string;
   footerText: string;
+  footerDescription: string;
   supportEmail: string;
   whatsapp: string;
+  telegramButtonLink?: string;
   socialLinks: SocialLinks;
 }
 
@@ -21,10 +23,24 @@ export interface SeoSettings {
   keywords: string;
 }
 
+export interface BottomNavItem {
+  id: string;
+  label: string;
+  icon: string;
+  href: string;
+  enabled: boolean;
+  isMandatory: boolean;
+  requiresAuth?: boolean;
+}
+
 export interface ThemeSettings {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  highlightIconColor?: string;
+  favoriteIconColor?: string;
+  loaderBackgroundColor: string;
+  loaderSpinnerColor: string;
   preset?: string;
 }
 
@@ -50,10 +66,12 @@ export interface MediaSettings {
     url: string;
   };
   banners: BannerItem[];
+  loaderGifUrl?: string;
+  telegramButtonImageUrl?: string;
 }
 
 export interface FeatureToggles {
-  showChat: boolean;
+  showTelegramButton: boolean;
   showSupport: boolean;
   showPromoBar: boolean;
   enableInvestments: boolean;
@@ -66,6 +84,9 @@ export interface ExperienceSettings {
   theme: ThemeSettings;
   media: MediaSettings;
   features: FeatureToggles;
+  navigation: {
+    bottomNav: BottomNavItem[];
+  };
 }
 
 export interface BrandingSettings {

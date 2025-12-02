@@ -38,12 +38,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Headers gerais para todas as rotas
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
@@ -51,6 +48,16 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+      {
+        // Bloquear iframe em rotas normais (exceto preview)
+        source: '/((?!.*preview=true).*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN', // Permite iframes do mesmo domínio
           },
         ],
       },

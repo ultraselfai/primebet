@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Star, Flame } from "lucide-react";
 import { useBetAuth } from "@/contexts/bet-auth-context";
+import { usePublicSettings } from "@/contexts/public-settings-context";
 
 interface GameCardProps {
   id: string;
@@ -29,6 +30,11 @@ export function GameCard({
   onToggleFavorite,
 }: GameCardProps) {
   const { isAuthenticated, openAuthModal, showToast } = useBetAuth();
+  const { settings: publicSettings } = usePublicSettings();
+  
+  // Cores dos ícones personalizáveis
+  const highlightIconColor = publicSettings?.experience?.theme?.highlightIconColor || "#f97316";
+  const favoriteIconColor = publicSettings?.experience?.theme?.favoriteIconColor || "#facc15";
 
   const handleClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
@@ -60,7 +66,10 @@ export function GameCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-1">
           {isHot && (
-            <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-500/90 text-[10px] font-bold text-white">
+            <span 
+              className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white"
+              style={{ backgroundColor: `${highlightIconColor}e6` }}
+            >
               <Flame className="w-3 h-3" />
             </span>
           )}
@@ -88,11 +97,19 @@ export function GameCard({
           }}
           className={cn(
             "absolute top-2 right-2 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/70 transition hover:bg-white/10",
-            isFavorite && "border-yellow-400/70 bg-yellow-400/20 text-yellow-300"
           )}
+          style={isFavorite ? { 
+            borderColor: `${favoriteIconColor}70`, 
+            backgroundColor: `${favoriteIconColor}33`,
+          } : undefined}
           aria-label={isFavorite ? "Remover jogo dos favoritos" : "Adicionar jogo aos favoritos"}
         >
-          <Star className={cn("h-4 w-4", isFavorite && "fill-yellow-300 text-yellow-500")}
+          <Star 
+            className="h-4 w-4"
+            style={isFavorite ? { 
+              fill: favoriteIconColor, 
+              color: favoriteIconColor,
+            } : undefined}
           />
         </button>
 

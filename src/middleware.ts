@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
   // Ignorar arquivos estáticos e API routes do NextAuth
   if (
@@ -12,6 +12,21 @@ export async function middleware(request: NextRequest) {
     pathname.includes(".")
   ) {
     return NextResponse.next();
+  }
+
+  // Permitir preview do editor (iframe interno do admin)
+  const isPreviewMode = searchParams.get("preview") === "true";
+  if (isPreviewMode) {
+    // Verificar se quem está acessando é um admin (pelo referer ou cookie)
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET 
+    });
+    
+    // Se é admin, permite o preview sem bloqueio
+    if (token && (token.role === "ADMIN" || token.role === "SUPER_ADMIN")) {
+      return NextResponse.next();
+    }
   }
 
   // Obter token JWT (funciona no Edge)

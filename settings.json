@@ -9,10 +9,10 @@
     "requireEmailVerification": true,
     "requireKYC": false,
     "minAge": 18,
-    "gameColumns": 2
+    "gameColumns": 3
   },
   "branding": {
-    "logoUrl": "/logo-horizontal.png",
+    "logoUrl": "https://images.ultraself.space/branding/logo/1764536145868-logo-of2.png",
     "mobileBannerUrl": "https://images.ultraself.space/branding/banner/1764511827646-banner-1.png"
   },
   "experience": {
@@ -20,8 +20,10 @@
       "siteName": "PlayInvest",
       "tagline": "Aposte e Invista",
       "footerText": "© 2024 PlayInvest. Todos os direitos reservados.",
+      "footerDescription": "O grupo PLAYINVEST é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
       "supportEmail": "suporte@playinvest.com",
       "whatsapp": "5511999999999",
+      "telegramButtonLink": "",
       "socialLinks": {
         "instagram": "https://instagram.com/playinvest",
         "telegram": "https://t.me/playinvest",
@@ -37,6 +39,10 @@
       "primaryColor": "#00faff",
       "secondaryColor": "#0a1628",
       "accentColor": "#00ff88",
+      "highlightIconColor": "#f97316",
+      "favoriteIconColor": "#facc15",
+      "loaderBackgroundColor": "#050f1f",
+      "loaderSpinnerColor": "#00faff",
       "preset": "cyan"
     },
     "media": {
@@ -47,24 +53,72 @@
       "favicon": {
         "url": "/favicon.ico"
       },
+      "loaderGifUrl": "",
+      "telegramButtonImageUrl": "",
       "banners": [
         {
           "id": "hero",
-          "title": "Promoções exclusivas",
-          "subtitle": "Bônus dobrado no primeiro depósito",
-          "ctaLabel": "Quero participar",
+          "title": "Banner Principal",
+          "subtitle": "Aposte no futuro",
+          "ctaLabel": "Depositar agora",
           "ctaLink": "/depositar",
-          "imageUrl": "https://images.ultraself.space/branding/banner/1764511827646-banner-1.png",
+          "imageUrl": "/banners/banner-default.jpg",
           "active": true
         }
       ]
     },
     "features": {
-      "showChat": true,
+      "showTelegramButton": true,
       "showSupport": true,
       "showPromoBar": true,
       "enableInvestments": true,
       "maintenanceMode": false
+    },
+    "navigation": {
+      "bottomNav": [
+        {
+          "id": "home",
+          "label": "Games",
+          "icon": "gamepad",
+          "href": "/",
+          "enabled": true,
+          "isMandatory": true
+        },
+        {
+          "id": "associate",
+          "label": "Associado",
+          "icon": "users",
+          "href": "/associado",
+          "enabled": false,
+          "isMandatory": false
+        },
+        {
+          "id": "wallet",
+          "label": "Carteira",
+          "icon": "wallet",
+          "href": "/carteira",
+          "enabled": true,
+          "isMandatory": true,
+          "requiresAuth": true
+        },
+        {
+          "id": "promotions",
+          "label": "Promoções",
+          "icon": "sparkles",
+          "href": "/promocoes",
+          "enabled": false,
+          "isMandatory": false
+        },
+        {
+          "id": "profile",
+          "label": "Perfil",
+          "icon": "user",
+          "href": "/perfil",
+          "enabled": true,
+          "isMandatory": true,
+          "requiresAuth": true
+        }
+      ]
     }
   },
   "fees": {
@@ -78,7 +132,7 @@
     "transferFee": 0
   },
   "investments": {
-    "enabled": true,
+    "enabled": false,
     "yieldRate": 1,
     "yieldFrequency": "monthly",
     "minInvestment": 100,

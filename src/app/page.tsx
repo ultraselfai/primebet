@@ -38,7 +38,8 @@ function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState<1 | 2 | 3 | 4>(3);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [displayIndex, setDisplayIndex] = useState(0);
+  const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
   const { settings: publicSettings } = usePublicSettings();
   const theme = publicSettings?.experience.theme;
@@ -50,6 +51,11 @@ function HomeContent() {
     const banners = publicSettings?.experience.media.banners ?? [];
     return banners.filter((banner) => banner.active !== false && !!banner.imageUrl);
   }, [publicSettings]);
+
+  const extendedBanners = useMemo<BannerItem[]>(() => {
+    if (!heroBanners.length) return [];
+    return [...heroBanners, heroBanners[0]];
+  }, [heroBanners]);
 
   // Carregar jogos públicos
   useEffect(() => {
@@ -98,28 +104,35 @@ function HomeContent() {
     setColumns(cols as 1 | 2 | 3 | 4);
   }, [publicSettings?.gameColumns]);
 
+  // Resetar índice quando a lista de banners mudar
   useEffect(() => {
-    if (!heroBanners.length) {
-      setCurrentBannerIndex(0);
-      return;
-    }
+    setDisplayIndex(0);
+    setIsTransitionEnabled(true);
+  }, [heroBanners.length]);
 
-    if (currentBannerIndex >= heroBanners.length) {
-      setCurrentBannerIndex(0);
-    }
-  }, [heroBanners, currentBannerIndex]);
-
+  // Auto-play: fica 3s parado, depois avança uma posição com animação
   useEffect(() => {
-    if (heroBanners.length <= 1 || isCarouselPaused) {
-      return;
+    if (heroBanners.length <= 1 || isCarouselPaused) return;
+
+    const idleTimer = setTimeout(() => {
+      setIsTransitionEnabled(true);
+      setDisplayIndex((prev) => prev + 1);
+    }, 3000);
+
+    return () => clearTimeout(idleTimer);
+  }, [displayIndex, heroBanners.length, isCarouselPaused]);
+
+  // Quando chega no clone (último item do array estendido), reseta sem animação
+  useEffect(() => {
+    if (heroBanners.length <= 1) return;
+    if (displayIndex === heroBanners.length) {
+      const resetTimer = setTimeout(() => {
+        setIsTransitionEnabled(false);
+        setDisplayIndex(0);
+      }, 500);
+      return () => clearTimeout(resetTimer);
     }
-
-    const timer = setInterval(() => {
-      setCurrentBannerIndex((prev) => (prev + 1) % heroBanners.length);
-    }, 6000);
-
-    return () => clearInterval(timer);
-  }, [heroBanners.length, isCarouselPaused]);
+  }, [displayIndex, heroBanners.length]);
 
   // carregar favoritos do localStorage
   useEffect(() => {
@@ -203,82 +216,61 @@ function HomeContent() {
 
   return (
     <>
-      {/* Hero Banner */}
-      <section className="px-4 mt-4">
-        <div className="mx-auto w-full max-w-sm">
-          <div
-            className="relative aspect-[320/131] overflow-hidden rounded-[28px] border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)]"
-            style={{
-              borderColor: `${primaryColor}33`,
-              backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${secondaryColor})`,
-            }}
-            onMouseEnter={() => setIsCarouselPaused(true)}
-            onMouseLeave={() => setIsCarouselPaused(false)}
-          >
-            {heroBanners.length ? (
-              <>
-                {heroBanners.map((banner, index) => (
+      {/* Hero Banner Carousel */}
+      <section 
+        className="mt-4 overflow-hidden"
+        onMouseEnter={() => setIsCarouselPaused(true)}
+        onMouseLeave={() => setIsCarouselPaused(false)}
+        onTouchStart={() => setIsCarouselPaused(true)}
+        onTouchEnd={() => setTimeout(() => setIsCarouselPaused(false), 3000)}
+      >
+        <div className="mx-auto w-full max-w-sm px-4">
+          {extendedBanners.length ? (
+            <div className="relative aspect-[320/131] overflow-hidden rounded-[28px]">
+              <div
+                className="flex h-full"
+                style={{
+                  width: `${extendedBanners.length * 100}%`,
+                  transform: `translateX(-${(displayIndex * 100) / extendedBanners.length}%)`,
+                  transition: isTransitionEnabled ? "transform 500ms ease-out" : "none",
+                }}
+              >
+                {extendedBanners.map((banner, index) => (
                   <div
-                    key={banner.id}
-                    className={`absolute inset-0 transition-opacity duration-500 ${index === currentBannerIndex ? "opacity-100" : "opacity-0"}`}
-                    aria-hidden={index !== currentBannerIndex}
+                    key={`${banner.id}-${index}`}
+                    className="h-full flex-shrink-0 px-0"
+                    style={{ width: `${100 / extendedBanners.length}%` }}
                   >
-                    <Image
-                      src={banner.imageUrl}
-                      alt={banner.title || "Banner mobile"}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 320px, 400px"
-                      priority={index === currentBannerIndex}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/70" />
-                    <div className="absolute inset-0 flex flex-col justify-end gap-1 px-5 pb-5">
-                      {banner.badge && (
-                        <span className="inline-flex w-fit items-center rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                          {banner.badge}
-                        </span>
-                      )}
-                      <h2 className="text-lg font-semibold text-white drop-shadow">
-                        {banner.title}
-                      </h2>
-                      {banner.subtitle && (
-                        <p className="text-xs text-white/80">{banner.subtitle}</p>
-                      )}
-                      {banner.ctaLabel && (
-                        <Link
-                          href={banner.ctaLink || "/depositar"}
-                          className="mt-2 inline-flex items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide shadow-lg"
-                          style={{ backgroundColor: primaryColor, color: "#0a1628" }}
-                        >
-                          {banner.ctaLabel}
-                        </Link>
-                      )}
+                    <div
+                      className="relative h-full rounded-[28px] border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)]"
+                      style={{
+                        borderColor: `${primaryColor}33`,
+                        backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${secondaryColor})`,
+                      }}
+                    >
+                      <Image
+                        src={banner.imageUrl}
+                        alt={banner.title || "Banner"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 320px, 400px"
+                        priority={index === 0}
+                      />
                     </div>
                   </div>
                 ))}
-                {heroBanners.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                    {heroBanners.map((banner, index) => (
-                      <button
-                        key={banner.id}
-                        type="button"
-                        className={`h-1.5 rounded-full transition-all ${index === currentBannerIndex ? "w-6 bg-white" : "w-2 bg-white/40"}`}
-                        aria-label={`Banner ${index + 1}`}
-                        onClick={() => setCurrentBannerIndex(index)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="flex h-full flex-col justify-center gap-1 px-5">
-                <p className="text-sm font-semibold text-white">Destaque mobile</p>
-                <p className="text-xs text-white/70">
-                  Suba banners no Editor Visual para controlar este carrossel.
-                </p>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* Skeleton placeholder - igual aos cards de jogos */
+            <div 
+              className="aspect-[320/131] overflow-hidden rounded-[28px] border bg-gradient-to-br shadow-[0_20px_30px_rgba(5,10,25,0.45)] animate-pulse"
+              style={{
+                borderColor: `${primaryColor}33`,
+                backgroundImage: `linear-gradient(135deg, ${secondaryColor}, ${secondaryColor})`,
+              }}
+            />
+          )}
         </div>
       </section>
 

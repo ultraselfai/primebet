@@ -9,6 +9,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-star-btn: star-btn calc(var(--duration)*1s) linear infinite;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -169,4 +170,28 @@ html {
 
 .animate-logo-scroll:hover {
   animation-play-state: paused;
+}
+
+/* Star Button Animation */
+@keyframes star-btn {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* Banner Slide - entrada pela esquerda */
+@keyframes banner-slide-in {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-banner-slide-in {
+  animation: banner-slide-in 500ms ease-out forwards;
 }

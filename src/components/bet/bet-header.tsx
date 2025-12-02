@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LogIn, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StarButton } from "@/components/ui/star-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBetAuth } from "@/contexts/bet-auth-context";
 import { usePublicSettings } from "@/contexts/public-settings-context";
@@ -78,33 +79,38 @@ export function BetHeader() {
           ) : isAuthenticated ? (
             // Logado - mostra saldo e perfil
             <>
-              <div className="flex h-8 items-center gap-1.5 rounded-[14px] border border-white/10 bg-[#0d1f3c] px-3">
+              <div className="flex h-7 items-center gap-1.5 rounded-lg border border-white/10 bg-[#0d1f3c] px-2.5">
                 <Image
                   src="/coin.svg"
                   alt="Saldo"
-                  width={28}
-                  height={18}
-                  className="h-[18px] w-[28px]"
+                  width={24}
+                  height={16}
+                  className="h-4 w-6"
                 />
-                <span className="text-[13px] font-semibold text-white">
+                <span className="text-xs font-semibold text-white">
                   {balanceLoading ? "..." : formatCurrency(balance)}
                 </span>
               </div>
 
-              {/* Deposit Button */}
-              <Link
-                href="/depositar"
-                className="inline-flex h-8 items-center rounded-[14px] px-4 text-[13px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: primaryColor, color: "#0a1628" }}
-              >
-                Depositar
+              {/* Deposit Button - StarButton com animação */}
+              <Link href="/depositar">
+                <StarButton
+                  lightColor="#03E6FF"
+                  backgroundColor="#0246FF"
+                  lightWidth={80}
+                  duration={2.5}
+                  borderWidth={1}
+                  className="h-7 px-3 rounded-lg text-[11px]"
+                >
+                  Depositar
+                </StarButton>
               </Link>
 
               {/* Profile */}
               <Link href="/perfil">
-                <Avatar className="h-8 w-8 border-2 border-[#00faff]/30">
+                <Avatar className="h-7 w-7 border border-[#00faff]/30">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-[#0d1f3c] text-[#00faff] text-xs font-medium">
+                  <AvatarFallback className="bg-[#0d1f3c] text-[#00faff] text-[10px] font-medium">
                     {getInitials(user?.name || null)}
                   </AvatarFallback>
                 </Avatar>

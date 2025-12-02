@@ -21,9 +21,14 @@ async function fetchPublicSettings(): Promise<PublicSettings> {
   return response.json();
 }
 
-export function PublicSettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = React.useState<PublicSettings | null>(null);
-  const [loading, setLoading] = React.useState(true);
+interface PublicSettingsProviderProps {
+  children: React.ReactNode;
+  initialSettings?: PublicSettings | null;
+}
+
+export function PublicSettingsProvider({ children, initialSettings = null }: PublicSettingsProviderProps) {
+  const [settings, setSettings] = React.useState<PublicSettings | null>(initialSettings);
+  const [loading, setLoading] = React.useState(!initialSettings);
   const [error, setError] = React.useState<string | null>(null);
 
   const refresh = React.useCallback(async () => {
@@ -66,11 +71,15 @@ export function PublicSettingsProvider({ children }: { children: React.ReactNode
           media: {
             ...prev.experience.media,
             ...next.experience?.media,
+            loaderGifUrl: next.experience?.media?.loaderGifUrl ?? prev.experience.media.loaderGifUrl,
             banners: next.experience?.media?.banners ?? prev.experience.media.banners,
           },
           features: {
             ...prev.experience.features,
             ...next.experience?.features,
+          },
+          navigation: {
+            bottomNav: next.experience?.navigation?.bottomNav ?? prev.experience.navigation.bottomNav,
           },
         },
       };
@@ -78,8 +87,10 @@ export function PublicSettingsProvider({ children }: { children: React.ReactNode
   }, []);
 
   React.useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (!initialSettings) {
+      refresh();
+    }
+  }, [initialSettings, refresh]);
 
   return (
     <PublicSettingsContext.Provider value={{ settings, loading, error, refresh, updateCache }}>

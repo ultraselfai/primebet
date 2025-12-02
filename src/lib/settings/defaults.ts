@@ -3,8 +3,10 @@ export const defaultExperience = {
     siteName: "PlayInvest",
     tagline: "Aposte e Invista",
     footerText: "© 2024 PlayInvest. Todos os direitos reservados.",
+    footerDescription: "O grupo PLAYINVEST é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
     supportEmail: "suporte@playinvest.com",
     whatsapp: "5511999999999",
+    telegramButtonLink: "",
     socialLinks: {
       instagram: "https://instagram.com/playinvest",
       telegram: "https://t.me/playinvest",
@@ -20,6 +22,10 @@ export const defaultExperience = {
     primaryColor: "#00faff",
     secondaryColor: "#0a1628",
     accentColor: "#00ff88",
+    highlightIconColor: "#f97316",
+    favoriteIconColor: "#facc15",
+    loaderBackgroundColor: "#050f1f",
+    loaderSpinnerColor: "#00faff",
     preset: "cyan",
   },
   media: {
@@ -30,6 +36,8 @@ export const defaultExperience = {
     favicon: {
       url: "/favicon.ico",
     },
+    loaderGifUrl: "",
+    telegramButtonImageUrl: "",
     banners: [
       {
         id: "hero",
@@ -43,11 +51,57 @@ export const defaultExperience = {
     ],
   },
   features: {
-    showChat: true,
+    showTelegramButton: true,
     showSupport: true,
     showPromoBar: true,
     enableInvestments: true,
     maintenanceMode: false,
+  },
+  navigation: {
+    bottomNav: [
+      {
+        id: "home",
+        label: "Games",
+        icon: "gamepad",
+        href: "/",
+        enabled: true,
+        isMandatory: true,
+      },
+      {
+        id: "associate",
+        label: "Associado",
+        icon: "users",
+        href: "/associado",
+        enabled: false,
+        isMandatory: false,
+      },
+      {
+        id: "wallet",
+        label: "Carteira",
+        icon: "wallet",
+        href: "/carteira",
+        enabled: true,
+        isMandatory: true,
+        requiresAuth: true,
+      },
+      {
+        id: "promotions",
+        label: "Promoções",
+        icon: "sparkles",
+        href: "/promocoes",
+        enabled: false,
+        isMandatory: false,
+      },
+      {
+        id: "profile",
+        label: "Perfil",
+        icon: "user",
+        href: "/perfil",
+        enabled: true,
+        isMandatory: true,
+        requiresAuth: true,
+      },
+    ],
   },
 };
 

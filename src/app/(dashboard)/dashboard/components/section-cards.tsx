@@ -17,17 +17,15 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription className="flex items-center gap-2">
             <Wallet className="size-4" />
-            Saldo Total em Carteiras
+            Saldo Total
+            <Badge variant="outline" className="ml-1">
+              <TrendingUp />
+              +8.2%
+            </Badge>
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             R$ 1.250.450,00
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <TrendingUp />
-              +8.2%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
