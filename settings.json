@@ -9,7 +9,7 @@
     "requireEmailVerification": true,
     "requireKYC": false,
     "minAge": 18,
-    "gameColumns": 3
+    "gameColumns": 2
   },
   "branding": {
     "logoUrl": "https://images.ultraself.space/branding/logo/1764647040241-logo2.png",
@@ -20,7 +20,7 @@
       "siteName": "PrimeBet",
       "tagline": "Aposte e Invista",
       "footerText": "© 2024 PrimeBet. Todos os direitos reservados.",
-      "footerDescription": "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
+      "footerDescription": "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e  transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
       "supportEmail": "suporte@primebet.com",
       "whatsapp": "5511999999999",
       "telegramButtonLink": "",

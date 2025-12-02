@@ -18,6 +18,8 @@ import {
   PiggyBank,
   Wallet,
   FileCheck,
+  Gift,
+  UserPlus,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -135,6 +137,16 @@ const data = {
           title: "Banking (FBSPAY)",
           url: "/banking",
           icon: Landmark,
+        },
+        {
+          title: "Promoções",
+          url: "/promocoes",
+          icon: Gift,
+        },
+        {
+          title: "Associados",
+          url: "/associados",
+          icon: UserPlus,
         },
         {
           title: "Editor Visual",
