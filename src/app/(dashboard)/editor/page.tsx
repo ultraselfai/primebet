@@ -1630,7 +1630,7 @@ export default function EditorPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <Label className="text-sm font-medium">Troféu (Vitórias)</Label>
-                            <p className="text-xs text-muted-foreground">Seção "Grandes Vitórias Recentes"</p>
+                            <p className="text-xs text-muted-foreground">Seção &ldquo;Grandes Vitórias Recentes&rdquo;</p>
                           </div>
                           {experience.media.icons?.trophyIconUrl && (
                             <button
@@ -2411,7 +2411,7 @@ export default function EditorPage() {
                   <Card>
                     <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <CardTitle className="text-base">Configurações de "{activeBottomNavItem.label}"</CardTitle>
+                        <CardTitle className="text-base">Configurações de &ldquo;{activeBottomNavItem.label}&rdquo;</CardTitle>
                         <CardDescription>Ajuste texto, link e ícone exibidos na navegação.</CardDescription>
                       </div>
                       {!activeBottomNavItem.isMandatory && (

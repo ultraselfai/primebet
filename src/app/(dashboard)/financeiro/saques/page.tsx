@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  ArrowUpRight,
   Search,
   Filter,
   MoreHorizontal,

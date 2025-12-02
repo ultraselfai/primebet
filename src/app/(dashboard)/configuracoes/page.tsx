@@ -9,14 +9,11 @@ import {
   Bell,
   Wallet,
   Percent,
-  Clock,
   AlertTriangle,
   CheckCircle,
   Info,
   Database,
   Server,
-  Key,
-  Mail,
   RefreshCw,
   Upload,
   Image as ImageIcon,
@@ -212,7 +209,11 @@ export default function ConfiguracoesPage() {
     if (!file) return;
     setUploadError(null);
     const isLogo = field === "logoUrl";
-    isLogo ? setUploadingLogo(true) : setUploadingBanner(true);
+    if (isLogo) {
+      setUploadingLogo(true);
+    } else {
+      setUploadingBanner(true);
+    }
 
     try {
       const formData = new FormData();
@@ -234,7 +235,11 @@ export default function ConfiguracoesPage() {
     } catch (error) {
       setUploadError((error as Error).message);
     } finally {
-      isLogo ? setUploadingLogo(false) : setUploadingBanner(false);
+      if (isLogo) {
+        setUploadingLogo(false);
+      } else {
+        setUploadingBanner(false);
+      }
     }
   };
 

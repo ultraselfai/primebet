@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Users, Wallet, UserCheck, UserX, TrendingUp } from "lucide-react"
+import { Users, Wallet, UserCheck, TrendingUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from '@/lib/utils'
 import type { User } from "../page"
@@ -12,7 +12,7 @@ export function StatCards({ users }: StatCardsProps) {
   // Calcular estatísticas
   const totalUsers = users.length
   const activeUsers = users.filter(u => u.status === 'ACTIVE').length
-  const blockedUsers = users.filter(u => u.status === 'BLOCKED' || u.status === 'SUSPENDED').length
+  const _blockedUsers = users.filter(u => u.status === 'BLOCKED' || u.status === 'SUSPENDED').length // Reservado para uso futuro
   
   const totalBalanceGame = users.reduce((sum, u) => sum + parseFloat(u.balanceGame || '0'), 0)
   const totalBalanceInvest = users.reduce((sum, u) => sum + parseFloat(u.balanceInvest || '0'), 0)

@@ -7,8 +7,6 @@ import {
   CheckCircle,
   Clock,
   Calendar,
-  DollarSign,
-  User,
   TrendingUp,
   ArrowUpFromLine,
 } from "lucide-react";

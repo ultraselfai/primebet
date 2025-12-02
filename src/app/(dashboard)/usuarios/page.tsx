@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
   Users,
   Search,
-  Filter,
   MoreHorizontal,
   Eye,
   Ban,
@@ -12,13 +11,8 @@ import {
   AlertTriangle,
   Wallet,
   Gamepad2,
-  TrendingUp,
-  Mail,
-  Phone,
-  Calendar,
   ShieldCheck,
   ShieldX,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

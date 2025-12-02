@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  FileCheck,
   Clock,
   CheckCircle,
   XCircle,
@@ -13,8 +12,6 @@ import {
   AlertTriangle,
   Ban,
   Send,
-  DollarSign,
-  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +47,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 

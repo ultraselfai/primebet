@@ -8,7 +8,6 @@ import { RecentWinsMarquee } from "@/components/bet/recent-wins-marquee";
 import { BetAuthProvider } from "@/contexts/bet-auth-context";
 import { Flame, Star as StarIcon, Sparkles, Dices, Trophy, Zap, RadioTower } from "lucide-react";
 import { useBetAuth } from "@/contexts/bet-auth-context";
-import Link from "next/link";
 import { usePublicSettings } from "@/contexts/public-settings-context";
 import type { BannerItem, CustomIcons } from "@/types/settings";
 

@@ -18,7 +18,6 @@ import {
   Ticket,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useBetAuth } from "@/contexts/bet-auth-context";
 import { AuthModal } from "./auth-modal";
 import { BetHeader } from "./bet-header";
@@ -62,7 +61,7 @@ const getNavItems = (items?: BottomNavItem[]): BottomNavItem[] => {
 };
 
 export function BetLayout({ children }: BetLayoutProps) {
-  const pathname = usePathname();
+  const currentPathname = usePathname();
   const { 
     isAuthenticated, 
     openAuthModal, 
@@ -91,9 +90,8 @@ export function BetLayout({ children }: BetLayoutProps) {
     [publicSettings?.experience?.navigation?.bottomNav],
   );
   const centerIndex = Math.floor(navItems.length / 2);
-  const centerNavItem = navItems[centerIndex];
-  const leftNavItems = navItems.slice(0, centerIndex);
-  const rightNavItems = navItems.slice(centerIndex + 1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _currentPath = currentPathname; // Keep for future use
 
   React.useEffect(() => {
     const updateFullscreen = () => {
@@ -277,10 +275,10 @@ export function BetLayout({ children }: BetLayoutProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-white">Cassino</h4>
                 <nav className="flex flex-col gap-2">
-                  <a href="/convidar" className="text-xs text-white/60 hover:text-white transition">Convidar</a>
-                  <a href="/eventos" className="text-xs text-white/60 hover:text-white transition">Eventos</a>
-                  <a href="/vip" className="text-xs text-white/60 hover:text-white transition">VIP</a>
-                  <a href="/afiliado" className="text-xs text-white/60 hover:text-white transition">Afiliado</a>
+                  <Link href="/convidar" className="text-xs text-white/60 hover:text-white transition">Convidar</Link>
+                  <Link href="/eventos" className="text-xs text-white/60 hover:text-white transition">Eventos</Link>
+                  <Link href="/vip" className="text-xs text-white/60 hover:text-white transition">VIP</Link>
+                  <Link href="/afiliado" className="text-xs text-white/60 hover:text-white transition">Afiliado</Link>
                 </nav>
               </div>
 
@@ -288,11 +286,11 @@ export function BetLayout({ children }: BetLayoutProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-white">Jogos</h4>
                 <nav className="flex flex-col gap-2">
-                  <a href="/?categoria=all" className="text-xs text-white/60 hover:text-white transition">Todos</a>
-                  <a href="/?categoria=hot" className="text-xs text-white/60 hover:text-white transition">Em Alta</a>
-                  <a href="/?categoria=slots" className="text-xs text-white/60 hover:text-white transition">Slots</a>
-                  <a href="/?categoria=crash" className="text-xs text-white/60 hover:text-white transition">Crash</a>
-                  <a href="/?categoria=live" className="text-xs text-white/60 hover:text-white transition">Ao Vivo</a>
+                  <Link href="/?categoria=all" className="text-xs text-white/60 hover:text-white transition">Todos</Link>
+                  <Link href="/?categoria=hot" className="text-xs text-white/60 hover:text-white transition">Em Alta</Link>
+                  <Link href="/?categoria=slots" className="text-xs text-white/60 hover:text-white transition">Slots</Link>
+                  <Link href="/?categoria=crash" className="text-xs text-white/60 hover:text-white transition">Crash</Link>
+                  <Link href="/?categoria=live" className="text-xs text-white/60 hover:text-white transition">Ao Vivo</Link>
                 </nav>
               </div>
 
@@ -300,10 +298,10 @@ export function BetLayout({ children }: BetLayoutProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-white">Suporte</h4>
                 <nav className="flex flex-col gap-2">
-                  <a href="/suporte" className="text-xs text-white/60 hover:text-white transition">Suporte Online</a>
-                  <a href="/ajuda" className="text-xs text-white/60 hover:text-white transition">Central de Ajuda</a>
-                  <a href="/termos" className="text-xs text-white/60 hover:text-white transition">Termos de Uso</a>
-                  <a href="/privacidade" className="text-xs text-white/60 hover:text-white transition">Privacidade</a>
+                  <Link href="/suporte" className="text-xs text-white/60 hover:text-white transition">Suporte Online</Link>
+                  <Link href="/ajuda" className="text-xs text-white/60 hover:text-white transition">Central de Ajuda</Link>
+                  <Link href="/termos" className="text-xs text-white/60 hover:text-white transition">Termos de Uso</Link>
+                  <Link href="/privacidade" className="text-xs text-white/60 hover:text-white transition">Privacidade</Link>
                 </nav>
               </div>
             </div>

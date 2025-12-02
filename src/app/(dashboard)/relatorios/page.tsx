@@ -6,7 +6,6 @@ import {
   Download,
   FileText,
   Calendar,
-  Filter,
   TrendingUp,
   TrendingDown,
   DollarSign,
@@ -16,7 +15,6 @@ import {
   ArrowUpFromLine,
   RefreshCw,
   PieChart,
-  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
