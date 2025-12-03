@@ -41,7 +41,7 @@ export function CasinoNavBar({ items, labelColor = "#9ca3af", activeLabelColor =
 
   const height = 60;
   const curveStart = 38;    // Reduzido de 65 para 50 - curva começa mais perto do centro
-  const curveDepth = 37;    // Reduzido de 35 para 32 - curva menos profunda
+  const curveDepth = 38;    // Reduzido de 35 para 32 - curva menos profunda
   const tension = 35;       // Reduzido de 35 para 28 - curva mais fechada/apertada
   const center = width / 2;
 

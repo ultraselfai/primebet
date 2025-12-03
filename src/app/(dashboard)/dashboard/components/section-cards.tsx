@@ -20,16 +20,16 @@ export function SectionCards() {
             Saldo Total
             <Badge variant="outline" className="ml-1">
               <TrendingUp />
-              +8.2%
+              0%
             </Badge>
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            R$ 1.250.450,00
+            R$ 0,00
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Crescimento este mês <TrendingUp className="size-4" />
+            Aguardando dados <TrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Soma de todos os saldos de jogadores
@@ -43,18 +43,18 @@ export function SectionCards() {
             Usuários Ativos
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            3.458
+            0
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingUp />
-              +15.3%
+              0%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Novos usuários hoje: 127 <TrendingUp className="size-4" />
+            Novos usuários hoje: 0 <TrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Jogaram nas últimas 24 horas
@@ -68,21 +68,21 @@ export function SectionCards() {
             Total Investido
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            R$ 845.200,00
+            R$ 0,00
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingUp />
-              +22.1%
+              0%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Rendimentos: R$ 25.356 <TrendingUp className="size-4" />
+            Rendimentos: R$ 0,00 <TrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
-            3% ao mês distribuídos
+            Distribuição mensal
           </div>
         </CardFooter>
       </Card>
@@ -93,12 +93,12 @@ export function SectionCards() {
             GGR (Receita Bruta)
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            R$ 78.430,00
+            R$ 0,00
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingDown />
-              -3.2%
+              0%
             </Badge>
           </CardAction>
         </CardHeader>
@@ -106,7 +106,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Apostas - Prêmios pagos <TrendingDown className="size-4" />
           </div>
-          <div className="text-muted-foreground">Margem: 4.8% do volume</div>
+          <div className="text-muted-foreground">Margem: 0% do volume</div>
         </CardFooter>
       </Card>
     </div>

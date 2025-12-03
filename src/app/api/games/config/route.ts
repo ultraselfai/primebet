@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
+import { auth } from "@/lib/auth";
 
 // Arquivo de configurações de jogos (em produção seria no banco)
 const GAMES_CONFIG_FILE = path.join(process.cwd(), "games-config.json");
@@ -30,6 +31,15 @@ export async function GET() {
 // POST - Salvar configuração de um jogo
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem configurar jogos
+    const session = await auth();
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const gameConfig: GameConfig = await request.json();
     
     // Ler configurações existentes
@@ -63,6 +73,15 @@ export async function POST(request: NextRequest) {
 // PUT - Salvar todas as configurações de jogos (bulk)
 export async function PUT(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem configurar jogos
+    const session = await auth();
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const allConfigs: Record<string, GameConfig> = await request.json();
     
     await writeFile(GAMES_CONFIG_FILE, JSON.stringify(allConfigs, null, 2));

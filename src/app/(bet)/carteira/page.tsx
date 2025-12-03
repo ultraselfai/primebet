@@ -2,29 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
-  ArrowLeft, ArrowUpRight, ArrowDownLeft, TrendingUp, 
-  History, Wallet, PiggyBank, ChevronRight, RefreshCw,
-  Info, Loader2
+  ArrowLeft, ArrowDownLeft, ArrowUpRight, RefreshCw, Loader2, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useBetAuth } from "@/contexts/bet-auth-context";
 
-interface Transaction {
-  id: string;
-  type: string;
-  amount: number;
-  date: string;
-  status: string;
-}
+// Tabela de níveis de resgate
+const rescueLevels = [
+  { level: 1, minLoss: 10, rate: 10 },
+  { level: 2, minLoss: 1000, rate: 11 },
+  { level: 3, minLoss: 5000, rate: 12 },
+  { level: 4, minLoss: 10000, rate: 13 },
+  { level: 5, minLoss: 50000, rate: 15 },
+  { level: 6, minLoss: 100000, rate: 25 },
+  { level: 7, minLoss: 500000, rate: 50 },
+];
 
 export default function CarteiraPage() {
   const router = useRouter();
@@ -32,14 +28,13 @@ export default function CarteiraPage() {
   
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   
-  // Dados da carteira - saldo de investimento virá de outra API futuramente
-  const [walletInvest] = useState({
-    saldoInvestido: 0, // TODO: Integrar com API de investimento
-    rendimentoMensal: 0,
-    taxaRendimento: 3,
-    totalRendido: 0,
+  // Dados de resgate - zerados até integrar com API
+  const [rescueData] = useState({
+    currentLoss: 0,
+    expectedRescueFunds: 0,
+    pastLoss: 0,
+    availableRescueFunds: 0,
   });
 
   // Redirecionar se não estiver autenticado
@@ -50,24 +45,9 @@ export default function CarteiraPage() {
     }
   }, [authLoading, isAuthenticated, openAuthModal, router]);
 
-  // Carregar transações
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        // TODO: Integrar com API de transações
-        // const res = await fetch("/api/wallet/transactions");
-        // const data = await res.json();
-        // if (data.success) setTransactions(data.transactions);
-        setTransactions([]); // Vazio até ter API
-      } catch (error) {
-        console.error("Erro ao carregar transações:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (isAuthenticated) {
-      fetchTransactions();
+      setLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -84,210 +64,230 @@ export default function CarteiraPage() {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(dateString));
-  };
-
-  const getTransactionInfo = (type: string) => {
-    const info: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-      deposit: { label: "Depósito", icon: <ArrowDownLeft className="w-4 h-4" />, color: "text-green-500" },
-      withdrawal: { label: "Saque", icon: <ArrowUpRight className="w-4 h-4" />, color: "text-red-500" },
-      yield: { label: "Rendimento", icon: <TrendingUp className="w-4 h-4" />, color: "text-[#00faff]" },
-      bet_win: { label: "Ganho", icon: <TrendingUp className="w-4 h-4" />, color: "text-green-500" },
-      bet_loss: { label: "Aposta", icon: <ArrowUpRight className="w-4 h-4" />, color: "text-red-500" },
-      transfer_to_invest: { label: "Investido", icon: <PiggyBank className="w-4 h-4" />, color: "text-purple-500" },
-    };
-    return info[type] || { label: type, icon: <History className="w-4 h-4" />, color: "text-white" };
+  const formatMinLoss = (value: number) => {
+    if (value >= 1000) {
+      return `R$ ≥${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+    }
+    return `R$ ≥${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
   };
 
   // Loading state
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00faff]" />
+      <div className="min-h-screen bg-[#000018] flex items-center justify-center relative overflow-hidden">
+        {/* Blur effect */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#0246FF]/20 rounded-full blur-[150px]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#0246FF]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628] pb-20">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
-        <Link href="/" className="text-white/70 hover:text-white transition">
-          <ArrowLeft className="w-6 h-6" />
-        </Link>
-        <h1 className="text-lg font-semibold text-white">Carteira</h1>
-        <button 
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="text-white/70 hover:text-white transition disabled:opacity-50"
-        >
-          <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
-        </button>
-      </header>
-
-      {/* Saldo Principal */}
-      <div className="p-4">
-        <div className="bg-gradient-to-br from-[#00faff]/20 to-[#00a8ff]/10 rounded-2xl p-5 border border-[#00faff]/30">
-          <div className="flex items-center gap-2 text-white/60 mb-1">
-            <Wallet className="w-4 h-4" />
-            <span className="text-sm">Saldo Disponível</span>
-          </div>
-          <p className="text-3xl font-bold text-white mb-4">
-            {formatCurrency(balance)}
-          </p>
-          
-          <div className="flex gap-3">
-            <Link href="/depositar" className="flex-1">
-              <Button className={cn(
-                "w-full h-11 font-semibold",
-                "bg-gradient-to-r from-[#00faff] to-[#00a8ff]",
-                "text-[#0a1628]"
-              )}>
-                <ArrowDownLeft className="w-4 h-4 mr-2" />
-                Depositar
-              </Button>
-            </Link>
-            <Link href="/sacar" className="flex-1">
-              <Button 
-                variant="outline" 
-                className="w-full h-11 font-semibold border-[#00faff]/50 text-[#00faff] bg-[#00faff]/10 hover:bg-[#00faff]/20 hover:text-[#00faff]"
-              >
-                <ArrowUpRight className="w-4 h-4 mr-2" />
-                Sacar
-              </Button>
-            </Link>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#000018] pb-24 relative overflow-hidden">
+      {/* Background blur effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#0246FF]/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/3 right-0 w-[300px] h-[300px] bg-[#0246FF]/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-0 w-[200px] h-[200px] bg-[#00a8ff]/10 rounded-full blur-[80px]" />
       </div>
 
-      {/* Saldo Investido */}
-      <div className="px-4 mb-4">
-        <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-white/60">
-              <PiggyBank className="w-4 h-4" />
-              <span className="text-sm">Saldo Investido</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="w-3.5 h-3.5 text-white/40" />
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-[#1a2a40] border-white/10 text-white max-w-xs">
-                    <p className="text-sm">
-                      Seu saldo investido rende automaticamente {walletInvest.taxaRendimento}% ao mês. 
-                      Os rendimentos são creditados diariamente.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-[#00faff]/20 text-[#00faff]">
-              {walletInvest.taxaRendimento}% ao mês
-            </span>
-          </div>
-          
-          <p className="text-2xl font-bold text-white mb-1">
-            {formatCurrency(walletInvest.saldoInvestido)}
-          </p>
-          
-          <div className="flex items-center justify-between text-sm mb-4">
-            <span className="text-white/50">Rendimento este mês</span>
-            <span className="text-[#00faff] font-medium">
-              +{formatCurrency(walletInvest.rendimentoMensal)}
-            </span>
-          </div>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="flex items-center justify-between p-4 border-b border-white/5">
+          <Link href="/" className="text-white/70 hover:text-white transition">
+            <ArrowLeft className="w-6 h-6" />
+          </Link>
+          <h1 className="text-lg font-semibold text-white">Carteira</h1>
+          <button 
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="text-white/70 hover:text-white transition disabled:opacity-50"
+          >
+            <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
+          </button>
+        </header>
 
-          <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-white/5">
-            <div>
-              <p className="text-white/50 text-xs">Total rendido</p>
-              <p className="text-white font-medium">{formatCurrency(walletInvest.totalRendido)}</p>
-            </div>
-            <Link href="/investir">
-              <Button 
-                size="sm" 
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Investir mais
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Transferir entre saldos */}
-      <div className="px-4 mb-6">
-        <Link href="/transferir">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <RefreshCw className="w-5 h-5 text-purple-400" />
+        {/* Saldo Principal Card */}
+        <div className="px-4 pt-4 relative z-30">
+          <div 
+            className="rounded-2xl p-5 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, #0246FF 0%, #0033CC 50%, #001a80 100%)",
+              boxShadow: "0 8px 32px rgba(2, 70, 255, 0.35), 0 4px 16px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            {/* Subtle glow overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-white/80 mb-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm font-medium">Saldo Disponível</span>
               </div>
-              <div>
-                <p className="text-white font-medium">Transferir Saldo</p>
-                <p className="text-white/50 text-sm">Entre jogo e investimento</p>
+              <p className="text-4xl font-bold text-white mb-5 tracking-tight">
+                {formatCurrency(balance)}
+              </p>
+              
+              {/* Botões Depositar e Sacar */}
+              <div className="flex gap-3">
+                <Link href="/depositar" className="flex-1">
+                  <Button 
+                    className="w-full h-12 font-bold text-base border-0"
+                    style={{
+                      background: "linear-gradient(135deg, #00faff 0%, #00a8ff 100%)",
+                      color: "#000018",
+                    }}
+                  >
+                    <ArrowDownLeft className="w-5 h-5 mr-2" />
+                    Depositar
+                  </Button>
+                </Link>
+                <Link href="/sacar" className="flex-1">
+                  <Button 
+                    className="w-full h-12 font-bold text-base border-0"
+                    style={{
+                      background: "linear-gradient(135deg, #1AF281 0%, #0fd06a 50%, #0ab85c 100%)",
+                      color: "#000018",
+                      boxShadow: "0 4px 16px rgba(26, 242, 129, 0.3)",
+                    }}
+                  >
+                    <ArrowUpRight className="w-5 h-5 mr-2" />
+                    Sacar
+                  </Button>
+                </Link>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/40" />
           </div>
-        </Link>
-      </div>
-
-      {/* Histórico */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-white font-semibold">Histórico</h2>
-          {transactions.length > 0 && (
-            <Link href="/extrato" className="text-[#00faff] text-sm hover:underline">
-              Ver tudo
-            </Link>
-          )}
         </div>
 
-        {transactions.length === 0 ? (
-          <div className="p-8 rounded-xl bg-white/5 text-center">
-            <History className="w-10 h-10 text-white/20 mx-auto mb-3" />
-            <p className="text-white/40 text-sm">Nenhuma transação ainda</p>
-            <p className="text-white/30 text-xs mt-1">Faça um depósito para começar!</p>
+        {/* Seção Resgatar */}
+        <div className="px-4">
+          {/* Banner Resgatar - Sobe para ficar atrás do card de saldo */}
+          <div className="relative w-full h-[480px] -mt-32 -mb-40 z-0">
+            <Image
+              src="/resgatar.png"
+              alt="Fundos de Resgate"
+              fill
+              className="object-contain object-bottom"
+              priority
+            />
           </div>
-        ) : (
-          <div className="space-y-2">
-            {transactions.map((tx) => {
-              const info = getTransactionInfo(tx.type);
-              return (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/5"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-9 h-9 rounded-full flex items-center justify-center",
-                      tx.amount > 0 ? "bg-green-500/20" : "bg-white/10"
-                    )}>
-                      <span className={info.color}>{info.icon}</span>
-                    </div>
-                    <div>
-                      <p className="text-white text-sm font-medium">{info.label}</p>
-                      <p className="text-white/40 text-xs">{formatDate(tx.date)}</p>
-                    </div>
-                  </div>
-                  <span className={cn(
-                    "font-semibold",
-                    tx.amount > 0 ? "text-green-500" : "text-white/70"
-                  )}>
-                    {tx.amount > 0 ? "+" : ""}{formatCurrency(tx.amount)}
-                  </span>
+
+          {/* Card Perda Atual - Sobe para sobrepor o banner */}
+          <div className="relative z-20 rounded-xl p-4 mb-3 bg-[#1a1520] border border-[#3d2a1a]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-[#c97b35]/30 flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5 text-[#c97b35]" />
                 </div>
-              );
-            })}
+                <span className="text-white font-medium">Perda Atual</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-white/30 mx-2">|</span>
+                <span className="text-white font-semibold">R$ {rescueData.currentLoss}</span>
+              </div>
+            </div>
+            
+            <div className="pl-1">
+              <p className="text-white/50 text-sm">Fundos de Resgate Previstos</p>
+              <p className="text-white font-bold text-lg">R$ {rescueData.expectedRescueFunds}</p>
+            </div>
           </div>
-        )}
+
+          {/* Card Perda Passada - Fundo sólido escuro */}
+          <div className="rounded-xl p-4 mb-6 bg-[#18161c] border border-[#2a2530]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-[#8a7a60]/30 flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5 text-[#a89070]" />
+                </div>
+                <span className="text-white/90 font-medium">Perda Passada</span>
+              </div>
+              <span className="text-white font-semibold">R$ {rescueData.pastLoss}</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/50 text-sm mb-1">Fundos de Resgate Disponíveis</p>
+                <p className="text-white font-bold text-lg">R$ {rescueData.availableRescueFunds}</p>
+              </div>
+              <Button 
+                disabled={rescueData.availableRescueFunds <= 0}
+                className="bg-[#2a2530] hover:bg-[#3a3540] text-white/60 border border-[#3a3540] disabled:opacity-40"
+              >
+                Receber
+              </Button>
+            </div>
+          </div>
+
+          {/* Tabela de Fundos de Resgate */}
+          <div className="rounded-xl overflow-hidden mb-6">
+            {/* Header da tabela - laranja */}
+            <div 
+              className="flex items-center gap-3 p-4"
+              style={{
+                background: "linear-gradient(135deg, #c97b35 0%, #a86520 100%)",
+              }}
+            >
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-white font-bold text-base">Tabela de Fundos de Resgate</h3>
+            </div>
+
+            {/* Cabeçalho colunas */}
+            <div className="grid grid-cols-3 text-center py-3 bg-[#1a1520] border-b border-[#2a2530]">
+              <span className="text-white/70 text-sm font-medium">Nível</span>
+              <span className="text-white/70 text-sm font-medium">Perda no Jogo</span>
+              <span className="text-white/70 text-sm font-medium">Taxa de Resgate</span>
+            </div>
+
+            {/* Linhas da tabela */}
+            <div className="bg-[#12101a]">
+              {rescueLevels.map((level, index) => (
+                <div 
+                  key={level.level}
+                  className={cn(
+                    "grid grid-cols-3 text-center py-3 border-b border-[#1a1820]",
+                    index % 2 === 0 ? "bg-[#15131d]" : "bg-[#12101a]"
+                  )}
+                >
+                  <span className="text-white/60 text-sm">{level.level}</span>
+                  <span className="text-white/60 text-sm">{formatMinLoss(level.minLoss)}</span>
+                  <span className="text-white/60 text-sm">{level.rate}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Descrição da Atividade */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <span className="px-4 text-white/60 text-sm font-medium">Descrição da Atividade</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            </div>
+
+            <div className="space-y-3 text-white/50 text-sm leading-relaxed">
+              <p>
+                <span className="text-white/70 font-medium">1.</span> Perda no Jogo = Perda na Conta - Montante Dado.
+              </p>
+              <p>
+                <span className="text-white/70 font-medium">2.</span> Os Fundos de Resgate são calculados diariamente de acordo com a tabela e podem ser solicitados no dia seguinte.
+              </p>
+              <p>
+                <span className="text-white/70 font-medium">3.</span> Se um usuário não solicitar os Fundos de Resgate hoje, será considerado como tendo desistido.
+              </p>
+              <p>
+                <span className="text-white/70 font-medium">4.</span> O objetivo de estabelecer os Fundos de Resgate é ajudar os usuários a se recuperarem no jogo, portanto, é necessário um volume de negócios de 1x.
+              </p>
+              <p>
+                <span className="text-white/70 font-medium">5.</span> Horário brasileiro 00:00 é o horário de liquidação.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

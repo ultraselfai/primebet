@@ -29,16 +29,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Mock data - rendimentos calculados
-const mockYieldHistory = [
-  { date: "2024-11-28", totalPrincipal: 32000, dailyRate: 0.0986, dailyYield: 31.55, totalYield: 5460.00 },
-  { date: "2024-11-27", totalPrincipal: 32000, dailyRate: 0.0986, dailyYield: 31.55, totalYield: 5428.45 },
-  { date: "2024-11-26", totalPrincipal: 32000, dailyRate: 0.0986, dailyYield: 31.55, totalYield: 5396.90 },
-  { date: "2024-11-25", totalPrincipal: 31500, dailyRate: 0.0986, dailyYield: 31.06, totalYield: 5365.35 },
-  { date: "2024-11-24", totalPrincipal: 31500, dailyRate: 0.0986, dailyYield: 31.06, totalYield: 5334.29 },
-  { date: "2024-11-23", totalPrincipal: 31500, dailyRate: 0.0986, dailyYield: 31.06, totalYield: 5303.23 },
-  { date: "2024-11-22", totalPrincipal: 30000, dailyRate: 0.0986, dailyYield: 29.58, totalYield: 5272.17 },
-];
+// Dados zerados para ambiente de produção
+const mockYieldHistory: Array<{
+  date: string;
+  totalPrincipal: number;
+  dailyRate: number;
+  dailyYield: number;
+  totalYield: number;
+}> = [];
 
 const yieldConfig = {
   monthlyRate: 3.0, // 3% ao mês

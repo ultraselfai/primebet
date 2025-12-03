@@ -2,9 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateUniquePlayerId } from '@/lib/utils/generate-player-id'
+import { auth } from '@/lib/auth'
+
+// Função auxiliar para verificar se é admin
+async function requireAdmin() {
+  const session = await auth()
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return null
+  }
+  return session
+}
 
 // GET - Lista todos os usuários com saldo
 export async function GET() {
+  const session = await requireAdmin()
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: 'Não autorizado' },
+      { status: 401 }
+    )
+  }
+
   try {
     const users = await prisma.user.findMany({
       include: {
@@ -48,6 +66,14 @@ export async function GET() {
 
 // POST - Criar novo usuário
 export async function POST(request: NextRequest) {
+  const session = await requireAdmin()
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: 'Não autorizado' },
+      { status: 401 }
+    )
+  }
+
   try {
     const body = await request.json()
     const { name, email, phone, cpf, password, role, status, initialBalance } = body

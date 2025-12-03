@@ -37,64 +37,18 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// Mock data - liberações de rendimentos
-const mockReleases = [
-  {
-    id: "1",
-    userId: "user_1",
-    userName: "João Silva",
-    userEmail: "joao@email.com",
-    amount: 150.00,
-    type: "monthly_yield",
-    status: "available",
-    releaseDate: "2024-11-01",
-    withdrawnAt: null,
-  },
-  {
-    id: "2",
-    userId: "user_4",
-    userName: "Ana Costa",
-    userEmail: "ana@email.com",
-    amount: 450.00,
-    type: "monthly_yield",
-    status: "withdrawn",
-    releaseDate: "2024-11-01",
-    withdrawnAt: "2024-11-05T14:30:00",
-  },
-  {
-    id: "3",
-    userId: "user_2",
-    userName: "Maria Santos",
-    userEmail: "maria@email.com",
-    amount: 60.00,
-    type: "monthly_yield",
-    status: "available",
-    releaseDate: "2024-11-01",
-    withdrawnAt: null,
-  },
-  {
-    id: "4",
-    userId: "user_7",
-    userName: "Roberto Lima",
-    userEmail: "roberto@email.com",
-    amount: 10000.00,
-    type: "principal_unlock",
-    status: "available",
-    releaseDate: "2024-11-28",
-    withdrawnAt: null,
-  },
-  {
-    id: "5",
-    userId: "user_1",
-    userName: "João Silva",
-    userEmail: "joao@email.com",
-    amount: 150.00,
-    type: "monthly_yield",
-    status: "withdrawn",
-    releaseDate: "2024-10-01",
-    withdrawnAt: "2024-10-03T10:15:00",
-  },
-];
+// Dados zerados para ambiente de produção
+const mockReleases: Array<{
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  amount: number;
+  type: string;
+  status: string;
+  releaseDate: string;
+  withdrawnAt: string | null;
+}> = [];
 
 const statusConfig = {
   available: { label: "Disponível", variant: "default" as const, icon: Wallet },
@@ -212,8 +166,8 @@ export default function LiberacoesPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">01/12</div>
-            <p className="text-xs text-muted-foreground">Em 3 dias</p>
+            <div className="text-2xl font-bold">--/--</div>
+            <p className="text-xs text-muted-foreground">Aguardando dados</p>
           </CardContent>
         </Card>
       </div>

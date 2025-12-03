@@ -38,19 +38,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data
-const mockTransactions = [
-  { id: "TXN-001", type: "DEPOSIT", description: "Depósito PIX", amount: 500, userId: "USR-123", userName: "João Silva", createdAt: "2024-01-15T14:30:00" },
-  { id: "TXN-002", type: "WITHDRAWAL", description: "Saque aprovado", amount: -250, userId: "USR-456", userName: "Maria Santos", createdAt: "2024-01-15T14:15:00" },
-  { id: "TXN-003", type: "BET", description: "Aposta - Gates of Olympus", amount: -50, userId: "USR-123", userName: "João Silva", createdAt: "2024-01-15T14:00:00" },
-  { id: "TXN-004", type: "WIN", description: "Prêmio - Gates of Olympus", amount: 175, userId: "USR-123", userName: "João Silva", createdAt: "2024-01-15T14:01:00" },
-  { id: "TXN-005", type: "YIELD", description: "Rendimento investimento", amount: 15, userId: "USR-789", userName: "Pedro Oliveira", createdAt: "2024-01-15T00:00:00" },
-  { id: "TXN-006", type: "DEPOSIT", description: "Depósito PIX", amount: 1000, userId: "USR-321", userName: "Ana Costa", createdAt: "2024-01-15T12:00:00" },
-  { id: "TXN-007", type: "TRANSFER", description: "Transferência para investimento", amount: -500, userId: "USR-321", userName: "Ana Costa", createdAt: "2024-01-15T12:05:00" },
-  { id: "TXN-008", type: "BET", description: "Aposta - Sweet Bonanza", amount: -100, userId: "USR-654", userName: "Carlos Lima", createdAt: "2024-01-15T11:30:00" },
-  { id: "TXN-009", type: "WITHDRAWAL", description: "Saque aprovado", amount: -800, userId: "USR-987", userName: "Lucas Ferreira", createdAt: "2024-01-15T10:00:00" },
-  { id: "TXN-010", type: "DEPOSIT", description: "Depósito PIX", amount: 200, userId: "USR-654", userName: "Carlos Lima", createdAt: "2024-01-15T09:00:00" },
-];
+// Dados zerados para ambiente de produção
+const mockTransactions: Array<{
+  id: string;
+  type: string;
+  description: string;
+  amount: number;
+  userId: string;
+  userName: string;
+  createdAt: string;
+}> = [];
 
 const typeConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   DEPOSIT: { label: "Depósito", icon: <ArrowDownLeft className="w-4 h-4" />, color: "text-green-600" },

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import {
   Settings,
   Save,
@@ -15,9 +14,6 @@ import {
   Database,
   Server,
   RefreshCw,
-  Upload,
-  Image as ImageIcon,
-  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +46,9 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { PasswordConfirmationModal } from "@/components/ui/password-confirmation-modal";
+import { usePasswordConfirmation } from "@/hooks/use-password-confirmation";
+import { toast } from "sonner";
 
 // Mock settings
 const initialSettings = {
@@ -64,11 +63,6 @@ const initialSettings = {
     requireEmailVerification: true,
     requireKYC: false,
     minAge: 18,
-    gameColumns: 3 as 1 | 2 | 3 | 4,
-  },
-  branding: {
-    logoUrl: "/logo-horizontal.png",
-    mobileBannerUrl: "",
   },
   // Financeiro - Taxas
   fees: {
@@ -128,11 +122,7 @@ export default function ConfiguracoesPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const logoInputRef = useRef<HTMLInputElement | null>(null);
-  const bannerInputRef = useRef<HTMLInputElement | null>(null);
+  const { isOpen, options, openConfirmation, closeConfirmation, confirm } = usePasswordConfirmation();
 
   // Carregar configurações da API
   useEffect(() => {
@@ -145,7 +135,6 @@ export default function ConfiguracoesPage() {
           setSettings(prev => ({
             ...prev,
             general: { ...prev.general, ...data.general },
-            branding: { ...prev.branding, ...data.branding },
             fees: { ...prev.fees, ...data.fees },
             investments: { ...prev.investments, ...data.investments },
             security: { ...prev.security, ...data.security },
@@ -182,70 +171,35 @@ export default function ConfiguracoesPage() {
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      
-      if (res.ok) {
-        setHasChanges(false);
-      } else {
-        console.error("Erro ao salvar configurações");
+    openConfirmation(
+      async () => {
+        setSaving(true);
+        try {
+          const res = await fetch("/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(settings),
+          });
+          
+          if (res.ok) {
+            setHasChanges(false);
+            toast.success("Configurações salvas com sucesso!");
+          } else {
+            toast.error("Erro ao salvar configurações");
+          }
+        } catch (error) {
+          console.error("Erro ao salvar:", error);
+          toast.error("Erro ao salvar configurações");
+        } finally {
+          setSaving(false);
+        }
+      },
+      {
+        title: "Salvar configurações",
+        description: "Confirme sua senha para salvar as alterações nas configurações do sistema.",
+        actionLabel: "Salvar",
       }
-    } catch (error) {
-      console.error("Erro ao salvar:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleBrandingUpload = async (
-    file: File | null,
-    field: "logoUrl" | "mobileBannerUrl"
-  ) => {
-    if (!file) return;
-    setUploadError(null);
-    const isLogo = field === "logoUrl";
-    if (isLogo) {
-      setUploadingLogo(true);
-    } else {
-      setUploadingBanner(true);
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", isLogo ? "branding/logo" : "branding/banner");
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Falha no upload");
-      }
-
-      updateSetting("branding", field, data.url);
-    } catch (error) {
-      setUploadError((error as Error).message);
-    } finally {
-      if (isLogo) {
-        setUploadingLogo(false);
-      } else {
-        setUploadingBanner(false);
-      }
-    }
-  };
-
-  const resetBrandingField = (field: "logoUrl" | "mobileBannerUrl") => {
-    const fallback = field === "logoUrl" ? "/logo-horizontal.png" : "";
-    updateSetting("branding", field, fallback);
+    );
   };
 
   if (loading) {
@@ -381,28 +335,6 @@ export default function ConfiguracoesPage() {
                     }
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Colunas de Jogos na Home</Label>
-                  <Select
-                    value={String(settings.general.gameColumns)}
-                    onValueChange={(value) =>
-                      updateSetting("general", "gameColumns", parseInt(value) as 1 | 2 | 3 | 4)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Coluna</SelectItem>
-                      <SelectItem value="2">2 Colunas</SelectItem>
-                      <SelectItem value="3">3 Colunas</SelectItem>
-                      <SelectItem value="4">4 Colunas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Quantidade de jogos por linha na home da bet
-                  </p>
-                </div>
               </CardContent>
             </Card>
 
@@ -472,135 +404,6 @@ export default function ConfiguracoesPage() {
                       updateSetting("general", "maintenanceMode", checked)
                     }
                   />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-base">Identidade Visual</CardTitle>
-                <CardDescription>
-                  Faça o upload do logo e do banner mobile para o lobby
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {uploadError && (
-                  <Alert variant="destructive">
-                    <AlertTitle>Falha no upload</AlertTitle>
-                    <AlertDescription>{uploadError}</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-3">
-                    <Label>Logo principal</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Use PNG/SVG com fundo transparente. Tamanho sugerido 400x120px.
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-16 w-40 overflow-hidden rounded-xl border border-dashed border-muted-foreground/40 bg-muted/20 flex items-center justify-center">
-                        {settings.branding.logoUrl ? (
-                          <Image
-                            src={settings.branding.logoUrl}
-                            alt="Logo atual"
-                            fill
-                            className="object-contain p-2"
-                            sizes="160px"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center text-xs text-muted-foreground">
-                            <ImageIcon className="h-5 w-5 mb-1" />
-                            Sem logo
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <input
-                          ref={logoInputRef}
-                          id="logo-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => {
-                            handleBrandingUpload(event.target.files?.[0] || null, "logoUrl");
-                            event.target.value = "";
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          disabled={uploadingLogo}
-                          onClick={() => logoInputRef.current?.click()}
-                        >
-                          <Upload className="h-4 w-4 mr-1" />
-                          {uploadingLogo ? "Enviando..." : "Enviar novo"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={!settings.branding.logoUrl}
-                          onClick={() => resetBrandingField("logoUrl")}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remover
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Banner mobile (320x131)</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Recomendado enviar 1080x450px para melhor nitidez. Será adaptado para 320x131.
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="relative w-full max-w-xs aspect-[320/131] overflow-hidden rounded-2xl border border-dashed border-muted-foreground/40 bg-muted/20 flex items-center justify-center">
-                        {settings.branding.mobileBannerUrl ? (
-                          <Image
-                            src={settings.branding.mobileBannerUrl}
-                            alt="Banner mobile"
-                            fill
-                            className="object-cover"
-                            sizes="260px"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center text-xs text-muted-foreground px-4 text-center">
-                            <ImageIcon className="h-5 w-5 mb-1" />
-                            Nenhum banner cadastrado
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <input
-                          ref={bannerInputRef}
-                          id="banner-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => {
-                            handleBrandingUpload(event.target.files?.[0] || null, "mobileBannerUrl");
-                            event.target.value = "";
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          disabled={uploadingBanner}
-                          onClick={() => bannerInputRef.current?.click()}
-                        >
-                          <Upload className="h-4 w-4 mr-1" />
-                          {uploadingBanner ? "Enviando..." : "Enviar banner"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={!settings.branding.mobileBannerUrl}
-                          onClick={() => resetBrandingField("mobileBannerUrl")}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remover
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1197,6 +1000,14 @@ export default function ConfiguracoesPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de confirmação de senha */}
+      <PasswordConfirmationModal
+        open={isOpen}
+        onOpenChange={closeConfirmation}
+        onConfirm={confirm}
+        {...options}
+      />
     </div>
   );
 }

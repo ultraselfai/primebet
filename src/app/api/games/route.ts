@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
+import { auth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,6 +61,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem criar jogos
+    const session = await auth()
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { providerId, providerName, name, slug, thumbnail, description, category, tags, rtp, volatility, active, featured } = body
 

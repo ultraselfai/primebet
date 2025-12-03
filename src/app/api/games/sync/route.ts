@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { GameCategory, Volatility } from '@prisma/client'
+import { auth } from '@/lib/auth'
 
 interface ProviderGame {
   game_id: string
@@ -32,6 +33,12 @@ function generateSlug(name: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem sincronizar jogos
+    const session = await auth()
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
     const PROVIDER_URL = process.env.GAME_PROVIDER_URL
     const API_KEY = process.env.GAME_PROVIDER_API_KEY
     const SECRET = process.env.GAME_PROVIDER_SECRET

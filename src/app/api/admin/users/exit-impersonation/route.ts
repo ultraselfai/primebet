@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { auth } from "@/lib/auth";
 
 // GET /api/admin/users/exit-impersonation - Sair da impersonação
 export async function GET() {
   try {
+    const session = await auth();
+    
+    // Verificar se usuário está logado e é admin
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const cookieStore = await cookies();
     
     // Remover cookies de impersonação

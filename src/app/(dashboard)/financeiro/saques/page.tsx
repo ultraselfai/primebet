@@ -44,56 +44,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data - virá do banco de dados
-const mockWithdrawals = [
-  {
-    id: "SAQ-001",
-    userId: "USR-123",
-    userName: "João Silva",
-    amount: 500.0,
-    pixKey: "joao@email.com",
-    status: "PENDING",
-    createdAt: "2024-01-15T10:30:00",
-  },
-  {
-    id: "SAQ-002",
-    userId: "USR-456",
-    userName: "Maria Santos",
-    amount: 1250.0,
-    pixKey: "11999998888",
-    status: "APPROVED",
-    createdAt: "2024-01-15T09:15:00",
-    approvedAt: "2024-01-15T09:45:00",
-  },
-  {
-    id: "SAQ-003",
-    userId: "USR-789",
-    userName: "Pedro Oliveira",
-    amount: 200.0,
-    pixKey: "123.456.789-00",
-    status: "REJECTED",
-    createdAt: "2024-01-14T18:00:00",
-    reason: "Saldo insuficiente",
-  },
-  {
-    id: "SAQ-004",
-    userId: "USR-321",
-    userName: "Ana Costa",
-    amount: 3500.0,
-    pixKey: "ana.costa@empresa.com",
-    status: "PROCESSING",
-    createdAt: "2024-01-15T08:00:00",
-  },
-  {
-    id: "SAQ-005",
-    userId: "USR-654",
-    userName: "Carlos Lima",
-    amount: 750.0,
-    pixKey: "21988887777",
-    status: "PENDING",
-    createdAt: "2024-01-15T11:00:00",
-  },
-];
+// Dados zerados para ambiente de produção
+const mockWithdrawals: Array<{
+  id: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  pixKey: string;
+  status: string;
+  createdAt: string;
+  approvedAt?: string;
+  reason?: string;
+}> = [];
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
   PENDING: { label: "Pendente", variant: "outline", icon: <Clock className="w-3 h-3" /> },
@@ -164,29 +126,29 @@ export default function SaquesPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Aprovados Hoje</CardDescription>
-            <CardTitle className="text-2xl">12</CardTitle>
+            <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Total: R$ 15.430,00
+              Total: R$ 0,00
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Rejeitados Hoje</CardDescription>
-            <CardTitle className="text-2xl">2</CardTitle>
+            <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Total: R$ 800,00
+              Total: R$ 0,00
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Tempo Médio</CardDescription>
-            <CardTitle className="text-2xl">15 min</CardTitle>
+            <CardTitle className="text-2xl">-- min</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">

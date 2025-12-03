@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { defaultExperience, defaultSettings } from "@/lib/settings/defaults";
+import { auth } from "@/lib/auth";
 
 // Arquivo de configurações (em produção seria no banco de dados)
 const SETTINGS_FILE = path.join(process.cwd(), "settings.json");
@@ -70,6 +71,15 @@ export async function GET() {
 // POST - Salvar configurações
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem salvar
+    const session = await auth();
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const settings = await request.json();
     
     const payload = mergeSettings(defaultSettings, withExperienceDefaults(settings));

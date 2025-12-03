@@ -42,55 +42,35 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Mock report data
+// Dados zerados - aguardando integração com banco de dados
 const summaryData = {
   revenue: {
-    current: 345678.90,
-    previous: 298456.78,
-    change: 15.8,
+    current: 0,
+    previous: 0,
+    change: 0,
   },
   deposits: {
-    current: 456789.00,
-    previous: 412345.00,
-    change: 10.8,
+    current: 0,
+    previous: 0,
+    change: 0,
   },
   withdrawals: {
-    current: 234567.00,
-    previous: 245678.00,
-    change: -4.5,
+    current: 0,
+    previous: 0,
+    change: 0,
   },
   users: {
-    current: 12456,
-    previous: 11234,
-    change: 10.9,
+    current: 0,
+    previous: 0,
+    change: 0,
   },
 };
 
-const dailyReport = [
-  { date: "28/11", deposits: 45230, withdrawals: 23450, ggr: 12340, users: 1234 },
-  { date: "27/11", deposits: 43120, withdrawals: 25670, ggr: 11230, users: 1189 },
-  { date: "26/11", deposits: 48900, withdrawals: 21340, ggr: 13450, users: 1302 },
-  { date: "25/11", deposits: 41230, withdrawals: 24560, ggr: 10890, users: 1156 },
-  { date: "24/11", deposits: 39870, withdrawals: 22340, ggr: 9870, users: 1098 },
-  { date: "23/11", deposits: 52340, withdrawals: 28900, ggr: 14230, users: 1423 },
-  { date: "22/11", deposits: 47890, withdrawals: 26780, ggr: 12890, users: 1287 },
-];
+const dailyReport: { date: string; deposits: number; withdrawals: number; ggr: number; users: number }[] = [];
 
-const topGames = [
-  { name: "Aviator", plays: 34567, revenue: 45678.90, users: 2340 },
-  { name: "Fortune Tiger", plays: 28934, revenue: 38456.78, users: 1890 },
-  { name: "Gates of Olympus", plays: 23456, revenue: 32345.67, users: 1567 },
-  { name: "Sweet Bonanza", plays: 19876, revenue: 28765.43, users: 1234 },
-  { name: "Mines", plays: 15678, revenue: 21234.56, users: 987 },
-];
+const topGames: { name: string; plays: number; revenue: number; users: number }[] = [];
 
-const userAcquisition = [
-  { source: "Orgânico", users: 4567, percentage: 36.6 },
-  { source: "Afiliados", users: 3456, percentage: 27.7 },
-  { source: "Social", users: 2345, percentage: 18.8 },
-  { source: "Google Ads", users: 1234, percentage: 9.9 },
-  { source: "Indicação", users: 854, percentage: 6.9 },
-];
+const userAcquisition: { source: string; users: number; percentage: number }[] = [];
 
 export default function RelatoriosPage() {
   const [period, setPeriod] = useState("7d");
@@ -382,8 +362,8 @@ export default function RelatoriosPage() {
                 <CardTitle className="text-sm font-medium">Novos Usuários</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">1,234</div>
-                <p className="text-xs text-green-600">+23% vs período anterior</p>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">-- vs período anterior</p>
               </CardContent>
             </Card>
             <Card>
@@ -391,8 +371,8 @@ export default function RelatoriosPage() {
                 <CardTitle className="text-sm font-medium">Taxa de Retenção</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">67.8%</div>
-                <p className="text-xs text-green-600">+2.3% vs período anterior</p>
+                <div className="text-2xl font-bold">0%</div>
+                <p className="text-xs text-muted-foreground">-- vs período anterior</p>
               </CardContent>
             </Card>
             <Card>
@@ -400,8 +380,8 @@ export default function RelatoriosPage() {
                 <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(245.67)}</div>
-                <p className="text-xs text-green-600">+8% vs período anterior</p>
+                <div className="text-2xl font-bold">{formatCurrency(0)}</div>
+                <p className="text-xs text-muted-foreground">-- vs período anterior</p>
               </CardContent>
             </Card>
           </div>
@@ -423,7 +403,7 @@ export default function RelatoriosPage() {
                       <span>Total Entradas</span>
                     </div>
                     <span className="font-bold text-green-600">
-                      {formatCurrency(456789.00)}
+                      {formatCurrency(0)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
@@ -432,7 +412,7 @@ export default function RelatoriosPage() {
                       <span>Total Saídas</span>
                     </div>
                     <span className="font-bold text-orange-600">
-                      {formatCurrency(234567.00)}
+                      {formatCurrency(0)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
@@ -441,7 +421,7 @@ export default function RelatoriosPage() {
                       <span>Saldo Líquido</span>
                     </div>
                     <span className="font-bold text-primary">
-                      {formatCurrency(222222.00)}
+                      {formatCurrency(0)}
                     </span>
                   </div>
                 </div>
@@ -457,19 +437,19 @@ export default function RelatoriosPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">GGR (Gross Gaming Revenue)</span>
-                    <span className="font-medium">{formatCurrency(89543.67)}</span>
+                    <span className="font-medium">{formatCurrency(0)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">NGR (Net Gaming Revenue)</span>
-                    <span className="font-medium">{formatCurrency(67234.45)}</span>
+                    <span className="font-medium">{formatCurrency(0)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Margem Bruta</span>
-                    <span className="font-medium">19.6%</span>
+                    <span className="font-medium">0%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">ROI Afiliados</span>
-                    <span className="font-medium">345%</span>
+                    <span className="font-medium">0%</span>
                   </div>
                 </div>
               </CardContent>

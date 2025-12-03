@@ -45,62 +45,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data
-const mockDeposits = [
-  {
-    id: "DEP-001",
-    userId: "USR-123",
-    userName: "João Silva",
-    amount: 100.0,
-    method: "PIX",
-    status: "COMPLETED",
-    createdAt: "2024-01-15T10:30:00",
-    completedAt: "2024-01-15T10:31:00",
-    txId: "E00000000202401151030ABCD1234",
-  },
-  {
-    id: "DEP-002",
-    userId: "USR-456",
-    userName: "Maria Santos",
-    amount: 500.0,
-    method: "PIX",
-    status: "PENDING",
-    createdAt: "2024-01-15T11:15:00",
-    txId: null,
-  },
-  {
-    id: "DEP-003",
-    userId: "USR-789",
-    userName: "Pedro Oliveira",
-    amount: 50.0,
-    method: "PIX",
-    status: "EXPIRED",
-    createdAt: "2024-01-14T18:00:00",
-    txId: null,
-  },
-  {
-    id: "DEP-004",
-    userId: "USR-321",
-    userName: "Ana Costa",
-    amount: 1000.0,
-    method: "PIX",
-    status: "COMPLETED",
-    createdAt: "2024-01-15T08:00:00",
-    completedAt: "2024-01-15T08:02:00",
-    txId: "E00000000202401150800EFGH5678",
-  },
-  {
-    id: "DEP-005",
-    userId: "USR-654",
-    userName: "Carlos Lima",
-    amount: 200.0,
-    method: "PIX",
-    status: "COMPLETED",
-    createdAt: "2024-01-15T07:00:00",
-    completedAt: "2024-01-15T07:01:00",
-    txId: "E00000000202401150700IJKL9012",
-  },
-];
+// Dados zerados para ambiente de produção
+const mockDeposits: Array<{
+  id: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  method: string;
+  status: string;
+  createdAt: string;
+  completedAt?: string;
+  txId: string | null;
+}> = [];
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
   PENDING: { label: "Aguardando", variant: "outline", icon: <Clock className="w-3 h-3" /> },
@@ -177,18 +133,18 @@ export default function DepositosPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Aguardando Pagamento</CardDescription>
-            <CardTitle className="text-2xl">3</CardTitle>
+            <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Total: R$ 1.250,00
+              Total: R$ 0,00
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Taxa de Conversão</CardDescription>
-            <CardTitle className="text-2xl">87%</CardTitle>
+            <CardTitle className="text-2xl">0%</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
@@ -199,7 +155,7 @@ export default function DepositosPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Ticket Médio</CardDescription>
-            <CardTitle className="text-2xl">R$ 185,00</CardTitle>
+            <CardTitle className="text-2xl">R$ 0,00</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">

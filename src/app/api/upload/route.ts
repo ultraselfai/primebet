@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadToR2, isValidImageType, isValidFileSize } from "@/lib/services/r2-storage";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticação - apenas admins podem fazer upload
+    const session = await auth();
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "games";

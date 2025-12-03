@@ -2,13 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
 import { SignJWT } from 'jose'
+import { auth } from '@/lib/auth'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
+// Função auxiliar para verificar se é admin
+async function requireAdmin() {
+  const session = await auth()
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return null
+  }
+  return session
+}
+
 // POST - Gerar token para impersonar usuário
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const adminSession = await requireAdmin()
+  if (!adminSession) {
+    return NextResponse.json(
+      { success: false, error: 'Não autorizado' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { id } = await params
 
@@ -36,7 +54,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       name: user.name,
       role: user.role,
       isImpersonation: true,
-      impersonatedBy: 'admin', // TODO: pegar ID do admin logado
+      impersonatedBy: adminSession.user.id, // Registrar ID do admin logado
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('4h')
@@ -86,6 +104,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
 // DELETE - Encerrar impersonação
 export async function DELETE() {
+  const session = await requireAdmin()
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: 'Não autorizado' },
+      { status: 401 }
+    )
+  }
+
   try {
     const cookieStore = await cookies()
     

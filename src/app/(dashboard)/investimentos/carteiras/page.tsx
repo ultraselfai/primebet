@@ -37,65 +37,21 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// Mock data
-const mockInvestments = [
-  {
-    id: "1",
-    userId: "user_1",
-    userName: "João Silva",
-    userEmail: "joao@email.com",
-    principal: 5000.00,
-    earnings: 450.00,
-    earningsAvailable: 150.00,
-    monthlyRate: 3,
-    startDate: "2024-06-15",
-    unlockDate: "2025-06-15",
-    daysRemaining: 199,
-    status: "active",
-  },
-  {
-    id: "2",
-    userId: "user_4",
-    userName: "Ana Costa",
-    userEmail: "ana@email.com",
-    principal: 15000.00,
-    earnings: 1350.00,
-    earningsAvailable: 450.00,
-    monthlyRate: 3,
-    startDate: "2024-05-01",
-    unlockDate: "2025-05-01",
-    daysRemaining: 154,
-    status: "active",
-  },
-  {
-    id: "3",
-    userId: "user_2",
-    userName: "Maria Santos",
-    userEmail: "maria@email.com",
-    principal: 2000.00,
-    earnings: 60.00,
-    earningsAvailable: 60.00,
-    monthlyRate: 3,
-    startDate: "2024-10-01",
-    unlockDate: "2025-10-01",
-    daysRemaining: 307,
-    status: "active",
-  },
-  {
-    id: "4",
-    userId: "user_7",
-    userName: "Roberto Lima",
-    userEmail: "roberto@email.com",
-    principal: 10000.00,
-    earnings: 3600.00,
-    earningsAvailable: 0,
-    monthlyRate: 3,
-    startDate: "2023-11-28",
-    unlockDate: "2024-11-28",
-    daysRemaining: 0,
-    status: "unlocked",
-  },
-];
+// Dados zerados para ambiente de produção
+const mockInvestments: Array<{
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  principal: number;
+  earnings: number;
+  earningsAvailable: number;
+  monthlyRate: number;
+  startDate: string;
+  unlockDate: string;
+  daysRemaining: number;
+  status: string;
+}> = [];
 
 export default function CarteirasInvestimentoPage() {
   const [searchQuery, setSearchQuery] = useState("");

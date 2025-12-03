@@ -1,13 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Decimal } from '@prisma/client/runtime/library'
+import { auth } from '@/lib/auth'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
+// Função auxiliar para verificar se é admin
+async function requireAdmin() {
+  const session = await auth()
+  if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+    return null
+  }
+  return session
+}
+
 // POST - Adicionar saldo ao usuário
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const session = await requireAdmin()
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: 'Não autorizado' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { id } = await params
     const body = await request.json()
