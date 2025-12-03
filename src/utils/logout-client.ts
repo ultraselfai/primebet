@@ -15,6 +15,8 @@ function buildTargetUrl(pathOrUrl: string) {
 }
 
 export async function logoutAndRedirect(pathOrUrl: string) {
+  const target = buildTargetUrl(pathOrUrl)
+
   try {
     const response = await fetch("/api/auth/logout", {
       method: "POST",
@@ -28,9 +30,15 @@ export async function logoutAndRedirect(pathOrUrl: string) {
     console.error("Erro ao chamar logout API:", error)
   }
 
-  const target = buildTargetUrl(pathOrUrl)
+  try {
+    await signOut({ redirect: false })
+  } catch (error) {
+    console.error("Erro ao chamar signOut do NextAuth:", error)
+  }
 
-  await signOut({
-    callbackUrl: target,
-  })
+  if (typeof window !== "undefined") {
+    window.location.href = target
+  }
+
+  return target
 }
