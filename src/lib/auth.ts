@@ -40,6 +40,8 @@ declare module "next-auth/jwt" {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: PrismaAdapter(prisma) as any,
+  // Confiar no host em produção (importante para múltiplos domínios)
+  trustHost: true,
   session: { 
     strategy: "jwt",
     // Sessão mais longa para evitar re-autenticações frequentes
