@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const isConsoleDomain = hostname.includes("console.");
   const isPublicDomain = hostname.includes(PUBLIC_DOMAIN) && !isConsoleDomain;
+  const secureCookie = request.nextUrl.protocol === "https:";
 
   // Ignorar arquivos estáticos
   if (
@@ -28,7 +29,8 @@ export async function middleware(request: NextRequest) {
   // Obter token JWT
   const token = await getToken({ 
     req: request,
-    secret: process.env.NEXTAUTH_SECRET 
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie,
   });
 
   // ========== ROTEAMENTO POR DOMÍNIO ==========
