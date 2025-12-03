@@ -5,9 +5,22 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { CommandSearch, SearchTrigger } from "@/components/command-search"
 import { ModeToggle } from "@/components/mode-toggle"
+import { Button } from "@/components/ui/button"
+import { ArrowRightFromLine } from "lucide-react"
+import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export function SiteHeader() {
   const [searchOpen, setSearchOpen] = React.useState(false)
+  const router = useRouter()
+
+  async function handleLogout() {
+    const result = await signOut({
+      redirect: false,
+      callbackUrl: "/admin/login",
+    })
+    router.push(result?.url ?? "/admin/login")
+  }
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -34,6 +47,15 @@ export function SiteHeader() {
             <SearchTrigger onClick={() => setSearchOpen(true)} />
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleLogout}
+            >
+              <ArrowRightFromLine className="size-4" />
+              Sair
+            </Button>
             <ModeToggle />
           </div>
         </div>

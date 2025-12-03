@@ -1,13 +1,12 @@
 "use client"
 
-import {
-  CreditCard,
-  EllipsisVertical,
-  LogOut,
-  BellDot,
-  CircleUser,
-} from "lucide-react"
+"use client"
+
+import { EllipsisVertical, LogOut, Settings2 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
+import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 import { Logo } from "@/components/logo"
 import {
@@ -25,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { usePublicSettings } from "@/contexts/public-settings-context"
 
 export function NavUser({
   user,
@@ -36,6 +36,22 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const { settings } = usePublicSettings()
+
+  const brandIconUrl =
+    settings?.experience?.media?.favicon?.url ||
+    settings?.experience?.media?.logo?.url
+  const brandName = settings?.experience?.identity?.siteName || "PrimeBet"
+
+  async function handleLogout() {
+    const result = await signOut({
+      redirect: false,
+      callbackUrl: "/admin/login",
+    })
+
+    router.push(result?.url ?? "/admin/login")
+  }
 
   return (
     <SidebarMenu>
@@ -46,8 +62,18 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg">
-                < Logo size={28} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-sidebar-accent">
+                {brandIconUrl ? (
+                  <Image
+                    src={brandIconUrl}
+                    alt={brandName}
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                  />
+                ) : (
+                  <Logo size={24} />
+                )}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -66,8 +92,18 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <div className="h-8 w-8 rounded-lg">
-                  < Logo size={28} />
+                <div className="h-8 w-8 rounded-lg overflow-hidden bg-sidebar-accent">
+                  {brandIconUrl ? (
+                    <Image
+                      src={brandIconUrl}
+                      alt={brandName}
+                      width={32}
+                      height={32}
+                      className="object-contain"
+                    />
+                  ) : (
+                    <Logo size={24} />
+                  )}
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -80,30 +116,16 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/account">
-                  <CircleUser />
-                  Account
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/billing">
-                  <CreditCard />
-                  Billing
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/notifications">
-                  <BellDot />
-                  Notifications
+                <Link href="/configuracoes">
+                  <Settings2 className="size-4" />
+                  Configurações
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/auth/sign-in">
-                <LogOut />
-                Log out
-              </Link>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <LogOut className="size-4" />
+              Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

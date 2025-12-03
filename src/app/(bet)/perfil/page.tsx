@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -45,6 +45,21 @@ export default function PerfilPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [pushEnabled, setPushEnabled] = useState(true);
+
+  const handleLogout = useCallback(async () => {
+    const callbackUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/?auth=login`
+      : "/?auth=login";
+
+    const result = await signOut({ redirect: false, callbackUrl });
+    const target = result?.url || callbackUrl;
+
+    if (typeof window !== "undefined") {
+      window.location.href = target;
+    } else {
+      router.push(target);
+    }
+  }, [router]);
 
   // Redirecionar se não estiver autenticado
   useEffect(() => {
@@ -317,7 +332,7 @@ export default function PerfilPage() {
         <Button 
           variant="ghost" 
           className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={handleLogout}
         >
           <LogOut className="w-5 h-5 mr-2" />
           Sair da Conta
