@@ -64,9 +64,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Login bem-sucedido - redireciona para o dashboard
-      router.push("/dashboard");
-      router.refresh();
+      // Login bem-sucedido - força navegação completa para garantir que cookies sejam lidos
+      window.location.href = "/dashboard";
     } catch (err) {
       setError("Erro ao fazer login. Tente novamente.");
       setIsLoading(false);

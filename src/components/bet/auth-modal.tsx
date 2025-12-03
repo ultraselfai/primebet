@@ -98,9 +98,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
         return;
       }
 
-      // Login bem-sucedido
-      onClose();
-      router.refresh();
+      // Login bem-sucedido - força reload completo para garantir que os cookies sejam lidos
+      window.location.reload();
     } catch (err) {
       setError("Erro ao fazer login. Tente novamente.");
       setIsLoading(false);
@@ -154,8 +153,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
         return;
       }
 
-      onClose();
-      router.refresh();
+      // Força reload completo para garantir que os cookies sejam lidos
+      window.location.reload();
     } catch (err) {
       setError("Erro ao criar conta. Tente novamente.");
       setIsLoading(false);

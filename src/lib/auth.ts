@@ -5,6 +5,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
 
+// Determinar se está em produção
+const isProduction = process.env.NODE_ENV === "production";
+// Domínio base para cookies (compartilhado entre primebet.space e console.primebet.space)
+const cookieDomain = isProduction ? ".primebet.space" : undefined;
+
 declare module "next-auth" {
   interface User {
     role: Role;
@@ -52,6 +57,39 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // JWT mais eficiente
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
+  // Configuração de cookies para funcionar em múltiplos subdomínios
+  cookies: {
+    sessionToken: {
+      name: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+        domain: cookieDomain,
+      },
+    },
+    callbackUrl: {
+      name: isProduction ? "__Secure-authjs.callback-url" : "authjs.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+        domain: cookieDomain,
+      },
+    },
+    csrfToken: {
+      name: isProduction ? "__Host-authjs.csrf-token" : "authjs.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProduction,
+        // __Host- cookies não podem ter domain definido
+      },
+    },
   },
   pages: {
     signIn: "/login",
