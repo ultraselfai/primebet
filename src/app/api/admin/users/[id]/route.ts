@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { auth } from '@/lib/auth'
+import { Role, UserStatus } from '@prisma/client'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -92,8 +93,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       email?: string
       phone?: string | null
       cpf?: string | null
-      role?: string
-      status?: string
+      role?: Role
+      status?: UserStatus
       passwordHash?: string
     } = {}
 
@@ -101,8 +102,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (email !== undefined) updateData.email = email
     if (phone !== undefined) updateData.phone = phone || null
     if (cpf !== undefined) updateData.cpf = cpf || null
-    if (role !== undefined) updateData.role = role
-    if (status !== undefined) updateData.status = status
+    if (role !== undefined) updateData.role = role as Role
+    if (status !== undefined) updateData.status = status as UserStatus
 
     // Se senha foi fornecida, fazer hash
     if (password && password.length >= 6) {

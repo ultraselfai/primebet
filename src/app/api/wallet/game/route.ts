@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
-
-// Cache simples em memória para evitar queries repetidas
-const userBalanceCache = new Map<string, { balance: number; timestamp: number }>();
-const CACHE_TTL = 5000; // 5 segundos
+import { getBalanceFromCache, setBalanceInCache, CACHE_TTL } from "@/lib/balance-cache";
 
 // Função OTIMIZADA para obter o ID do usuário
 async function getCurrentUserId(): Promise<string | null> {
@@ -46,7 +43,7 @@ export async function GET() {
     }
 
     // Verificar cache primeiro
-    const cached = userBalanceCache.get(userId);
+    const cached = getBalanceFromCache(userId);
     const now = Date.now();
     
     if (cached && (now - cached.timestamp) < CACHE_TTL) {
@@ -77,7 +74,7 @@ export async function GET() {
     }
     
     // Atualizar cache
-    userBalanceCache.set(userId, { balance, timestamp: now });
+    setBalanceInCache(userId, balance);
 
     return NextResponse.json({
       success: true,
@@ -87,15 +84,10 @@ export async function GET() {
         "Cache-Control": "private, max-age=5",
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Erro interno" },
       { status: 500 }
     );
   }
-}
-
-// Limpar cache quando saldo for atualizado (exportar para outras APIs usarem)
-export function invalidateBalanceCache(userId: string) {
-  userBalanceCache.delete(userId);
 }

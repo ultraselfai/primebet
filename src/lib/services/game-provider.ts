@@ -78,11 +78,12 @@ export async function getAccessToken(): Promise<string> {
   }
 
   // Atualiza cache
-  cachedToken = data.data.accessToken;
+  const token: string = data.data.accessToken;
+  cachedToken = token;
   tokenExpiresAt = new Date(Date.now() + (data.data.expiresIn * 1000) - 60000); // 1 min antes de expirar
 
   console.log('[GameProvider] Token obtido com sucesso');
-  return cachedToken;
+  return token;
 }
 
 /**

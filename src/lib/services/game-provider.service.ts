@@ -67,10 +67,11 @@ export async function getAccessToken(): Promise<string> {
     throw new Error(data.message || 'Falha na autenticação com Game Provider');
   }
 
-  cachedToken = data.data.accessToken;
+  const token: string = data.data.accessToken;
+  cachedToken = token;
   tokenExpiresAt = new Date(Date.now() + data.data.expiresIn * 1000);
 
-  return cachedToken;
+  return token;
 }
 
 export async function getProviderGames(): Promise<ProviderGame[]> {

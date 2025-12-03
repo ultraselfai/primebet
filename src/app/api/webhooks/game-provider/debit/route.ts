@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { invalidateBalanceCache } from "@/app/api/wallet/game/route";
+import { invalidateBalanceCache } from "@/lib/balance-cache";
 
 /**
  * Webhook de Débito (Aposta) - Ultraself Game Provider

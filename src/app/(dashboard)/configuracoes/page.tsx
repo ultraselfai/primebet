@@ -14,6 +14,10 @@ import {
   Database,
   Server,
   RefreshCw,
+  Key,
+  Eye,
+  EyeOff,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +53,7 @@ import { Separator } from "@/components/ui/separator";
 import { PasswordConfirmationModal } from "@/components/ui/password-confirmation-modal";
 import { usePasswordConfirmation } from "@/hooks/use-password-confirmation";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 // Mock settings
 const initialSettings = {
@@ -123,6 +128,19 @@ export default function ConfiguracoesPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const { isOpen, options, openConfirmation, closeConfirmation, confirm } = usePasswordConfirmation();
+
+  // Estados para alteração de senha
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   // Carregar configurações da API
   useEffect(() => {
@@ -200,6 +218,67 @@ export default function ConfiguracoesPage() {
         actionLabel: "Salvar",
       }
     );
+  };
+
+  const handleChangePassword = async () => {
+    // Validações
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("A nova senha deve ter pelo menos 8 caracteres");
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      toast.error("A nova senha deve ser diferente da atual");
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const res = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Senha alterada com sucesso! Você será redirecionado para o login.");
+        
+        // Limpar formulário
+        setPasswordForm({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+
+        // Aguardar 2 segundos e fazer logout
+        setTimeout(() => {
+          signOut({ callbackUrl: "/admin/login" });
+        }, 2000);
+      } else {
+        toast.error(data.error || "Erro ao alterar senha");
+      }
+    } catch (error) {
+      console.error("Erro ao alterar senha:", error);
+      toast.error("Erro ao alterar senha");
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   if (loading) {
@@ -762,6 +841,164 @@ export default function ConfiguracoesPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Card de Alteração de Senha */}
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Alterar Senha do Administrador
+              </CardTitle>
+              <CardDescription>
+                Altere sua senha de acesso ao painel. Após a alteração, você será desconectado.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Senha Atual</Label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.current ? "text" : "password"}
+                      placeholder="Digite sua senha atual"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          currentPassword: e.target.value,
+                        }))
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          current: !prev.current,
+                        }))
+                      }
+                    >
+                      {showPasswords.current ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Nova Senha</Label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.new ? "text" : "password"}
+                      placeholder="Digite a nova senha"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          newPassword: e.target.value,
+                        }))
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          new: !prev.new,
+                        }))
+                      }
+                    >
+                      {showPasswords.new ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo 8 caracteres
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirmar Nova Senha</Label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.confirm ? "text" : "password"}
+                      placeholder="Confirme a nova senha"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          confirmPassword: e.target.value,
+                        }))
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          confirm: !prev.confirm,
+                        }))
+                      }
+                    >
+                      {showPasswords.confirm ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {passwordForm.newPassword && passwordForm.confirmPassword && 
+                passwordForm.newPassword !== passwordForm.confirmPassword && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    As senhas não coincidem
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={
+                    changingPassword ||
+                    !passwordForm.currentPassword ||
+                    !passwordForm.newPassword ||
+                    !passwordForm.confirmPassword ||
+                    passwordForm.newPassword !== passwordForm.confirmPassword
+                  }
+                  variant="default"
+                >
+                  {changingPassword ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Alterando...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Alterar Senha e Sair
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Notifications Settings */}
