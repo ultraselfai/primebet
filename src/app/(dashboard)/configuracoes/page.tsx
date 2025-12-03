@@ -53,7 +53,7 @@ import { Separator } from "@/components/ui/separator";
 import { PasswordConfirmationModal } from "@/components/ui/password-confirmation-modal";
 import { usePasswordConfirmation } from "@/hooks/use-password-confirmation";
 import { toast } from "sonner";
-import { signOut } from "next-auth/react";
+import { logoutAndRedirect } from "@/utils/logout-client";
 
 // Mock settings
 const initialSettings = {
@@ -268,7 +268,7 @@ export default function ConfiguracoesPage() {
 
         // Aguardar 2 segundos e fazer logout
         setTimeout(() => {
-          signOut({ callbackUrl: "/admin/login" });
+          logoutAndRedirect("/admin/login");
         }, 2000);
       } else {
         toast.error(data.error || "Erro ao alterar senha");

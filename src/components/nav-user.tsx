@@ -5,8 +5,7 @@
 import { EllipsisVertical, LogOut, Settings2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { logoutAndRedirect } from "@/utils/logout-client"
 
 import { Logo } from "@/components/logo"
 import {
@@ -36,7 +35,6 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const router = useRouter()
   const { settings } = usePublicSettings()
 
   const brandIconUrl =
@@ -45,12 +43,7 @@ export function NavUser({
   const brandName = settings?.experience?.identity?.siteName || "PrimeBet"
 
   async function handleLogout() {
-    const result = await signOut({
-      redirect: false,
-      callbackUrl: "/admin/login",
-    })
-
-    router.push(result?.url ?? "/admin/login")
+    await logoutAndRedirect("/admin/login")
   }
 
   return (

@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { 
   ArrowLeft, User, Mail, Phone, Shield, Bell, LogOut, 
   ChevronRight, Settings, HelpCircle, FileText,
@@ -16,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useBetAuth } from "@/contexts/bet-auth-context";
+import { logoutAndRedirect } from "@/utils/logout-client";
 
 interface UserProfile {
   name: string;
@@ -47,19 +47,8 @@ export default function PerfilPage() {
   const [pushEnabled, setPushEnabled] = useState(true);
 
   const handleLogout = useCallback(async () => {
-    const callbackUrl = typeof window !== "undefined"
-      ? `${window.location.origin}/?auth=login`
-      : "/?auth=login";
-
-    const result = await signOut({ redirect: false, callbackUrl });
-    const target = result?.url || callbackUrl;
-
-    if (typeof window !== "undefined") {
-      window.location.href = target;
-    } else {
-      router.push(target);
-    }
-  }, [router]);
+    await logoutAndRedirect("/?auth=login")
+  }, []);
 
   // Redirecionar se não estiver autenticado
   useEffect(() => {
