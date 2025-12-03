@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// Domínios configurados
+const CONSOLE_DOMAIN = "console.primebet.space";
+const PUBLIC_DOMAIN = "primebet.space";
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const hostname = request.headers.get("host") || "";
 
   // Ignorar arquivos estáticos e API routes do NextAuth
   if (
@@ -12,6 +17,40 @@ export async function middleware(request: NextRequest) {
     pathname.includes(".")
   ) {
     return NextResponse.next();
+  }
+
+  // ========== ROTEAMENTO POR DOMÍNIO ==========
+  
+  // Se está no domínio CONSOLE (admin)
+  if (hostname.includes(CONSOLE_DOMAIN) || hostname.includes("console.")) {
+    // Bloquear acesso a rotas públicas da bet no console
+    const betRoutes = ["/", "/cassino", "/crash", "/slots", "/ao-vivo", "/carteira", "/depositar", "/sacar", "/perfil"];
+    const isBetRoute = betRoutes.includes(pathname) || 
+                       pathname.startsWith("/games/") ||
+                       pathname.startsWith("/provedor/");
+    
+    // Se está tentando acessar rota da bet no console, redireciona para dashboard
+    if (isBetRoute && pathname === "/") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    if (isBetRoute) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+  
+  // Se está no domínio PÚBLICO (bet)
+  if (hostname.includes(PUBLIC_DOMAIN) && !hostname.includes("console.")) {
+    // Bloquear acesso a rotas admin no domínio público
+    const adminRoutes = ["/dashboard", "/admin", "/usuarios", "/configuracoes", "/financeiro", 
+                         "/jogos", "/integracoes", "/aprovacoes", "/relatorios", "/gerenciar-promocoes",
+                         "/associados", "/investimentos", "/editor", "/banking"];
+    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+    
+    if (isAdminRoute) {
+      // Redireciona para o console correto
+      const consoleUrl = new URL(pathname, `https://${CONSOLE_DOMAIN}`);
+      return NextResponse.redirect(consoleUrl);
+    }
   }
 
   // Permitir preview do editor (iframe interno do admin)
