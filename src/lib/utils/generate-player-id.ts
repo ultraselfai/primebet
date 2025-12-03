@@ -1,4 +1,3 @@
-import { prisma as defaultPrisma } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
 
 /**
@@ -20,10 +19,11 @@ export function generatePlayerId(): string {
 
 /**
  * Gera um Player ID único garantindo que não existe no banco
- * @param prismaClient - Cliente Prisma opcional (usa o default se não fornecido)
+ * @param prismaClient - Cliente Prisma (obrigatório para evitar import estático)
  */
 export async function generateUniquePlayerId(prismaClient?: PrismaClient): Promise<string> {
-  const prisma = prismaClient || defaultPrisma;
+  // Import dinâmico para evitar problemas no build
+  const prisma = prismaClient || (await import("@/lib/prisma")).prisma;
   let playerId: string;
   let attempts = 0;
   const maxAttempts = 10;
