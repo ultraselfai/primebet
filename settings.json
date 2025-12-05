@@ -12,15 +12,15 @@
     "gameColumns": 2
   },
   "branding": {
-    "logoUrl": "https://images.ultraself.space/branding/logo/1764647040241-logo2.png",
-    "mobileBannerUrl": "https://images.ultraself.space/branding/banners/1764642259661-01JH5ZN60FYTJ6KH7VQ3089DA1.jpg"
+    "logoUrl": "https://images.ultraself.space/branding/logo/1764974831856-horiz-primebet.png",
+    "mobileBannerUrl": "https://images.ultraself.space/branding/banners/1764974908728-01JH5ZN60FYTJ6KH7VQ3089DA1__1_.jpg"
   },
   "experience": {
     "identity": {
       "siteName": "PrimeBet",
       "tagline": "Aposte e Invista",
       "footerText": "© 2024 PrimeBet. Todos os direitos reservados.",
-      "footerDescription": "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e  transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
+      "footerDescription": "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
       "supportEmail": "suporte@primebet.com",
       "whatsapp": "5511999999999",
       "telegramButtonLink": "",
@@ -43,19 +43,19 @@
       "favoriteIconColor": "#facc15",
       "loaderBackgroundColor": "#050f1f",
       "loaderSpinnerColor": "#00faff",
-      "navLabelColor": "#ffffff",
+      "navLabelColor": "#9ca3af",
       "navActiveLabelColor": "#00E0FF",
       "preset": "cyan"
     },
     "media": {
       "logo": {
-        "url": "https://images.ultraself.space/branding/logo/1764647040241-logo2.png",
+        "url": "https://images.ultraself.space/branding/logo/1764974831856-horiz-primebet.png",
         "alt": "Logotipo PrimeBet"
       },
       "favicon": {
-        "url": "https://images.ultraself.space/branding/favicon/1764644088978-simbol-primebet.png"
+        "url": "https://images.ultraself.space/branding/favicon/1764974757465-simbol-primebet.png"
       },
-      "loaderGifUrl": "https://images.ultraself.space/branding/loader/1764644302084-Design_sem_nome__3_.gif",
+      "loaderGifUrl": "https://images.ultraself.space/branding/loader/1764974864384-Design_sem_nome__3_.gif",
       "telegramButtonImageUrl": "",
       "banners": [
         {
@@ -64,30 +64,30 @@
           "subtitle": "Aposte no futuro",
           "ctaLabel": "Depositar agora",
           "ctaLink": "/depositar",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764642259661-01JH5ZN60FYTJ6KH7VQ3089DA1.jpg",
+          "imageUrl": "https://images.ultraself.space/branding/banners/1764974908728-01JH5ZN60FYTJ6KH7VQ3089DA1__1_.jpg",
           "active": true
         },
         {
-          "id": "aa8c7d1a-9dd7-426e-9d42-44ddcabcdb86",
+          "id": "760204de-f124-4233-aa5b-5ce05e58a8e6",
           "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764644542708-01JH5ZRCR7HMSPW3R4P0FWG6E3.jpg",
+          "imageUrl": "https://images.ultraself.space/branding/banners/1764974918178-01JH5ZRCR7HMSPW3R4P0FWG6E3.jpg",
           "active": true
         },
         {
-          "id": "f599284f-8754-4a20-8f22-ce2faa5c5a8b",
+          "id": "bdd8d3e2-4f8a-4b55-aed8-aad9bbd11565",
           "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764644553858-01JH5ZQT0HZHZFYGW95F0GJZT6.jpg",
+          "imageUrl": "https://images.ultraself.space/branding/banners/1764974928758-01JH5ZQT0HZHZFYGW95F0GJZT6.jpg",
           "active": true
         },
         {
-          "id": "867928a8-7dd3-4f9a-909b-4f6ea4b445e1",
+          "id": "cb23410b-fa03-47ac-90c5-5ecdefc01932",
           "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764644560660-01JH5ZPGRS2SQJ52ZD7A6XZ5SV.jpg",
+          "imageUrl": "https://images.ultraself.space/branding/banners/1764974936655-01JH5ZPGRS2SQJ52ZD7A6XZ5SV.jpg",
           "active": true
         }
       ],
       "icons": {
-        "trophyIconUrl": "https://images.ultraself.space/icons/1764684852470-trophy-prize-achievement-svgrepo-com.svg",
+        "trophyIconUrl": "https://images.ultraself.space/icons/1764974945450-trophy-prize-achievement-svgrepo-com.svg",
         "highlightIconUrl": "",
         "favoriteIconUrl": "",
         "balanceCoinIconUrl": "",
@@ -109,44 +109,37 @@
     "navigation": {
       "bottomNav": [
         {
-          "id": "wallet",
-          "label": "Carteira",
-          "icon": "wallet",
-          "href": "/carteira",
+          "id": "home",
+          "label": "Games",
+          "icon": "gamepad",
+          "href": "/",
           "enabled": true,
-          "isMandatory": true,
-          "requiresAuth": true,
-          "customIconUrl": "https://images.ultraself.space/nav-icons/1764682348532-menu_wallet_original.png",
-          "customActiveIconUrl": "https://images.ultraself.space/nav-icons/1764685914916-menu_wallet_select.png"
+          "isMandatory": true
         },
         {
           "id": "associate",
           "label": "Associado",
           "icon": "users",
           "href": "/associado",
-          "enabled": true,
-          "isMandatory": false,
-          "customIconUrl": "https://images.ultraself.space/nav-icons/1764682674408-menu_agent_original.png",
-          "customActiveIconUrl": "https://images.ultraself.space/nav-icons/1764686027000-menu_agent_select.png"
+          "enabled": false,
+          "isMandatory": false
         },
         {
-          "id": "home",
-          "label": "Games",
-          "icon": "gamepad",
-          "href": "/",
+          "id": "wallet",
+          "label": "Carteira",
+          "icon": "wallet",
+          "href": "/carteira",
           "enabled": true,
           "isMandatory": true,
-          "customIconUrl": "https://images.ultraself.space/nav-icons/1764679356568-games--2.png"
+          "requiresAuth": true
         },
         {
           "id": "promotions",
           "label": "Promoções",
-          "icon": "gift",
+          "icon": "sparkles",
           "href": "/promocoes",
-          "enabled": true,
-          "isMandatory": false,
-          "customIconUrl": "https://images.ultraself.space/nav-icons/1764682690087-menu_activity_original.png",
-          "customActiveIconUrl": "https://images.ultraself.space/nav-icons/1764686039476-menu_promo_select.png"
+          "enabled": false,
+          "isMandatory": false
         },
         {
           "id": "profile",
@@ -155,9 +148,7 @@
           "href": "/perfil",
           "enabled": true,
           "isMandatory": true,
-          "requiresAuth": true,
-          "customIconUrl": "https://images.ultraself.space/nav-icons/1764683096743-menu_personal_original.png",
-          "customActiveIconUrl": "https://images.ultraself.space/nav-icons/1764686049074-menu_personal_select.png"
+          "requiresAuth": true
         }
       ]
     }
