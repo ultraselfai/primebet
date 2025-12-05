@@ -1,0 +1,23 @@
+{
+	"servers": {
+		"Linear": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"mcp-remote",
+				"https://mcp.linear.app/mcp"
+			]
+		},
+		"Vibe Check": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@pv-bhat/vibe-check-mcp",
+				"start",
+				"--stdio"
+			]
+		}
+	},
+	"inputs": []
+}

@@ -103,7 +103,7 @@
       "showTelegramButton": true,
       "showSupport": true,
       "showPromoBar": true,
-      "enableInvestments": true,
+      "enableInvestments": false,
       "maintenanceMode": false
     },
     "navigation": {

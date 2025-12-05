@@ -1,11 +1,12 @@
 // ============================================
 // PrimeBet - Deposit Service
-// Lógica de depósito com Split Duplo
+// Lógica de depósito com Split Duplo (condicional)
 // ============================================
 
 import prisma from "@/lib/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { loadPublicSettings } from "@/lib/settings/load-public-settings";
 
 // Configurações
 const INVESTMENT_LOCK_MONTHS = 12;
@@ -89,10 +90,15 @@ export async function createDeposit(params: CreateDepositParams): Promise<Deposi
 
 /**
  * Confirma um depósito (chamado pelo webhook do gateway)
- * Aplica o Split Duplo: credita WalletGame + WalletInvest
+ * Aplica o Split Duplo apenas se enableInvestments estiver ativo
+ * Caso contrário, credita apenas WalletGame
  */
 export async function confirmDeposit(transactionId: string, gatewayRef?: string): Promise<boolean> {
   try {
+    // Buscar configurações para verificar se investimentos está habilitado
+    const settings = await loadPublicSettings();
+    const enableInvestments = settings?.experience?.features?.enableInvestments ?? true;
+    
     // Buscar transação
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
@@ -120,8 +126,9 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
     const userId = transaction.userId;
 
     // ============================================
-    // SPLIT DUPLO - Regra do PRD
-    // Depósito R$100 → R$100 WalletGame + R$100 WalletInvest
+    // SPLIT DUPLO - Regra do PRD (condicional)
+    // Se enableInvestments: R$100 → R$100 WalletGame + R$100 WalletInvest
+    // Se desabilitado: R$100 → R$100 WalletGame apenas
     // ============================================
 
     await prisma.$transaction(async (tx) => {
@@ -149,27 +156,31 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
         },
       });
 
-      // 3. Creditar Wallet Invest (ou criar se não existir)
-      // O capital fica travado por 12 meses
-      const lockUntilDate = new Date();
-      lockUntilDate.setMonth(lockUntilDate.getMonth() + INVESTMENT_LOCK_MONTHS);
+      // 3. Creditar Wallet Invest apenas se investimentos estiver habilitado
+      let lockUntilDate: Date | null = null;
+      
+      if (enableInvestments) {
+        // O capital fica travado por 12 meses
+        lockUntilDate = new Date();
+        lockUntilDate.setMonth(lockUntilDate.getMonth() + INVESTMENT_LOCK_MONTHS);
 
-      await tx.walletInvest.upsert({
-        where: { userId },
-        update: {
-          principal: {
-            increment: amount,
+        await tx.walletInvest.upsert({
+          where: { userId },
+          update: {
+            principal: {
+              increment: amount,
+            },
+            // Atualiza o lock se o novo depósito estende o período
+            lockedUntil: lockUntilDate,
           },
-          // Atualiza o lock se o novo depósito estende o período
-          lockedUntil: lockUntilDate,
-        },
-        create: {
-          userId,
-          principal: amount,
-          yields: new Decimal(0),
-          lockedUntil: lockUntilDate,
-        },
-      });
+          create: {
+            userId,
+            principal: amount,
+            yields: new Decimal(0),
+            lockedUntil: lockUntilDate,
+          },
+        });
+      }
 
       // 4. Log de auditoria
       await tx.auditLog.create({
@@ -181,14 +192,15 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
           newData: {
             amount: Number(amount),
             splitGame: Number(amount),
-            splitInvest: Number(amount),
-            lockedUntil: lockUntilDate.toISOString(),
+            splitInvest: enableInvestments ? Number(amount) : 0,
+            investmentsEnabled: enableInvestments,
+            lockedUntil: lockUntilDate?.toISOString() || null,
           },
         },
       });
     });
 
-    console.log(`Depósito confirmado: ${transactionId} - R$ ${amount}`);
+    console.log(`Depósito confirmado: ${transactionId} - R$ ${amount}${enableInvestments ? ' (Split Duplo)' : ' (Apenas Game)'}`);
     return true;
   } catch (error) {
     console.error("Erro ao confirmar depósito:", error);

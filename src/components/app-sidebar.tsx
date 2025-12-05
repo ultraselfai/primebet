@@ -169,6 +169,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Usar favicon ou logo das configurações
   const sidebarIconUrl = settings?.experience?.media?.favicon?.url || settings?.experience?.media?.logo?.url;
   const siteName = settings?.experience?.identity?.siteName || "PrimeBet";
+  
+  // Verificar se investimentos está habilitado
+  const enableInvestments = settings?.experience?.features?.enableInvestments ?? true;
+  
+  // Filtrar grupos de navegação baseado nas features habilitadas
+  const filteredNavGroups = React.useMemo(() => {
+    return data.navGroups.filter((group) => {
+      // Ocultar grupo "Investimentos" se a feature estiver desabilitada
+      if (group.label === "Investimentos" && !enableInvestments) {
+        return false;
+      }
+      return true;
+    });
+  }, [enableInvestments]);
 
   return (
     <Sidebar {...props}>
@@ -202,7 +216,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {data.navGroups.map((group) => (
+        {filteredNavGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
