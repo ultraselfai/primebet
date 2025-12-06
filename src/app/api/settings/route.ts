@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, writeFile } from "fs/promises";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 import { defaultExperience, defaultSettings } from "@/lib/settings/defaults";
 import { auth } from "@/lib/auth";
-
-// Arquivo de configurações (em produção seria no banco de dados)
-const SETTINGS_FILE = path.join(process.cwd(), "settings.json");
 
 const withExperienceDefaults = (settings: Record<string, unknown>) => {
   if (settings.experience) {
@@ -51,16 +47,29 @@ const mergeSettings = <T extends Record<string, unknown>>(defaults: T, overrides
   return result as T;
 };
 
-// GET - Buscar configurações
+// GET - Buscar configurações do banco de dados
 export async function GET() {
   try {
-    const data = await readFile(SETTINGS_FILE, "utf-8");
-    const parsed = withExperienceDefaults(JSON.parse(data));
+    const record = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
+
+    if (!record) {
+      // Se não existe no banco, retorna configurações padrão
+      return NextResponse.json({
+        ...defaultSettings,
+        experience: defaultExperience,
+      });
+    }
+
+    const parsed = withExperienceDefaults(record.data as Record<string, unknown>);
     const settings = mergeSettings(defaultSettings, parsed);
     settings.experience = mergeSettings(defaultExperience, parsed.experience as Record<string, unknown>);
+    
     return NextResponse.json(settings);
-  } catch {
-    // Se o arquivo não existe, retorna configurações padrão
+  } catch (error) {
+    console.error("[Settings API] Erro ao buscar:", error);
+    // Em caso de erro, retorna configurações padrão
     return NextResponse.json({
       ...defaultSettings,
       experience: defaultExperience,
@@ -68,7 +77,7 @@ export async function GET() {
   }
 }
 
-// POST - Salvar configurações
+// POST - Salvar configurações no banco de dados
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticação - apenas admins podem salvar
@@ -88,14 +97,19 @@ export async function POST(request: NextRequest) {
       (settings as Record<string, unknown>).experience as Record<string, unknown>
     );
 
-    await writeFile(SETTINGS_FILE, JSON.stringify(payload, null, 2));
+    // Upsert - cria se não existe, atualiza se existe
+    await prisma.siteSettings.upsert({
+      where: { id: "default" },
+      update: { data: payload },
+      create: { id: "default", data: payload },
+    });
     
     return NextResponse.json({ 
       success: true, 
       message: "Configurações salvas com sucesso" 
     });
   } catch (error) {
-    console.error("Erro ao salvar configurações:", error);
+    console.error("[Settings API] Erro ao salvar:", error);
     return NextResponse.json(
       { success: false, error: "Erro ao salvar configurações" },
       { status: 500 }

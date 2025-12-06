@@ -1,10 +1,7 @@
-import { readFile } from "fs/promises";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 
 import { defaultExperience, defaultSettings } from "./defaults";
 import type { PublicSettings } from "@/types/settings";
-
-const SETTINGS_FILE = path.join(process.cwd(), "settings.json");
 
 const defaultPublicSettings: PublicSettings = {
   gameColumns: defaultSettings.general.gameColumns,
@@ -18,47 +15,55 @@ const defaultPublicSettings: PublicSettings = {
 
 export async function loadPublicSettings(): Promise<PublicSettings> {
   try {
-    const data = await readFile(SETTINGS_FILE, "utf-8");
-    const settings = JSON.parse(data);
+    const record = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
+
+    if (!record) {
+      return defaultPublicSettings;
+    }
+
+    const settings = record.data as Record<string, unknown>;
 
     return {
-      gameColumns: settings.general?.gameColumns || defaultPublicSettings.gameColumns,
-      siteName: settings.general?.siteName || defaultPublicSettings.siteName,
+      gameColumns: (settings.general as Record<string, unknown>)?.gameColumns as number || defaultPublicSettings.gameColumns,
+      siteName: (settings.general as Record<string, unknown>)?.siteName as string || defaultPublicSettings.siteName,
       branding: {
-        logoUrl: settings.branding?.logoUrl || defaultPublicSettings.branding.logoUrl,
-        mobileBannerUrl: settings.branding?.mobileBannerUrl || defaultPublicSettings.branding.mobileBannerUrl,
+        logoUrl: (settings.branding as Record<string, unknown>)?.logoUrl as string || defaultPublicSettings.branding.logoUrl,
+        mobileBannerUrl: (settings.branding as Record<string, unknown>)?.mobileBannerUrl as string || defaultPublicSettings.branding.mobileBannerUrl,
       },
       experience: {
         identity: {
           ...defaultExperience.identity,
-          ...settings.experience?.identity,
+          ...((settings.experience as Record<string, unknown>)?.identity as Record<string, unknown>),
         },
         seo: {
           ...defaultExperience.seo,
-          ...settings.experience?.seo,
+          ...((settings.experience as Record<string, unknown>)?.seo as Record<string, unknown>),
         },
         theme: {
           ...defaultExperience.theme,
-          ...settings.experience?.theme,
+          ...((settings.experience as Record<string, unknown>)?.theme as Record<string, unknown>),
         },
         media: {
           ...defaultExperience.media,
-          ...settings.experience?.media,
-          loaderGifUrl: settings.experience?.media?.loaderGifUrl ?? defaultExperience.media.loaderGifUrl,
-          banners: settings.experience?.media?.banners || defaultExperience.media.banners,
+          ...((settings.experience as Record<string, unknown>)?.media as Record<string, unknown>),
+          loaderGifUrl: ((settings.experience as Record<string, unknown>)?.media as Record<string, unknown>)?.loaderGifUrl as string ?? defaultExperience.media.loaderGifUrl,
+          banners: ((settings.experience as Record<string, unknown>)?.media as Record<string, unknown>)?.banners as typeof defaultExperience.media.banners || defaultExperience.media.banners,
         },
         features: {
           ...defaultExperience.features,
-          ...settings.experience?.features,
+          ...((settings.experience as Record<string, unknown>)?.features as Record<string, unknown>),
         },
         navigation: {
-          bottomNav: settings.experience?.navigation?.bottomNav?.length
-            ? settings.experience.navigation.bottomNav
+          bottomNav: (((settings.experience as Record<string, unknown>)?.navigation as Record<string, unknown>)?.bottomNav as typeof defaultExperience.navigation.bottomNav)?.length
+            ? ((settings.experience as Record<string, unknown>)?.navigation as Record<string, unknown>)?.bottomNav as typeof defaultExperience.navigation.bottomNav
             : defaultExperience.navigation.bottomNav,
         },
       },
     } satisfies PublicSettings;
-  } catch {
+  } catch (error) {
+    console.error("[loadPublicSettings] Erro ao carregar:", error);
     return defaultPublicSettings;
   }
 }

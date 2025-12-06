@@ -637,3 +637,20 @@ model SupportConfig {
 
   @@map("support_config")
 }
+
+// ============================================
+// CONFIGURAÇÕES DO SITE (Editor Visual)
+// ============================================
+
+model SiteSettings {
+  id        String   @id @default("default")
+  
+  // JSON com todas as configurações do editor visual
+  // Inclui: cores, logos, banners, menu inferior, features, etc.
+  data      Json     @db.JsonB
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}

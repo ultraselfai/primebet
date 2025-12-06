@@ -477,7 +477,7 @@ function LivePreview({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Mapear tela para URL real (relativa)
+  // Mapear tela para URL real
   const screenUrls: Record<PreviewScreen, string> = {
     home: "/",
     carteira: "/carteira",
@@ -485,8 +485,27 @@ function LivePreview({
     perfil: "/perfil",
   };
 
-  // Usar URL relativa com timestamp para cache bust
-  const iframeUrl = `${screenUrls[screen]}?preview=true&t=${previewKey}`;
+  // Detectar base URL da bet
+  // Em produção: console.primebet.space precisa apontar para primebet.space
+  // Em desenvolvimento: usa a mesma origem (localhost:3000)
+  const getBetBaseUrl = () => {
+    if (typeof window === "undefined") return "";
+    
+    const hostname = window.location.hostname;
+    
+    // Se está no console.* em produção, aponta para o domínio principal
+    if (hostname.startsWith("console.")) {
+      const mainDomain = hostname.replace("console.", "");
+      return `${window.location.protocol}//${mainDomain}`;
+    }
+    
+    // Em desenvolvimento ou domínio único, usa URL relativa
+    return "";
+  };
+
+  // Usar URL completa com timestamp para cache bust
+  const baseUrl = getBetBaseUrl();
+  const iframeUrl = `${baseUrl}${screenUrls[screen]}?preview=true&t=${previewKey}`;
 
   const handleLoad = () => {
     setLoading(false);
