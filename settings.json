@@ -6,14 +6,14 @@
     "language": "pt-BR",
     "maintenanceMode": false,
     "allowRegistration": true,
-    "requireEmailVerification": true,
+    "requireEmailVerification": false,
     "requireKYC": false,
     "minAge": 18,
     "gameColumns": 2
   },
   "branding": {
-    "logoUrl": "https://images.ultraself.space/branding/logo/1764974831856-horiz-primebet.png",
-    "mobileBannerUrl": "https://images.ultraself.space/branding/banners/1764974908728-01JH5ZN60FYTJ6KH7VQ3089DA1__1_.jpg"
+    "logoUrl": "/logo-horizontal.png",
+    "mobileBannerUrl": "/banners/banner-default.jpg"
   },
   "experience": {
     "identity": {
@@ -49,13 +49,13 @@
     },
     "media": {
       "logo": {
-        "url": "https://images.ultraself.space/branding/logo/1764974831856-horiz-primebet.png",
+        "url": "/logo-horizontal.png",
         "alt": "Logotipo PrimeBet"
       },
       "favicon": {
-        "url": "https://images.ultraself.space/branding/favicon/1764974757465-simbol-primebet.png"
+        "url": "https://images.ultraself.space/branding/favicon/1764980448989-simbol-primebet.png"
       },
-      "loaderGifUrl": "https://images.ultraself.space/branding/loader/1764974864384-Design_sem_nome__3_.gif",
+      "loaderGifUrl": "",
       "telegramButtonImageUrl": "",
       "banners": [
         {
@@ -64,30 +64,12 @@
           "subtitle": "Aposte no futuro",
           "ctaLabel": "Depositar agora",
           "ctaLink": "/depositar",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764974908728-01JH5ZN60FYTJ6KH7VQ3089DA1__1_.jpg",
-          "active": true
-        },
-        {
-          "id": "760204de-f124-4233-aa5b-5ce05e58a8e6",
-          "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764974918178-01JH5ZRCR7HMSPW3R4P0FWG6E3.jpg",
-          "active": true
-        },
-        {
-          "id": "bdd8d3e2-4f8a-4b55-aed8-aad9bbd11565",
-          "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764974928758-01JH5ZQT0HZHZFYGW95F0GJZT6.jpg",
-          "active": true
-        },
-        {
-          "id": "cb23410b-fa03-47ac-90c5-5ecdefc01932",
-          "title": "",
-          "imageUrl": "https://images.ultraself.space/branding/banners/1764974936655-01JH5ZPGRS2SQJ52ZD7A6XZ5SV.jpg",
+          "imageUrl": "/banners/banner-default.jpg",
           "active": true
         }
       ],
       "icons": {
-        "trophyIconUrl": "https://images.ultraself.space/icons/1764974945450-trophy-prize-achievement-svgrepo-com.svg",
+        "trophyIconUrl": "",
         "highlightIconUrl": "",
         "favoriteIconUrl": "",
         "balanceCoinIconUrl": "",
@@ -103,7 +85,7 @@
       "showTelegramButton": true,
       "showSupport": true,
       "showPromoBar": true,
-      "enableInvestments": false,
+      "enableInvestments": true,
       "maintenanceMode": false
     },
     "navigation": {

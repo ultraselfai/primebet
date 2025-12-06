@@ -430,6 +430,7 @@ model Gateway {
 }
 
 enum GatewayType {
+  PODPAY
   FBSPAY
   PIXUP
   QUACK

@@ -6,7 +6,6 @@ import {
   Save,
   Shield,
   Bell,
-  Wallet,
   Percent,
   AlertTriangle,
   CheckCircle,
@@ -322,7 +321,7 @@ export default function ConfiguracoesPage() {
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
           <TabsTrigger value="general" className="gap-1">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
@@ -330,10 +329,6 @@ export default function ConfiguracoesPage() {
           <TabsTrigger value="fees" className="gap-1">
             <Percent className="h-4 w-4" />
             <span className="hidden sm:inline">Taxas</span>
-          </TabsTrigger>
-          <TabsTrigger value="investments" className="gap-1">
-            <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">Investimentos</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-1">
             <Shield className="h-4 w-4" />
@@ -578,143 +573,6 @@ export default function ConfiguracoesPage() {
                     value={settings.fees.maxWithdrawal}
                     onChange={(e) =>
                       updateSetting("fees", "maxWithdrawal", parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Investments Settings */}
-        <TabsContent value="investments" className="space-y-4 mt-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Configurações de Rendimento</CardTitle>
-                <CardDescription>
-                  Define como os investimentos rendem
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Módulo Ativo</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Habilitar investimentos
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.investments.enabled}
-                    onCheckedChange={(checked) =>
-                      updateSetting("investments", "enabled", checked)
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label>Taxa de Rendimento Mensal (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={settings.investments.yieldRate}
-                    onChange={(e) =>
-                      updateSetting("investments", "yieldRate", parseFloat(e.target.value))
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Rendimento ao mês aplicado sobre o saldo investido
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequência de Pagamento</Label>
-                  <Select
-                    value={settings.investments.yieldFrequency}
-                    onValueChange={(value) =>
-                      updateSetting("investments", "yieldFrequency", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Diário</SelectItem>
-                      <SelectItem value="weekly">Semanal</SelectItem>
-                      <SelectItem value="monthly">Mensal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Período de Lock (dias)</Label>
-                  <Input
-                    type="number"
-                    value={settings.investments.lockPeriod}
-                    onChange={(e) =>
-                      updateSetting("investments", "lockPeriod", parseInt(e.target.value))
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Tempo mínimo que o valor deve ficar investido
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Limites de Investimento</CardTitle>
-                <CardDescription>
-                  Define valores mínimos e máximos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Investimento Mínimo (R$)</Label>
-                  <Input
-                    type="number"
-                    value={settings.investments.minInvestment}
-                    onChange={(e) =>
-                      updateSetting("investments", "minInvestment", parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Investimento Máximo (R$)</Label>
-                  <Input
-                    type="number"
-                    value={settings.investments.maxInvestment}
-                    onChange={(e) =>
-                      updateSetting("investments", "maxInvestment", parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Auto Reinvestir</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Reinvestir rendimentos automaticamente
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.investments.autoReinvest}
-                    onCheckedChange={(checked) =>
-                      updateSetting("investments", "autoReinvest", checked)
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Juros Compostos</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Calcular juros sobre juros
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.investments.compoundYield}
-                    onCheckedChange={(checked) =>
-                      updateSetting("investments", "compoundYield", checked)
                     }
                   />
                 </div>

@@ -6,17 +6,13 @@ import {
   Gamepad2,
   Users,
   Plug,
-  Landmark,
   Palette,
   Settings,
-  TrendingUp,
   ArrowDownToLine,
   ArrowUpFromLine,
   History,
   ShieldCheck,
   BarChart3,
-  PiggyBank,
-  Wallet,
   FileCheck,
   Gift,
   UserPlus,
@@ -81,26 +77,6 @@ const data = {
       ],
     },
     {
-      label: "Investimentos",
-      items: [
-        {
-          title: "Carteiras",
-          url: "/investimentos/carteiras",
-          icon: PiggyBank,
-        },
-        {
-          title: "Rendimentos",
-          url: "/investimentos/rendimentos",
-          icon: TrendingUp,
-        },
-        {
-          title: "Liberações",
-          url: "/investimentos/liberacoes",
-          icon: Wallet,
-        },
-      ],
-    },
-    {
       label: "Operações",
       items: [
         {
@@ -134,11 +110,6 @@ const data = {
           icon: Plug,
         },
         {
-          title: "Banking (FBSPAY)",
-          url: "/banking",
-          icon: Landmark,
-        },
-        {
           title: "Promoções",
           url: "/gerenciar-promocoes",
           icon: Gift,
@@ -169,20 +140,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Usar favicon ou logo das configurações
   const sidebarIconUrl = settings?.experience?.media?.favicon?.url || settings?.experience?.media?.logo?.url;
   const siteName = settings?.experience?.identity?.siteName || "PrimeBet";
-  
-  // Verificar se investimentos está habilitado
-  const enableInvestments = settings?.experience?.features?.enableInvestments ?? true;
-  
-  // Filtrar grupos de navegação baseado nas features habilitadas
-  const filteredNavGroups = React.useMemo(() => {
-    return data.navGroups.filter((group) => {
-      // Ocultar grupo "Investimentos" se a feature estiver desabilitada
-      if (group.label === "Investimentos" && !enableInvestments) {
-        return false;
-      }
-      return true;
-    });
-  }, [enableInvestments]);
 
   return (
     <Sidebar {...props}>
@@ -216,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {filteredNavGroups.map((group) => (
+        {data.navGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>

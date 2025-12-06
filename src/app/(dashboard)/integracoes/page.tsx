@@ -72,10 +72,28 @@ export default function IntegracoesPage() {
   const [showApiSecret, setShowApiSecret] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
 
+  // Gateway state
+  const [gatewayConfigured, setGatewayConfigured] = useState(false);
+  const [gatewayLoading, setGatewayLoading] = useState(true);
+
   // Fetch Game Provider status on mount
   useEffect(() => {
     fetchGameProviderStatus();
+    fetchGatewayStatus();
   }, []);
+
+  const fetchGatewayStatus = async () => {
+    setGatewayLoading(true);
+    try {
+      const response = await fetch("/api/admin/gateway");
+      const data = await response.json();
+      setGatewayConfigured(data.configured && data.gateway?.active);
+    } catch {
+      setGatewayConfigured(false);
+    } finally {
+      setGatewayLoading(false);
+    }
+  };
 
   const fetchGameProviderStatus = async () => {
     setGameProviderLoading(true);
@@ -158,13 +176,17 @@ export default function IntegracoesPage() {
       errorMessage: gameProviderStatus?.error,
     },
     {
-      id: "fbspay",
-      name: "FBSPAY Banking",
-      description: "Gateway de pagamentos PIX - Depósitos e Saques",
+      id: "gateway",
+      name: "Gateway de Pagamentos",
+      description: "Gateway PIX para processamento de Depósitos e Saques (PodPay)",
       category: "Pagamentos",
       icon: <Wallet className="w-6 h-6" />,
-      status: "disconnected",
-      lastSync: null,
+      status: gatewayLoading 
+        ? "loading" 
+        : gatewayConfigured 
+          ? "connected" 
+          : "disconnected",
+      lastSync: gatewayConfigured ? new Date().toISOString() : null,
       stats: null,
     },
   ];
@@ -338,10 +360,20 @@ export default function IntegracoesPage() {
                       </Button>
                     </>
                   )}
-                  {integration.status === "disconnected" && integration.id === "fbspay" && (
-                    <Button size="sm" variant="secondary" disabled className="gap-2">
-                      <AlertTriangle className="w-4 h-4" />
-                      Em Manutenção
+                  {integration.status === "disconnected" && integration.id === "gateway" && (
+                    <Button size="sm" asChild>
+                      <a href="/integracoes/gateway">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Integrar Gateway
+                      </a>
+                    </Button>
+                  )}
+                  {integration.status === "connected" && integration.id === "gateway" && (
+                    <Button size="sm" variant="outline" asChild>
+                      <a href="/integracoes/gateway">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Configurar Gateway
+                      </a>
                     </Button>
                   )}
                   {integration.status === "disconnected" && integration.id !== "fbspay" && (

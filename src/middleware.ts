@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Proteger rotas admin no console
-    const adminRoutes = ["/dashboard", "/usuarios", "/configuracoes", "/financeiro", "/jogos", "/integracoes", "/aprovacoes", "/relatorios", "/gerenciar-promocoes", "/associados", "/investimentos", "/editor", "/banking"];
+    const adminRoutes = ["/dashboard", "/usuarios", "/configuracoes", "/financeiro", "/jogos", "/integracoes", "/aprovacoes", "/relatorios", "/gerenciar-promocoes", "/associados", "/editor"];
     if (adminRoutes.some(route => pathname.startsWith(route))) {
       if (!token) {
         return NextResponse.redirect(new URL("/admin/login", request.url));
@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
   // Se está no domínio PÚBLICO (bet)
   if (isPublicDomain) {
     // Bloquear acesso a rotas admin no domínio público
-    const adminRoutes = ["/dashboard", "/admin", "/usuarios", "/configuracoes", "/financeiro", "/jogos", "/integracoes", "/aprovacoes", "/relatorios", "/gerenciar-promocoes", "/associados", "/investimentos", "/editor", "/banking"];
+    const adminRoutes = ["/dashboard", "/admin", "/usuarios", "/configuracoes", "/financeiro", "/jogos", "/integracoes", "/aprovacoes", "/relatorios", "/gerenciar-promocoes", "/associados", "/editor"];
     
     if (adminRoutes.some(route => pathname.startsWith(route))) {
       // Redireciona para o console correto

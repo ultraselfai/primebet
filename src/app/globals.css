@@ -214,3 +214,71 @@ html {
 .pause-animation {
   animation-play-state: paused;
 }
+
+/* Sidebar Scrollbar - Custom Styles */
+[data-sidebar="content"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar {
+  width: 4px;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Hide scrollbar corner */
+[data-sidebar="content"]::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Cursor pointer para elementos interativos */
+button,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="menuitemcheckbox"],
+[role="menuitemradio"],
+[role="option"],
+[role="switch"],
+[role="checkbox"],
+[role="radio"],
+[role="combobox"],
+[role="listbox"],
+[role="slider"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+a[href],
+select,
+label[for],
+summary,
+[data-state],
+[data-radix-collection-item],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Input fields mantém cursor de texto */
+input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]),
+textarea {
+  cursor: text;
+}
+
+/* Elementos desabilitados */
+[disabled],
+[aria-disabled="true"],
+.disabled {
+  cursor: not-allowed;
+}
