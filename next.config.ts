@@ -52,12 +52,36 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Bloquear iframe em rotas normais (exceto preview)
-        source: '/((?!.*preview=true).*)',
+        // Permitir iframe do console.primebet.space para rotas com ?preview=true
+        // Isso é necessário para o Editor Visual funcionar
+        source: '/:path*',
+        has: [
+          {
+            type: 'query',
+            key: 'preview',
+            value: 'true',
+          },
+        ],
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://console.primebet.space https://primebet.space http://localhost:3000",
+          },
+        ],
+      },
+      {
+        // Bloquear iframe em rotas normais (sem preview)
+        source: '/((?!api).*)',
+        missing: [
+          {
+            type: 'query',
+            key: 'preview',
+          },
+        ],
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN', // Permite iframes do mesmo domínio
+            value: 'DENY',
           },
         ],
       },

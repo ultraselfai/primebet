@@ -9,6 +9,9 @@ import { DynamicFavicon } from "@/components/dynamic-favicon";
 import { inter } from "@/lib/fonts";
 import { loadPublicSettings } from "@/lib/settings/load-public-settings";
 
+// Força renderização dinâmica para sempre buscar settings atualizadas do banco
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "PrimeBet - Casa de Apostas & Investimentos",
   description: "Plataforma híbrida de apostas e investimentos com rendimentos automáticos",
