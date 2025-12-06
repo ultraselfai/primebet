@@ -2,16 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { GameCategory, Volatility } from '@prisma/client'
 import { auth } from '@/lib/auth'
-
-interface ProviderGame {
-  game_id: string
-  game_name: string
-  provider: string
-  category: string
-  thumbnail_url: string
-  rtp: number
-  volatility: string
-}
+import { getProviderGames } from '@/lib/services/game-provider.service'
 
 function mapCategory(cat: string): GameCategory {
   const map: Record<string, GameCategory> = {
@@ -19,12 +10,12 @@ function mapCategory(cat: string): GameCategory {
     'live': 'LIVE_CASINO', 'table': 'TABLE_GAMES', 'table_games': 'TABLE_GAMES', 'crash': 'CRASH',
     'instant': 'CRASH', 'sports': 'SPORTS', 'virtual': 'VIRTUAL', 'virtual_sports': 'VIRTUAL',
   }
-  return map[cat.toLowerCase()] || 'OTHER'
+  return map[cat?.toLowerCase()] || 'SLOTS'
 }
 
 function mapVolatility(vol: string): Volatility | null {
   const map: Record<string, Volatility> = { 'low': 'LOW', 'medium': 'MEDIUM', 'med': 'MEDIUM', 'high': 'HIGH' }
-  return map[vol.toLowerCase()] || null
+  return map[vol?.toLowerCase()] || null
 }
 
 function generateSlug(name: string): string {
@@ -39,37 +30,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const PROVIDER_URL = process.env.GAME_PROVIDER_URL
-    const API_KEY = process.env.GAME_PROVIDER_API_KEY
-    const SECRET = process.env.GAME_PROVIDER_SECRET
-    const OPERATOR_ID = process.env.GAME_PROVIDER_OPERATOR_ID
+    // Verificar se deve limpar jogos antigos
+    const body = await request.json().catch(() => ({}));
+    const clearOld = body?.clearOld === true;
 
-    if (!PROVIDER_URL || !API_KEY) {
+    // Usar o service do Game Provider para buscar jogos
+    let providerGames;
+    try {
+      providerGames = await getProviderGames();
+    } catch (err) {
+      console.error('Erro ao buscar jogos do provider:', err);
+      return NextResponse.json({ 
+        error: 'Falha ao conectar com o Game Provider', 
+        details: err instanceof Error ? err.message : 'Erro desconhecido'
+      }, { status: 500 });
+    }
+
+    if (!providerGames || providerGames.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'Provider not configured. Configure GAME_PROVIDER_URL and GAME_PROVIDER_API_KEY in .env',
-        synced: 0, total: 0,
+        message: 'Nenhum jogo encontrado no provedor',
+        synced: 0, 
+        total: 0,
       })
     }
 
-    const response = await fetch(`${PROVIDER_URL}/games/list`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-        'X-Operator-Id': OPERATOR_ID || '',
-      },
-      body: JSON.stringify({ secret: SECRET, operator_id: OPERATOR_ID }),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Provider API error:', errorText)
-      return NextResponse.json({ error: 'Failed to fetch from provider', details: errorText }, { status: response.status })
+    // Se clearOld, deletar jogos que não existem no provedor
+    const providerGameCodes = providerGames.map(g => g.gameCode);
+    let deleted = 0;
+    
+    if (clearOld) {
+      // Deletar jogos mockados (que não estão no provedor)
+      const result = await prisma.game.deleteMany({
+        where: {
+          providerId: {
+            notIn: providerGameCodes,
+          },
+          // Só deletar jogos que não têm apostas
+          bets: {
+            none: {},
+          },
+        },
+      });
+      deleted = result.count;
     }
-
-    const data = await response.json()
-    const providerGames: ProviderGame[] = data.games || data.data || []
 
     let synced = 0
     const errors: string[] = []
@@ -77,26 +81,41 @@ export async function POST(request: NextRequest) {
     for (const game of providerGames) {
       try {
         await prisma.game.upsert({
-          where: { providerId: game.game_id },
+          where: { providerId: game.gameCode },
           update: {
-            name: game.game_name, providerName: game.provider, thumbnail: game.thumbnail_url,
-            category: mapCategory(game.category), rtp: game.rtp, volatility: mapVolatility(game.volatility),
+            name: game.name, 
+            thumbnail: game.thumbnail,
+            rtp: game.rtp, 
+            volatility: mapVolatility(game.volatility),
+            active: game.isActive,
           },
           create: {
-            providerId: game.game_id, providerName: game.provider, name: game.game_name,
-            slug: generateSlug(game.game_name), thumbnail: game.thumbnail_url,
-            category: mapCategory(game.category), rtp: game.rtp, volatility: mapVolatility(game.volatility),
-            active: true, featured: false,
+            providerId: game.gameCode, 
+            providerName: 'Ultraself', 
+            name: game.name,
+            slug: generateSlug(game.name), 
+            thumbnail: game.thumbnail,
+            category: 'SLOTS', // O provider não retorna categoria, default para SLOTS
+            rtp: game.rtp, 
+            volatility: mapVolatility(game.volatility),
+            active: game.isActive, 
+            featured: false,
           },
         })
         synced++
       } catch (err) {
-        console.error(`Error syncing ${game.game_name}:`, err)
-        errors.push(game.game_name)
+        console.error(`Error syncing ${game.name}:`, err)
+        errors.push(game.name)
       }
     }
 
-    return NextResponse.json({ success: true, synced, total: providerGames.length, errors: errors.length > 0 ? errors : undefined })
+    return NextResponse.json({ 
+      success: true, 
+      synced, 
+      deleted,
+      total: providerGames.length, 
+      errors: errors.length > 0 ? errors : undefined 
+    })
   } catch (error) {
     console.error('Error syncing games:', error)
     return NextResponse.json({ error: 'Failed to sync games' }, { status: 500 })

@@ -6,11 +6,30 @@ export const defaultExperience = {
     footerDescription: "O grupo PRIMEBET é uma das mais renomadas empresas internacionais de operação de iGaming, oferecendo os principais jogos slots e uma modalidade exclusiva onde VOCÊ nunca perde e ao invés disso transforma seus depósitos em retorno financeiro. Estamos autorizados e regulamentados pelo governo de Curaçao, operando com a licença número Antillephone emitida para a 8048/JAZ. Passamos por todas as verificações.",
     supportEmail: "suporte@primebet.com",
     whatsapp: "5511999999999",
-    telegramButtonLink: "",
+    telegramButtonLink: "", // @deprecated
     socialLinks: {
       instagram: "https://instagram.com/primebet",
       telegram: "https://t.me/primebet",
       youtube: "",
+    },
+    helpCenter: {
+      whatsappLink: "",
+      whatsappImageUrl: "",
+      telegramLink: "",
+      telegramImageUrl: "",
+      emailSupport: "suporte@primebet.com",
+    },
+    floatingButtons: {
+      telegram: {
+        enabled: false,
+        link: "",
+        imageUrl: "",
+      },
+      whatsapp: {
+        enabled: false,
+        link: "",
+        imageUrl: "",
+      },
     },
   },
   seo: {
@@ -39,7 +58,6 @@ export const defaultExperience = {
       url: "/favicon.ico",
     },
     loaderGifUrl: "",
-    telegramButtonImageUrl: "",
     banners: [
       {
         id: "hero",
@@ -63,13 +81,6 @@ export const defaultExperience = {
       categoryLiveIconUrl: "",
       categoryFavoritesIconUrl: "",
     },
-  },
-  features: {
-    showTelegramButton: true,
-    showSupport: true,
-    showPromoBar: true,
-    enableInvestments: true,
-    maintenanceMode: false,
   },
   navigation: {
     bottomNav: [
@@ -131,6 +142,18 @@ export const defaultSettings = {
     requireKYC: false,
     minAge: 18,
     gameColumns: 3,
+  },
+  // Configurações Financeiras
+  financial: {
+    minDeposit: 10,
+    maxDeposit: 100000,
+    minWithdrawal: 20,
+    maxWithdrawal: 50000,
+    depositFee: 0,
+    withdrawalFee: 0,
+    // Se true, cobra taxa da transação do usuário (netPayout=true na PodPay)
+    // Se false, a plataforma absorve a taxa (netPayout=false - padrão para bets)
+    chargeTransactionFee: false,
   },
   branding: {
     logoUrl: "/logo-horizontal.png",

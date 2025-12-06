@@ -193,6 +193,20 @@ export default function JogosPage() {
 
   const syncGames = async () => {
     setSyncing(true);
+    try {
+      // Sincronizar jogos no banco de dados também
+      const syncRes = await fetch("/api/games/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clearOld: true }),
+      });
+      const syncData = await syncRes.json();
+      if (syncData.success) {
+        console.log(`Sincronização: ${syncData.synced} jogos sincronizados, ${syncData.deleted || 0} removidos`);
+      }
+    } catch (err) {
+      console.error("Erro ao sincronizar no banco:", err);
+    }
     await fetchGames();
     setSyncing(false);
   };

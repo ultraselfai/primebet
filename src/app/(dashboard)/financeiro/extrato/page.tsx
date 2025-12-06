@@ -158,7 +158,7 @@ export default function ExtratoPage() {
               <TrendingDown className="w-4 h-4 text-orange-500" />
               Volume Apostas
             </CardDescription>
-            <CardTitle className="text-2xl">{formatCurrency(totalBets)}</CardTitle>
+            <CardTitle className="text-2xl text-orange-600">{formatCurrency(totalBets)}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">Total apostado</p>
@@ -170,7 +170,7 @@ export default function ExtratoPage() {
               <TrendingUp className="w-4 h-4 text-purple-500" />
               Prêmios Pagos
             </CardDescription>
-            <CardTitle className="text-2xl">{formatCurrency(totalWins)}</CardTitle>
+            <CardTitle className="text-2xl text-purple-600">{formatCurrency(totalWins)}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">Ganhos dos jogadores</p>

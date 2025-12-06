@@ -308,8 +308,8 @@ export default function GamePage() {
             <p className="text-white font-semibold text-sm">{game.volatility || "Alta"}</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/5">
-            <p className="text-white/40 text-xs mb-1">Min Bet</p>
-            <p className="text-white font-semibold text-sm">R$ {game.minBet || "0.2"}</p>
+            <p className="text-white/40 text-xs mb-1">Min Spin</p>
+            <p className="text-white font-semibold text-sm">R$ 0.5</p>
           </div>
         </div>
 
@@ -318,7 +318,7 @@ export default function GamePage() {
           <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
             <Info className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-white/60">
-              Jogue com responsabilidade. Você pode definir limites de depósito nas configurações.
+              Jogue com responsabilidade.
             </p>
           </div>
         </div>

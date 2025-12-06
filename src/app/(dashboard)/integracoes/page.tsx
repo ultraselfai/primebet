@@ -350,14 +350,16 @@ export default function IntegracoesPage() {
                         />
                         {isSyncing ? "Sincronizando..." : "Sincronizar"}
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => openConfigModal(integration.id)}
-                      >
-                        <Settings className="w-4 h-4 mr-2" />
-                        Configurar
-                      </Button>
+                      {integration.id !== "gateway" && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openConfigModal(integration.id)}
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Configurar
+                        </Button>
+                      )}
                     </>
                   )}
                   {integration.status === "disconnected" && integration.id === "gateway" && (

@@ -8,7 +8,7 @@ import { invalidateBalanceCache } from "@/lib/balance-cache";
  * POST /api/webhooks/game-provider/credit
  * 
  * O provider chama este endpoint quando o jogador ganha.
- * Credita o valor no saldo do jogador.
+ * Credita o valor no saldo do jogador e atualiza a aposta como ganha.
  */
 
 interface CreditRequest {
@@ -56,14 +56,57 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Creditar no saldo (mesmo se amount = 0, para confirmar a rodada)
-    const updated = await prisma.walletGame.update({
-      where: { userId: playerId },
-      data: { balance: { increment: amount } },
-      select: { balance: true },
+    // Buscar a aposta ativa pelo roundId
+    let bet = null;
+    if (roundId) {
+      bet = await prisma.bet.findFirst({
+        where: {
+          userId: playerId,
+          roundId: roundId,
+          status: "ACTIVE",
+        },
+        select: { id: true, amount: true },
+      });
+    }
+
+    // Se não encontrou pelo roundId, pegar a última aposta ativa
+    if (!bet) {
+      bet = await prisma.bet.findFirst({
+        where: {
+          userId: playerId,
+          status: "ACTIVE",
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, amount: true },
+      });
+    }
+
+    // Executar crédito e atualizar aposta em transação
+    const result = await prisma.$transaction(async (tx) => {
+      // Creditar no saldo (mesmo se amount = 0, para confirmar a rodada)
+      const updated = await tx.walletGame.update({
+        where: { userId: playerId },
+        data: { balance: { increment: amount } },
+        select: { balance: true },
+      });
+
+      // Atualizar aposta se encontrada
+      if (bet) {
+        const won = amount > 0;
+        await tx.bet.update({
+          where: { id: bet.id },
+          data: {
+            status: won ? "WON" : "LOST",
+            result: amount,
+            settledAt: new Date(),
+          },
+        });
+      }
+
+      return updated;
     });
 
-    const newBalance = Number(updated.balance);
+    const newBalance = Number(result.balance);
     invalidateBalanceCache(playerId);
 
     // Log em desenvolvimento

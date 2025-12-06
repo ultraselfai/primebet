@@ -41,7 +41,7 @@ interface BetAuthContextType {
   // Saldo
   balance: number;
   balanceLoading: boolean;
-  refreshBalance: () => Promise<void>;
+  refreshBalance: (forceRefresh?: boolean) => Promise<void>;
   
   // Impersonation
   isImpersonating: boolean;

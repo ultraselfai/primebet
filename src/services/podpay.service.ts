@@ -31,6 +31,8 @@ interface CreateTransactionParams {
   postbackUrl?: string;
   externalRef?: string;
   metadata?: string;
+  // Se true, cobra taxa do usuário. Se false (padrão), plataforma absorve a taxa
+  netPayout?: boolean;
 }
 
 interface CreateTransferParams {
@@ -171,8 +173,11 @@ async function podpayRequest<T>(
     headers["x-withdraw-key"] = credentials.withdrawKey;
   }
 
+  const url = `${PODPAY_API_URL}${endpoint}`;
+  console.log(`[PodPay] ${method} ${url}`);
+
   try {
-    const response = await fetch(`${PODPAY_API_URL}${endpoint}`, {
+    const response = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
@@ -182,10 +187,12 @@ async function podpayRequest<T>(
 
     if (!response.ok) {
       const error = data as PodPayError;
-      console.error("[PodPay] Erro na requisição:", error);
+      console.error("[PodPay] Erro na requisição:", JSON.stringify(data, null, 2));
+      console.error("[PodPay] Status HTTP:", response.status);
       return { success: false, error: error.message || "Erro na API do PodPay" };
     }
 
+    console.log("[PodPay] Resposta OK:", response.status);
     return { success: true, data: data as T };
   } catch (error) {
     console.error("[PodPay] Erro de conexão:", error);
@@ -199,31 +206,68 @@ async function podpayRequest<T>(
 
 /**
  * Cria uma transação PIX para depósito
+ * Seguindo documentação: https://linear.app/decodeink/project/documentacao-api-podpay
  */
 export async function createPixDeposit(params: CreateTransactionParams): Promise<
   { success: true; transaction: PodPayTransaction } | { success: false; error: string }
 > {
+  // Gerar CPF fictício se não fornecido (11 dígitos)
+  const cpfNumber = params.customer.document?.number || "00011122233";
+  
+  // Gerar telefone fictício se não fornecido
+  const phoneNumber = params.customer.phone || "11999999999";
+
+  // Montar payload seguindo EXATAMENTE o exemplo da documentação
+  const payload = {
+    amount: params.amount,
+    paymentMethod: "pix",
+    postbackUrl: params.postbackUrl || undefined,
+    externalRef: params.externalRef || undefined,
+    metadata: params.metadata || undefined,
+    items: [
+      {
+        title: "Depósito via PIX",
+        quantity: 1,
+        tangible: true,
+        unitPrice: params.amount,
+        externalRef: params.externalRef || "deposit-001",
+      },
+    ],
+    customer: {
+      name: params.customer.name,
+      email: params.customer.email,
+      phone: phoneNumber,
+      birthdate: "1990-01-01",
+      externalRef: params.externalRef || null,
+      document: {
+        type: "cpf",
+        number: cpfNumber,
+      },
+      address: {
+        street: "Rua Exemplo",
+        streetNumber: "100",
+        complement: "",
+        zipCode: "01310100",
+        neighborhood: "Centro",
+        city: "São Paulo",
+        state: "SP",
+        country: "BR",
+      },
+    },
+  };
+
+  console.log("[PodPay] Criando transação PIX com payload:", JSON.stringify(payload, null, 2));
+
   const result = await podpayRequest<PodPayTransaction>("/transactions", {
     method: "POST",
-    body: {
-      amount: params.amount,
-      paymentMethod: "pix",
-      customer: {
-        name: params.customer.name,
-        email: params.customer.email,
-        phone: params.customer.phone,
-        document: params.customer.document,
-      },
-      postbackUrl: params.postbackUrl,
-      externalRef: params.externalRef,
-      metadata: params.metadata,
-    },
+    body: payload,
   });
 
   if (!result.success) {
     return result;
   }
 
+  console.log("[PodPay] Transação criada com sucesso:", result.data.id);
   return { success: true, transaction: result.data };
 }
 

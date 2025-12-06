@@ -17,7 +17,6 @@ import {
   Plus,
   RefreshCw,
   Save,
-  Settings2,
   Trash2,
   Type,
   Wallet,
@@ -245,6 +244,20 @@ const ensureExperience = (incoming?: Partial<ExperienceSettings>): ExperienceSet
       ...defaultExperience.identity.socialLinks,
       ...(incoming?.identity?.socialLinks ?? {}),
     },
+    helpCenter: {
+      ...defaultExperience.identity.helpCenter,
+      ...(incoming?.identity?.helpCenter ?? {}),
+    },
+    floatingButtons: {
+      telegram: {
+        ...defaultExperience.identity.floatingButtons.telegram,
+        ...(incoming?.identity?.floatingButtons?.telegram ?? {}),
+      },
+      whatsapp: {
+        ...defaultExperience.identity.floatingButtons.whatsapp,
+        ...(incoming?.identity?.floatingButtons?.whatsapp ?? {}),
+      },
+    },
   },
   seo: {
     ...defaultExperience.seo,
@@ -264,7 +277,6 @@ const ensureExperience = (incoming?: Partial<ExperienceSettings>): ExperienceSet
       ...(incoming?.media?.favicon ?? {}),
     },
     loaderGifUrl: incoming?.media?.loaderGifUrl ?? defaultExperience.media.loaderGifUrl,
-    telegramButtonImageUrl: incoming?.media?.telegramButtonImageUrl ?? defaultExperience.media.telegramButtonImageUrl,
     banners:
       incoming?.media?.banners?.length
         ? incoming.media.banners.map((banner, index) => ({
@@ -277,10 +289,6 @@ const ensureExperience = (incoming?: Partial<ExperienceSettings>): ExperienceSet
       ...defaultExperience.media.icons,
       ...(incoming?.media?.icons ?? {}),
     },
-  },
-  features: {
-    ...defaultExperience.features,
-    ...incoming?.features,
   },
   navigation: {
     bottomNav: ensureBottomNav(incoming?.navigation?.bottomNav),
@@ -581,8 +589,11 @@ export default function EditorPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [uploadingLoaderGif, setUploadingLoaderGif] = useState(false);
-  const [uploadingTelegramButton, setUploadingTelegramButton] = useState(false);
   const [uploadingBannerId, setUploadingBannerId] = useState<string | null>(null);
+  const [uploadingHelpCenterWhatsapp, setUploadingHelpCenterWhatsapp] = useState(false);
+  const [uploadingHelpCenterTelegram, setUploadingHelpCenterTelegram] = useState(false);
+  const [uploadingFloatingTelegram, setUploadingFloatingTelegram] = useState(false);
+  const [uploadingFloatingWhatsapp, setUploadingFloatingWhatsapp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const { refresh: refreshPublicSettings, updateCache } = usePublicSettings();
@@ -793,16 +804,6 @@ export default function EditorPage() {
     }));
   };
 
-  const handleFeatureToggle = (key: keyof ExperienceSettings["features"], value: boolean) => {
-    updateExperience((prev) => ({
-      ...prev,
-      features: {
-        ...prev.features,
-        [key]: value,
-      },
-    }));
-  };
-
   const handleBottomNavItemChange = (itemId: string, changes: Partial<BottomNavItem>) => {
     updateExperience((prev) => ({
       ...prev,
@@ -991,23 +992,56 @@ export default function EditorPage() {
     }
   };
 
-  const handleTelegramButtonUpload = async (file: File | null) => {
+  // Upload de imagens para a Central de Ajuda
+  const handleHelpCenterImageUpload = async (type: "whatsapp" | "telegram", file: File | null) => {
     if (!file) return;
+    const setUploading = type === "whatsapp" ? setUploadingHelpCenterWhatsapp : setUploadingHelpCenterTelegram;
     try {
-      setUploadingTelegramButton(true);
-      const url = await uploadAsset(file, "branding/telegram-button");
+      setUploading(true);
+      const url = await uploadAsset(file, `help-center/${type}`);
       updateExperience((prev) => ({
         ...prev,
-        media: {
-          ...prev.media,
-          telegramButtonImageUrl: url,
+        identity: {
+          ...prev.identity,
+          helpCenter: {
+            ...prev.identity.helpCenter,
+            [type === "whatsapp" ? "whatsappImageUrl" : "telegramImageUrl"]: url,
+          },
         },
       }));
-      toast.success("Botão do Telegram atualizado");
+      toast.success(`Card de ${type === "whatsapp" ? "WhatsApp" : "Telegram"} atualizado`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro no upload do botão");
+      toast.error(error instanceof Error ? error.message : "Erro no upload");
     } finally {
-      setUploadingTelegramButton(false);
+      setUploading(false);
+    }
+  };
+
+  // Upload de imagens para Botões Flutuantes
+  const handleFloatingButtonUpload = async (type: "telegram" | "whatsapp", file: File | null) => {
+    if (!file) return;
+    const setUploading = type === "telegram" ? setUploadingFloatingTelegram : setUploadingFloatingWhatsapp;
+    try {
+      setUploading(true);
+      const url = await uploadAsset(file, `floating-buttons/${type}`);
+      updateExperience((prev) => ({
+        ...prev,
+        identity: {
+          ...prev.identity,
+          floatingButtons: {
+            ...prev.identity.floatingButtons,
+            [type]: {
+              ...prev.identity.floatingButtons[type],
+              imageUrl: url,
+            },
+          },
+        },
+      }));
+      toast.success(`Botão flutuante de ${type === "telegram" ? "Telegram" : "WhatsApp"} atualizado`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro no upload");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -1183,10 +1217,6 @@ export default function EditorPage() {
                 <TabsTrigger value="push" className="gap-2">
                   <Bell className="h-4 w-4" />
                   Push
-                </TabsTrigger>
-                <TabsTrigger value="features" className="gap-2">
-                  <Settings2 className="h-4 w-4" />
-                  Features
                 </TabsTrigger>
               </TabsList>
 
@@ -2193,33 +2223,10 @@ export default function EditorPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Contato & Suporte</CardTitle>
-                    <CardDescription>Informações exibidas para o jogador</CardDescription>
+                    <CardTitle className="text-base">Redes Sociais</CardTitle>
+                    <CardDescription>Links para as redes sociais do site</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label>Email de suporte</Label>
-                        <Input type="email" value={experience.identity.supportEmail} onChange={(event) => handleIdentityChange("supportEmail", event.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>WhatsApp</Label>
-                        <Input value={experience.identity.whatsapp} onChange={(event) => handleIdentityChange("whatsapp", event.target.value)} placeholder="5521999999999" />
-                      </div>
-                        {experience.features.showTelegramButton && (
-                          <div className="space-y-2 md:col-span-2">
-                            <Label>Link do botão flutuante (Telegram)</Label>
-                            <Input
-                              value={experience.identity.telegramButtonLink || ""}
-                              onChange={(event) => handleIdentityChange("telegramButtonLink", event.target.value)}
-                              placeholder="https://t.me/seu-suporte"
-                            />
-                            <p className="text-xs text-muted-foreground">Informe a URL que abrirá ao clicar no botão flutuante</p>
-                          </div>
-                        )}
-                    </div>
-                    <Separator />
-                    <p className="text-sm font-medium">Redes sociais</p>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label>Instagram</Label>
@@ -2238,6 +2245,343 @@ export default function EditorPage() {
                         <Input value={experience.identity.socialLinks.twitter || ""} onChange={(event) => handleSocialLinkChange("twitter", event.target.value)} placeholder="https://x.com/..." />
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Central de Ajuda - cards na página /ajuda */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Central de Ajuda</CardTitle>
+                    <CardDescription>Configure os cards exibidos na página /ajuda com links e imagens personalizadas</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* WhatsApp Card */}
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Send className="h-4 w-4 text-emerald-500" />
+                          </div>
+                          <span className="font-medium">Card WhatsApp</span>
+                        </div>
+                        {experience.identity.helpCenter?.whatsappImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => updateExperience((prev) => ({
+                              ...prev,
+                              identity: { ...prev.identity, helpCenter: { ...prev.identity.helpCenter, whatsappImageUrl: "" } }
+                            }))}
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            Remover imagem
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Link do WhatsApp</Label>
+                        <Input 
+                          value={experience.identity.helpCenter?.whatsappLink || ""} 
+                          onChange={(e) => updateExperience((prev) => ({
+                            ...prev,
+                            identity: {
+                              ...prev.identity,
+                              helpCenter: { ...prev.identity.helpCenter, whatsappLink: e.target.value }
+                            }
+                          }))}
+                          placeholder="https://wa.me/5521999999999"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Imagem do card</Label>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.identity.helpCenter?.whatsappImageUrl ? (
+                              <img src={experience.identity.helpCenter.whatsappImageUrl} alt="WhatsApp" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Send className="h-6 w-6 text-emerald-500" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input
+                              type="file"
+                              accept="image/png,image/svg+xml,image/webp,image/jpeg,image/gif"
+                              onChange={(e) => handleHelpCenterImageUpload("whatsapp", e.target.files?.[0] ?? null)}
+                              disabled={uploadingHelpCenterWhatsapp}
+                              className="flex-1"
+                            />
+                            {uploadingHelpCenterWhatsapp && <Loader2 className="h-4 w-4 animate-spin" />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Telegram Card */}
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Send className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <span className="font-medium">Card Telegram</span>
+                        </div>
+                        {experience.identity.helpCenter?.telegramImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => updateExperience((prev) => ({
+                              ...prev,
+                              identity: { ...prev.identity, helpCenter: { ...prev.identity.helpCenter, telegramImageUrl: "" } }
+                            }))}
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            Remover imagem
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Link do Telegram</Label>
+                        <Input 
+                          value={experience.identity.helpCenter?.telegramLink || ""} 
+                          onChange={(e) => updateExperience((prev) => ({
+                            ...prev,
+                            identity: {
+                              ...prev.identity,
+                              helpCenter: { ...prev.identity.helpCenter, telegramLink: e.target.value }
+                            }
+                          }))}
+                          placeholder="https://t.me/seu-suporte"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Imagem do card</Label>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-zinc-900">
+                            {experience.identity.helpCenter?.telegramImageUrl ? (
+                              <img src={experience.identity.helpCenter.telegramImageUrl} alt="Telegram" className="h-8 w-8 object-contain" />
+                            ) : (
+                              <Send className="h-6 w-6 text-blue-500" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input
+                              type="file"
+                              accept="image/png,image/svg+xml,image/webp,image/jpeg,image/gif"
+                              onChange={(e) => handleHelpCenterImageUpload("telegram", e.target.files?.[0] ?? null)}
+                              disabled={uploadingHelpCenterTelegram}
+                              className="flex-1"
+                            />
+                            {uploadingHelpCenterTelegram && <Loader2 className="h-4 w-4 animate-spin" />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email Suporte */}
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                          <Send className="h-4 w-4 text-orange-500" />
+                        </div>
+                        <span className="font-medium">Email de Suporte</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input 
+                          type="email"
+                          value={experience.identity.helpCenter?.emailSupport || experience.identity.supportEmail || ""} 
+                          onChange={(e) => updateExperience((prev) => ({
+                            ...prev,
+                            identity: {
+                              ...prev.identity,
+                              helpCenter: { ...prev.identity.helpCenter, emailSupport: e.target.value }
+                            }
+                          }))}
+                          placeholder="suporte@primebet.com"
+                        />
+                        <p className="text-xs text-muted-foreground">Ao clicar, abrirá o cliente de email do usuário</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Botões Flutuantes */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Botões Flutuantes</CardTitle>
+                    <CardDescription>Botões fixos na tela que direcionam para atendimento. Podem ser GIF, PNG ou SVG.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Telegram Flutuante */}
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Send className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <span className="font-medium">Telegram</span>
+                        </div>
+                        <Switch
+                          checked={experience.identity.floatingButtons?.telegram?.enabled ?? false}
+                          onCheckedChange={(checked) => updateExperience((prev) => ({
+                            ...prev,
+                            identity: {
+                              ...prev.identity,
+                              floatingButtons: {
+                                ...prev.identity.floatingButtons,
+                                telegram: { ...prev.identity.floatingButtons.telegram, enabled: checked }
+                              }
+                            }
+                          }))}
+                        />
+                      </div>
+                      {experience.identity.floatingButtons?.telegram?.enabled && (
+                        <>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>Link do Telegram</Label>
+                              <Input 
+                                value={experience.identity.floatingButtons.telegram.link || ""} 
+                                onChange={(e) => updateExperience((prev) => ({
+                                  ...prev,
+                                  identity: {
+                                    ...prev.identity,
+                                    floatingButtons: {
+                                      ...prev.identity.floatingButtons,
+                                      telegram: { ...prev.identity.floatingButtons.telegram, link: e.target.value }
+                                    }
+                                  }
+                                }))}
+                                placeholder="https://t.me/seu-suporte"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Imagem do botão</Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/png,image/svg+xml,image/webp,image/jpeg,image/gif"
+                                  onChange={(e) => handleFloatingButtonUpload("telegram", e.target.files?.[0] ?? null)}
+                                  disabled={uploadingFloatingTelegram}
+                                  className="flex-1"
+                                />
+                                {uploadingFloatingTelegram && <Loader2 className="h-4 w-4 animate-spin" />}
+                              </div>
+                            </div>
+                          </div>
+                          {experience.identity.floatingButtons.telegram.imageUrl && (
+                            <div className="flex items-center gap-4">
+                              <div className="h-16 w-16 rounded-lg border bg-zinc-900 p-2">
+                                <img src={experience.identity.floatingButtons.telegram.imageUrl} alt="Botão Telegram" className="h-full w-full object-contain" />
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  identity: {
+                                    ...prev.identity,
+                                    floatingButtons: {
+                                      ...prev.identity.floatingButtons,
+                                      telegram: { ...prev.identity.floatingButtons.telegram, imageUrl: "" }
+                                    }
+                                  }
+                                }))}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remover
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* WhatsApp Flutuante */}
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Send className="h-4 w-4 text-emerald-500" />
+                          </div>
+                          <span className="font-medium">WhatsApp</span>
+                        </div>
+                        <Switch
+                          checked={experience.identity.floatingButtons?.whatsapp?.enabled ?? false}
+                          onCheckedChange={(checked) => updateExperience((prev) => ({
+                            ...prev,
+                            identity: {
+                              ...prev.identity,
+                              floatingButtons: {
+                                ...prev.identity.floatingButtons,
+                                whatsapp: { ...prev.identity.floatingButtons.whatsapp, enabled: checked }
+                              }
+                            }
+                          }))}
+                        />
+                      </div>
+                      {experience.identity.floatingButtons?.whatsapp?.enabled && (
+                        <>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>Link do WhatsApp</Label>
+                              <Input 
+                                value={experience.identity.floatingButtons.whatsapp.link || ""} 
+                                onChange={(e) => updateExperience((prev) => ({
+                                  ...prev,
+                                  identity: {
+                                    ...prev.identity,
+                                    floatingButtons: {
+                                      ...prev.identity.floatingButtons,
+                                      whatsapp: { ...prev.identity.floatingButtons.whatsapp, link: e.target.value }
+                                    }
+                                  }
+                                }))}
+                                placeholder="https://wa.me/5521999999999"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Imagem do botão</Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/png,image/svg+xml,image/webp,image/jpeg,image/gif"
+                                  onChange={(e) => handleFloatingButtonUpload("whatsapp", e.target.files?.[0] ?? null)}
+                                  disabled={uploadingFloatingWhatsapp}
+                                  className="flex-1"
+                                />
+                                {uploadingFloatingWhatsapp && <Loader2 className="h-4 w-4 animate-spin" />}
+                              </div>
+                            </div>
+                          </div>
+                          {experience.identity.floatingButtons.whatsapp.imageUrl && (
+                            <div className="flex items-center gap-4">
+                              <div className="h-16 w-16 rounded-lg border bg-zinc-900 p-2">
+                                <img src={experience.identity.floatingButtons.whatsapp.imageUrl} alt="Botão WhatsApp" className="h-full w-full object-contain" />
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => updateExperience((prev) => ({
+                                  ...prev,
+                                  identity: {
+                                    ...prev.identity,
+                                    floatingButtons: {
+                                      ...prev.identity.floatingButtons,
+                                      whatsapp: { ...prev.identity.floatingButtons.whatsapp, imageUrl: "" }
+                                    }
+                                  }
+                                }))}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remover
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Recomendado PNG/SVG/GIF com fundo transparente (até 200×200px).</p>
                   </CardContent>
                 </Card>
 
@@ -2262,72 +2606,6 @@ export default function EditorPage() {
                   </CardContent>
                 </Card>
 
-                {experience.features.showTelegramButton && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Botão flutuante do Telegram</CardTitle>
-                      <CardDescription>Envie a arte que ficará fixa na home direcionando para o atendimento.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-4 md:flex-row md:items-center">
-                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border bg-zinc-900 p-2">
-                        {experience.media.telegramButtonImageUrl ? (
-                          <img
-                            src={experience.media.telegramButtonImageUrl}
-                            alt="Botão do Telegram"
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        ) : (
-                          <div className="text-center text-xs text-muted-foreground">
-                            Nenhuma imagem enviada
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="file"
-                            accept="image/png,image/svg+xml,image/webp,image/jpeg"
-                            onChange={(event) => handleTelegramButtonUpload(event.target.files?.[0] ?? null)}
-                            disabled={uploadingTelegramButton}
-                            className="flex-1"
-                          />
-                          {uploadingTelegramButton && <Loader2 className="h-4 w-4 animate-spin" />}
-                        </div>
-                        <div className="space-y-1">
-                          <Label>Ou cole a URL</Label>
-                          <Input
-                            value={experience.media.telegramButtonImageUrl || ""}
-                            onChange={(event) =>
-                              updateExperience((prev) => ({
-                                ...prev,
-                                media: { ...prev.media, telegramButtonImageUrl: event.target.value },
-                              }))
-                            }
-                            placeholder="https://cdn.sua-bet.com/telegram-button.png"
-                          />
-                        </div>
-                        {experience.media.telegramButtonImageUrl && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() =>
-                              updateExperience((prev) => ({
-                                ...prev,
-                                media: { ...prev.media, telegramButtonImageUrl: "" },
-                              }))
-                            }
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Remover imagem
-                          </Button>
-                        )}
-                        <p className="text-xs text-muted-foreground">Recomendado PNG/SVG com fundo transparente (até 200×200px).</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Grid de jogos</CardTitle>
@@ -2720,38 +2998,6 @@ export default function EditorPage() {
               {/* Tab: Push Notifications */}
               <TabsContent value="push" className="mt-4 space-y-4">
                 <PushNotificationsTab />
-              </TabsContent>
-
-              {/* Tab: Features */}
-              <TabsContent value="features" className="mt-4 space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Funcionalidades</CardTitle>
-                    <CardDescription>Ative ou desative recursos do cassino</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {[
-                      { key: "showPromoBar", label: "Barra promocional", description: "Exibe o slogan no topo da home." },
-                      { key: "showTelegramButton", label: "Botão flutuante Telegram", description: "Exibe um botão fixo levando para o seu atendimento." },
-                      { key: "showSupport", label: "Badge de suporte", description: "Etiqueta lateral com status do suporte." },
-                      { key: "enableInvestments", label: "Módulo Invest", description: "Habilita a carteira de investimento com rendimentos." },
-                      { key: "maintenanceMode", label: "Modo manutenção", description: "Bloqueia o acesso ao cassino com aviso." },
-                    ].map((feature) => (
-                      <div key={feature.key} className="flex items-start justify-between gap-4 py-2">
-                        <div>
-                          <p className="text-sm font-semibold">{feature.label}</p>
-                          <p className="text-xs text-muted-foreground">{feature.description}</p>
-                        </div>
-                        <Switch
-                          checked={experience.features[feature.key as keyof ExperienceSettings["features"]]}
-                          onCheckedChange={(checked) =>
-                            handleFeatureToggle(feature.key as keyof ExperienceSettings["features"], checked)
-                          }
-                        />
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           </div>

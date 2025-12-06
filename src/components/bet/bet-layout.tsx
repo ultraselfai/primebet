@@ -77,9 +77,12 @@ export function BetLayout({ children }: BetLayoutProps) {
   const theme = publicSettings?.experience.theme;
   const secondaryColor = theme?.secondaryColor ?? "#050f1f";
   const accentColor = theme?.accentColor ?? "#42e8ff";
-  const telegramButtonEnabled = Boolean(publicSettings?.experience.features.showTelegramButton);
-  const telegramButtonLink = publicSettings?.experience.identity.telegramButtonLink;
-  const telegramButtonImage = publicSettings?.experience.media.telegramButtonImageUrl;
+  
+  // Nova estrutura de botões flutuantes
+  const floatingButtons = publicSettings?.experience?.identity?.floatingButtons;
+  const telegramFloating = floatingButtons?.telegram;
+  const whatsappFloating = floatingButtons?.whatsapp;
+  
   const layoutStyle = React.useMemo(() => ({
     "--bet-primary": theme?.primaryColor ?? "#00faff",
     "--bet-secondary": secondaryColor,
@@ -243,27 +246,51 @@ export function BetLayout({ children }: BetLayoutProps) {
       {!isGameFullscreen && <BetHeader />}
       {/* Main Content */}
       <main className="relative z-10 flex min-h-screen flex-col pb-28 pt-[3.5rem]">
-        {telegramButtonEnabled && telegramButtonLink && (
-          <a
-            href={telegramButtonLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="fixed bottom-28 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur"
-            style={{
-              boxShadow: "0 20px 45px rgba(3,7,18,0.45)",
-            }}
-          >
-            {telegramButtonImage ? (
-              <img
-                src={telegramButtonImage}
-                alt="Atendimento Telegram"
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <Send className="h-6 w-6 text-white" />
-            )}
-          </a>
-        )}
+        {/* Botões Flutuantes - Nova estrutura */}
+        <div className="fixed bottom-28 right-4 z-40 flex flex-col gap-3">
+          {/* Botão Telegram Flutuante */}
+          {telegramFloating?.enabled && telegramFloating?.link && (
+            <a
+              href={telegramFloating.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur transition-transform hover:scale-110"
+              style={{ boxShadow: "0 20px 45px rgba(3,7,18,0.45)" }}
+            >
+              {telegramFloating.imageUrl ? (
+                <img
+                  src={telegramFloating.imageUrl}
+                  alt="Telegram"
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <Send className="h-6 w-6 text-blue-400" />
+              )}
+            </a>
+          )}
+          
+          {/* Botão WhatsApp Flutuante */}
+          {whatsappFloating?.enabled && whatsappFloating?.link && (
+            <a
+              href={whatsappFloating.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur transition-transform hover:scale-110"
+              style={{ boxShadow: "0 20px 45px rgba(3,7,18,0.45)" }}
+            >
+              {whatsappFloating.imageUrl ? (
+                <img
+                  src={whatsappFloating.imageUrl}
+                  alt="WhatsApp"
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <Send className="h-6 w-6 text-emerald-400" />
+              )}
+            </a>
+          )}
+        </div>
+        
         {children}
 
         {/* Footer */}

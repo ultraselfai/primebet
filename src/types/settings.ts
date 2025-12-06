@@ -6,6 +6,27 @@ export interface SocialLinks {
   twitter?: string;
 }
 
+// Central de Ajuda - cards com links e imagens
+export interface HelpCenterSettings {
+  whatsappLink: string;
+  whatsappImageUrl: string;
+  telegramLink: string;
+  telegramImageUrl: string;
+  emailSupport: string;
+}
+
+// Botões flutuantes - podem ser GIF/PNG/SVG
+export interface FloatingButtonSettings {
+  enabled: boolean;
+  link: string;
+  imageUrl: string;
+}
+
+export interface FloatingButtonsSettings {
+  telegram: FloatingButtonSettings;
+  whatsapp: FloatingButtonSettings;
+}
+
 export interface IdentitySettings {
   siteName: string;
   tagline: string;
@@ -13,8 +34,10 @@ export interface IdentitySettings {
   footerDescription: string;
   supportEmail: string;
   whatsapp: string;
-  telegramButtonLink?: string;
+  telegramButtonLink?: string; // @deprecated - usar floatingButtons
   socialLinks: SocialLinks;
+  helpCenter: HelpCenterSettings;
+  floatingButtons: FloatingButtonsSettings;
 }
 
 export interface SeoSettings {
@@ -84,16 +107,7 @@ export interface MediaSettings {
   };
   banners: BannerItem[];
   loaderGifUrl?: string;
-  telegramButtonImageUrl?: string;
   icons?: CustomIcons;
-}
-
-export interface FeatureToggles {
-  showTelegramButton: boolean;
-  showSupport: boolean;
-  showPromoBar: boolean;
-  enableInvestments: boolean;
-  maintenanceMode: boolean;
 }
 
 export interface ExperienceSettings {
@@ -101,7 +115,6 @@ export interface ExperienceSettings {
   seo: SeoSettings;
   theme: ThemeSettings;
   media: MediaSettings;
-  features: FeatureToggles;
   navigation: {
     bottomNav: BottomNavItem[];
   };
@@ -112,9 +125,17 @@ export interface BrandingSettings {
   mobileBannerUrl: string;
 }
 
+export interface FinancialPublicSettings {
+  minDeposit: number;
+  maxDeposit: number;
+  minWithdrawal: number;
+  maxWithdrawal: number;
+}
+
 export interface PublicSettings {
   gameColumns: number;
   siteName: string;
   branding: BrandingSettings;
+  financial: FinancialPublicSettings;
   experience: ExperienceSettings;
 }

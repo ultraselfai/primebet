@@ -15,17 +15,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useBetAuth } from "@/contexts/bet-auth-context";
-import { usePublicSettings } from "@/contexts/public-settings-context";
 
 type TransferDirection = "jogo-para-investimento" | "investimento-para-jogo";
 
 export default function TransferirPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, balance, balanceLoading, openAuthModal } = useBetAuth();
-  const { settings } = usePublicSettings();
-  
-  // Verificar se investimentos está habilitado
-  const enableInvestments = settings?.experience?.features?.enableInvestments ?? true;
   
   const [direction, setDirection] = useState<TransferDirection>("jogo-para-investimento");
   const [amount, setAmount] = useState("");
@@ -38,13 +33,6 @@ export default function TransferirPage() {
       router.push("/");
     }
   }, [authLoading, isAuthenticated, openAuthModal, router]);
-  
-  // Redirecionar se investimentos estiver desabilitado
-  useEffect(() => {
-    if (!enableInvestments) {
-      router.push("/carteira");
-    }
-  }, [enableInvestments, router]);
 
   // Dados da carteira - saldo de jogo vem do contexto, investimento virá de outra API
   const wallet = {

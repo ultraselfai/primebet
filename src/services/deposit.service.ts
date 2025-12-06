@@ -1,15 +1,10 @@
 // ============================================
 // PrimeBet - Deposit Service
-// Lógica de depósito com Split Duplo (condicional)
 // ============================================
 
 import prisma from "@/lib/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { loadPublicSettings } from "@/lib/settings/load-public-settings";
-
-// Configurações
-const INVESTMENT_LOCK_MONTHS = 12;
 
 interface CreateDepositParams {
   userId: string;
@@ -90,15 +85,10 @@ export async function createDeposit(params: CreateDepositParams): Promise<Deposi
 
 /**
  * Confirma um depósito (chamado pelo webhook do gateway)
- * Aplica o Split Duplo apenas se enableInvestments estiver ativo
- * Caso contrário, credita apenas WalletGame
+ * Credita o valor na WalletGame do usuário
  */
 export async function confirmDeposit(transactionId: string, gatewayRef?: string): Promise<boolean> {
   try {
-    // Buscar configurações para verificar se investimentos está habilitado
-    const settings = await loadPublicSettings();
-    const enableInvestments = settings?.experience?.features?.enableInvestments ?? true;
-    
     // Buscar transação
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
@@ -106,7 +96,6 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
         user: {
           include: {
             walletGame: true,
-            walletInvest: true,
           },
         },
       },
@@ -124,12 +113,6 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
 
     const amount = transaction.amount;
     const userId = transaction.userId;
-
-    // ============================================
-    // SPLIT DUPLO - Regra do PRD (condicional)
-    // Se enableInvestments: R$100 → R$100 WalletGame + R$100 WalletInvest
-    // Se desabilitado: R$100 → R$100 WalletGame apenas
-    // ============================================
 
     await prisma.$transaction(async (tx) => {
       // 1. Atualizar status da transação
@@ -156,33 +139,7 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
         },
       });
 
-      // 3. Creditar Wallet Invest apenas se investimentos estiver habilitado
-      let lockUntilDate: Date | null = null;
-      
-      if (enableInvestments) {
-        // O capital fica travado por 12 meses
-        lockUntilDate = new Date();
-        lockUntilDate.setMonth(lockUntilDate.getMonth() + INVESTMENT_LOCK_MONTHS);
-
-        await tx.walletInvest.upsert({
-          where: { userId },
-          update: {
-            principal: {
-              increment: amount,
-            },
-            // Atualiza o lock se o novo depósito estende o período
-            lockedUntil: lockUntilDate,
-          },
-          create: {
-            userId,
-            principal: amount,
-            yields: new Decimal(0),
-            lockedUntil: lockUntilDate,
-          },
-        });
-      }
-
-      // 4. Log de auditoria
+      // 3. Log de auditoria
       await tx.auditLog.create({
         data: {
           userId,
@@ -191,16 +148,12 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
           entityId: transactionId,
           newData: {
             amount: Number(amount),
-            splitGame: Number(amount),
-            splitInvest: enableInvestments ? Number(amount) : 0,
-            investmentsEnabled: enableInvestments,
-            lockedUntil: lockUntilDate?.toISOString() || null,
           },
         },
       });
     });
 
-    console.log(`Depósito confirmado: ${transactionId} - R$ ${amount}${enableInvestments ? ' (Split Duplo)' : ' (Apenas Game)'}`);
+    console.log(`Depósito confirmado: ${transactionId} - R$ ${amount}`);
     return true;
   } catch (error) {
     console.error("Erro ao confirmar depósito:", error);

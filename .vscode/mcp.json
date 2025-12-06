@@ -8,16 +8,23 @@
 				"https://mcp.linear.app/mcp"
 			]
 		},
-		"Vibe Check": {
+		"io.github.upstash/context7": {
 			"type": "stdio",
 			"command": "npx",
 			"args": [
-				"-y",
-				"@pv-bhat/vibe-check-mcp",
-				"start",
-				"--stdio"
-			]
+				"@upstash/context7-mcp@1.0.31"
+			],
+			"env": {
+				"CONTEXT7_API_KEY": "${input:CONTEXT7_API_KEY}"
+			}
 		}
 	},
-	"inputs": []
+	"inputs": [
+		{
+			"id": "CONTEXT7_API_KEY",
+			"type": "promptString",
+			"description": "API key for authentication",
+			"password": true
+		}
+	]
 }

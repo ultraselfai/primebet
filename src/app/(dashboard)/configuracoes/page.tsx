@@ -10,8 +10,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
-  Database,
-  Server,
   RefreshCw,
   Key,
   Eye,
@@ -68,16 +66,15 @@ const initialSettings = {
     requireKYC: false,
     minAge: 18,
   },
-  // Financeiro - Taxas
-  fees: {
+  // Financeiro
+  financial: {
     depositFee: 0,
-    withdrawalFee: 2.5,
+    withdrawalFee: 0,
     minWithdrawal: 20,
     maxWithdrawal: 50000,
     minDeposit: 10,
     maxDeposit: 100000,
-    pixFee: 0,
-    transferFee: 0,
+    chargeTransactionFee: false,
   },
   // Investimentos
   investments: {
@@ -109,15 +106,6 @@ const initialSettings = {
     marketingEmails: false,
     adminAlerts: true,
     lowBalanceAlert: 1000,
-  },
-  // Sistema
-  system: {
-    databaseUrl: "postgresql://***@db.primebet.com:5432/primebet",
-    redisUrl: "redis://***@redis.primebet.com:6379",
-    apiRateLimit: 100,
-    cacheEnabled: true,
-    logLevel: "info",
-    debugMode: false,
   },
 };
 
@@ -152,11 +140,10 @@ export default function ConfiguracoesPage() {
           setSettings(prev => ({
             ...prev,
             general: { ...prev.general, ...data.general },
-            fees: { ...prev.fees, ...data.fees },
+            financial: { ...prev.financial, ...data.financial },
             investments: { ...prev.investments, ...data.investments },
             security: { ...prev.security, ...data.security },
             notifications: { ...prev.notifications, ...data.notifications },
-            system: { ...prev.system, ...data.system },
           }));
         }
       } catch (error) {
@@ -321,14 +308,14 @@ export default function ConfiguracoesPage() {
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-fit">
           <TabsTrigger value="general" className="gap-1">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Geral</span>
           </TabsTrigger>
-          <TabsTrigger value="fees" className="gap-1">
+          <TabsTrigger value="financial" className="gap-1">
             <Percent className="h-4 w-4" />
-            <span className="hidden sm:inline">Taxas</span>
+            <span className="hidden sm:inline">Financeiro</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-1">
             <Shield className="h-4 w-4" />
@@ -337,10 +324,6 @@ export default function ConfiguracoesPage() {
           <TabsTrigger value="notifications" className="gap-1">
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">Notificações</span>
-          </TabsTrigger>
-          <TabsTrigger value="system" className="gap-1">
-            <Server className="h-4 w-4" />
-            <span className="hidden sm:inline">Sistema</span>
           </TabsTrigger>
         </TabsList>
 
@@ -484,53 +467,41 @@ export default function ConfiguracoesPage() {
           </div>
         </TabsContent>
 
-        {/* Fees Settings */}
-        <TabsContent value="fees" className="space-y-4 mt-6">
+        {/* Financial Settings */}
+        <TabsContent value="financial" className="space-y-4 mt-6">
           <Alert>
             <Info className="h-4 w-4" />
             <AlertTitle>Importante</AlertTitle>
             <AlertDescription>
-              Alterações nas taxas entram em vigor imediatamente para novas transações.
+              Alterações nas configurações financeiras entram em vigor imediatamente para novas transações.
             </AlertDescription>
           </Alert>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+            {/* Configurações de Gateway */}
+            <Card className="md:col-span-2">
               <CardHeader>
-                <CardTitle className="text-base">Taxas de Depósito</CardTitle>
+                <CardTitle className="text-base">Configurações do Gateway</CardTitle>
                 <CardDescription>
-                  Configurações para depósitos
+                  Defina como as taxas de transação serão tratadas
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Taxa de Depósito (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={settings.fees.depositFee}
-                    onChange={(e) =>
-                      updateSetting("fees", "depositFee", parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Depósito Mínimo (R$)</Label>
-                  <Input
-                    type="number"
-                    value={settings.fees.minDeposit}
-                    onChange={(e) =>
-                      updateSetting("fees", "minDeposit", parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Depósito Máximo (R$)</Label>
-                  <Input
-                    type="number"
-                    value={settings.fees.maxDeposit}
-                    onChange={(e) =>
-                      updateSetting("fees", "maxDeposit", parseFloat(e.target.value))
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Cobrar Taxa de Transação do Usuário</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Se ativado, a taxa do gateway será descontada do valor do depósito/saque do usuário.
+                      <br />
+                      <span className="text-yellow-600 dark:text-yellow-500">
+                        Recomendado: Desativado (a plataforma absorve a taxa)
+                      </span>
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.financial.chargeTransactionFee}
+                    onCheckedChange={(checked) =>
+                      updateSetting("financial", "chargeTransactionFee", checked)
                     }
                   />
                 </div>
@@ -539,9 +510,55 @@ export default function ConfiguracoesPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Taxas de Saque</CardTitle>
+                <CardTitle className="text-base">Depósitos</CardTitle>
                 <CardDescription>
-                  Configurações para saques
+                  Configurações de valores para depósitos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Taxa de Depósito (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={settings.financial.depositFee}
+                    onChange={(e) =>
+                      updateSetting("financial", "depositFee", parseFloat(e.target.value) || 0)
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">Taxa adicional cobrada sobre depósitos (0 = sem taxa)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Depósito Mínimo (R$)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={settings.financial.minDeposit}
+                    onChange={(e) =>
+                      updateSetting("financial", "minDeposit", parseFloat(e.target.value) || 10)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Depósito Máximo (R$)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={settings.financial.maxDeposit}
+                    onChange={(e) =>
+                      updateSetting("financial", "maxDeposit", parseFloat(e.target.value) || 100000)
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Saques</CardTitle>
+                <CardDescription>
+                  Configurações de valores para saques
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -550,19 +567,22 @@ export default function ConfiguracoesPage() {
                   <Input
                     type="number"
                     step="0.1"
-                    value={settings.fees.withdrawalFee}
+                    min="0"
+                    value={settings.financial.withdrawalFee}
                     onChange={(e) =>
-                      updateSetting("fees", "withdrawalFee", parseFloat(e.target.value))
+                      updateSetting("financial", "withdrawalFee", parseFloat(e.target.value) || 0)
                     }
                   />
+                  <p className="text-xs text-muted-foreground">Taxa adicional cobrada sobre saques (0 = sem taxa)</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Saque Mínimo (R$)</Label>
                   <Input
                     type="number"
-                    value={settings.fees.minWithdrawal}
+                    min="1"
+                    value={settings.financial.minWithdrawal}
                     onChange={(e) =>
-                      updateSetting("fees", "minWithdrawal", parseFloat(e.target.value))
+                      updateSetting("financial", "minWithdrawal", parseFloat(e.target.value) || 20)
                     }
                   />
                 </div>
@@ -570,9 +590,10 @@ export default function ConfiguracoesPage() {
                   <Label>Saque Máximo (R$)</Label>
                   <Input
                     type="number"
-                    value={settings.fees.maxWithdrawal}
+                    min="1"
+                    value={settings.financial.maxWithdrawal}
                     onChange={(e) =>
-                      updateSetting("fees", "maxWithdrawal", parseFloat(e.target.value))
+                      updateSetting("financial", "maxWithdrawal", parseFloat(e.target.value) || 50000)
                     }
                   />
                 </div>
@@ -965,130 +986,6 @@ export default function ConfiguracoesPage() {
                   <p className="text-xs text-muted-foreground">
                     Alertar quando o saldo da conta principal estiver abaixo
                   </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* System Settings */}
-        <TabsContent value="system" className="space-y-4 mt-6">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertTitle>Configurações Avançadas</AlertTitle>
-            <AlertDescription>
-              Estas configurações são técnicas e podem afetar o funcionamento do sistema.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Conexões</CardTitle>
-                <CardDescription>
-                  URLs de banco de dados e cache
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    Database URL
-                  </Label>
-                  <Input
-                    value={settings.system.databaseUrl}
-                    readOnly
-                    className="font-mono text-xs"
-                  />
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-green-600">Conectado</span>
-                  </div>
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Server className="h-4 w-4" />
-                    Redis URL
-                  </Label>
-                  <Input
-                    value={settings.system.redisUrl}
-                    readOnly
-                    className="font-mono text-xs"
-                  />
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-green-600">Conectado</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Performance</CardTitle>
-                <CardDescription>
-                  Configurações de desempenho
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Rate Limit da API (req/min)</Label>
-                  <Input
-                    type="number"
-                    value={settings.system.apiRateLimit}
-                    onChange={(e) =>
-                      updateSetting("system", "apiRateLimit", parseInt(e.target.value))
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Cache Habilitado</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Melhorar performance
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.system.cacheEnabled}
-                    onCheckedChange={(checked) =>
-                      updateSetting("system", "cacheEnabled", checked)
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label>Nível de Log</Label>
-                  <Select
-                    value={settings.system.logLevel}
-                    onValueChange={(value) =>
-                      updateSetting("system", "logLevel", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="error">Error</SelectItem>
-                      <SelectItem value="warn">Warning</SelectItem>
-                      <SelectItem value="info">Info</SelectItem>
-                      <SelectItem value="debug">Debug</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-orange-600">Modo Debug</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Logs detalhados (performance reduzida)
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.system.debugMode}
-                    onCheckedChange={(checked) =>
-                      updateSetting("system", "debugMode", checked)
-                    }
-                  />
                 </div>
               </CardContent>
             </Card>

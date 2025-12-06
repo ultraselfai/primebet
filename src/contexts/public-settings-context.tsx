@@ -53,6 +53,10 @@ export function PublicSettingsProvider({ children, initialSettings = null }: Pub
       return {
         ...prev,
         ...next,
+        financial: {
+          ...prev.financial,
+          ...next.financial,
+        },
         experience: {
           ...prev.experience,
           ...next.experience,
@@ -73,10 +77,6 @@ export function PublicSettingsProvider({ children, initialSettings = null }: Pub
             ...next.experience?.media,
             loaderGifUrl: next.experience?.media?.loaderGifUrl ?? prev.experience.media.loaderGifUrl,
             banners: next.experience?.media?.banners ?? prev.experience.media.banners,
-          },
-          features: {
-            ...prev.experience.features,
-            ...next.experience?.features,
           },
           navigation: {
             bottomNav: next.experience?.navigation?.bottomNav ?? prev.experience.navigation.bottomNav,

@@ -1,35 +1,58 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, Check, QrCode, Clock, AlertCircle } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Copy, Check, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useBetAuth } from "@/contexts/bet-auth-context";
+import { usePublicSettings } from "@/contexts/public-settings-context";
+import { toast } from "sonner";
 
 const PRESET_VALUES = [20, 50, 100, 200, 500, 1000];
 
+interface PixData {
+  transactionId: string;
+  qrCode: string | null;
+  copyPaste: string | null;
+  expiresAt: string;
+  secureUrl?: string;
+}
+
 export default function DepositarPage() {
+  const { user, refreshBalance } = useBetAuth();
+  const { settings } = usePublicSettings();
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"amount" | "pix">("amount");
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [pixData, setPixData] = useState<PixData | null>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
-  // Mock PIX data - virá da API FBSPAY
-  const pixData = {
-    code: "00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-426614174000",
-    qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX_CODE_HERE",
-    expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutos
-  };
+  // Configurações financeiras do backend
+  const minDeposit = settings?.financial?.minDeposit ?? 10;
+  const maxDeposit = settings?.financial?.maxDeposit ?? 100000;
 
   const formatCurrency = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    const amount = parseInt(numbers) / 100;
-    if (isNaN(amount)) return "";
-    return amount.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    // Remove tudo que não é número ou vírgula
+    let cleaned = value.replace(/[^\d,]/g, "");
+    
+    // Garante que só tem uma vírgula
+    const parts = cleaned.split(",");
+    if (parts.length > 2) {
+      cleaned = parts[0] + "," + parts.slice(1).join("");
+    }
+    
+    // Limita casas decimais a 2
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleaned = parts[0] + "," + parts[1].substring(0, 2);
+    }
+    
+    return cleaned;
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,21 +64,129 @@ export default function DepositarPage() {
     setAmount(value.toFixed(2).replace(".", ","));
   };
 
-  const handleContinue = () => {
-    if (parseFloat(amount.replace(",", ".")) >= 10) {
-      setStep("pix");
+  const handleContinue = async () => {
+    const numericValue = parseFloat(amount.replace(".", "").replace(",", "."));
+    
+    if (numericValue < minDeposit) {
+      toast.error(`Valor mínimo de depósito é R$ ${minDeposit.toFixed(2).replace(".", ",")}`);
+      return;
+    }
+
+    if (numericValue > maxDeposit) {
+      toast.error(`Valor máximo de depósito é R$ ${maxDeposit.toFixed(2).replace(".", ",")}`);
+      return;
+    }
+
+    if (!user?.id) {
+      toast.error("Você precisa estar logado para depositar");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("/api/deposits/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: numericValue,
+          userId: user.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setPixData({
+          transactionId: result.data.transactionId,
+          qrCode: result.data.pix.qrCode,
+          copyPaste: result.data.pix.copyPaste,
+          expiresAt: result.data.pix.expiresAt,
+          secureUrl: result.data.secureUrl,
+        });
+        setStep("pix");
+      } else {
+        toast.error(result.error || "Erro ao gerar PIX");
+      }
+    } catch {
+      toast.error("Erro de conexão. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCopyPix = async () => {
-    await navigator.clipboard.writeText(pixData.code);
+    if (!pixData?.copyPaste) return;
+    await navigator.clipboard.writeText(pixData.copyPaste);
     setCopied(true);
+    toast.success("Código PIX copiado!");
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Countdown timer
+  useEffect(() => {
+    if (!pixData?.expiresAt) return;
+
+    const updateTimer = () => {
+      const now = new Date();
+      const expires = new Date(pixData.expiresAt);
+      const diff = expires.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeLeft("Expirado");
+        return;
+      }
+
+      const minutes = Math.floor(diff / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [pixData?.expiresAt]);
+
+  // Check payment status periodically
+  const checkPaymentStatus = useCallback(async () => {
+    if (!pixData?.transactionId || checkingPayment) return;
+
+    setCheckingPayment(true);
+    try {
+      const response = await fetch(`/api/transactions?search=${pixData.transactionId}`);
+      const result = await response.json();
+
+      if (result.success && result.data.transactions.length > 0) {
+        const transaction = result.data.transactions[0];
+        if (transaction.status === "COMPLETED") {
+          toast.success("🎉 Pagamento confirmado! Seu saldo foi atualizado.", {
+            duration: 5000,
+          });
+          // Forçar refresh do saldo (sem cache)
+          await refreshBalance?.(true);
+          // Redirecionar para home após um breve delay
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 2000);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao verificar pagamento:", error);
+    } finally {
+      setCheckingPayment(false);
+    }
+  }, [pixData?.transactionId, checkingPayment, refreshBalance]);
+
+  useEffect(() => {
+    if (step !== "pix" || !pixData) return;
+    
+    // Check every 5 seconds
+    const interval = setInterval(checkPaymentStatus, 5000);
+    return () => clearInterval(interval);
+  }, [step, pixData, checkPaymentStatus]);
+
   const numericAmount = parseFloat(amount.replace(".", "").replace(",", ".")) || 0;
 
-  if (step === "pix") {
+  if (step === "pix" && pixData) {
     return (
       <div className="min-h-screen bg-[#0a1628] flex flex-col">
         {/* Header */}
@@ -76,13 +207,30 @@ export default function DepositarPage() {
 
           {/* QR Code */}
           <div className="bg-white p-4 rounded-2xl mb-6">
-            <QrCode className="w-48 h-48 text-[#0a1628]" />
+            {pixData.qrCode ? (
+              <Image 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixData.qrCode)}`}
+                alt="QR Code PIX"
+                width={192}
+                height={192}
+                className="w-48 h-48"
+              />
+            ) : (
+              <div className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              </div>
+            )}
           </div>
 
           {/* Timer */}
           <div className="flex items-center gap-2 text-yellow-500 mb-6">
             <Clock className="w-4 h-4" />
-            <span className="text-sm">Expira em 30:00 minutos</span>
+            <span className="text-sm">
+              {timeLeft === "Expirado" ? "PIX expirado" : `Expira em ${timeLeft} minutos`}
+            </span>
+            {checkingPayment && (
+              <Loader2 className="w-4 h-4 animate-spin ml-2" />
+            )}
           </div>
 
           {/* PIX Code */}
@@ -90,7 +238,7 @@ export default function DepositarPage() {
             <Label className="text-white/60 text-sm">Código PIX Copia e Cola</Label>
             <div className="relative">
               <Input
-                value={pixData.code}
+                value={pixData.copyPaste || ""}
                 readOnly
                 className="h-12 pr-12 bg-white/5 border-white/10 text-white text-sm font-mono"
               />
@@ -164,7 +312,9 @@ export default function DepositarPage() {
               )}
             />
           </div>
-          <p className="text-white/40 text-xs mt-2">Depósito mínimo: R$ 10,00</p>
+          <p className="text-white/40 text-xs mt-2">
+            Depósito mínimo: R$ {minDeposit.toFixed(2).replace(".", ",")}
+          </p>
         </div>
 
         {/* Preset Values */}
@@ -203,13 +353,11 @@ export default function DepositarPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-white/10">
+        {/* Continue Button */}
         <Button
           onClick={handleContinue}
-          disabled={numericAmount < 10}
+          disabled={numericAmount < minDeposit || loading}
           className={cn(
             "w-full h-12 text-base font-semibold",
             "bg-gradient-to-r from-[#00faff] to-[#00a8ff]",
@@ -217,7 +365,14 @@ export default function DepositarPage() {
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
-          Continuar
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Gerando PIX...
+            </>
+          ) : (
+            "Continuar"
+          )}
         </Button>
       </div>
     </div>

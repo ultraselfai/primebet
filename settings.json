@@ -12,7 +12,7 @@
     "gameColumns": 2
   },
   "branding": {
-    "logoUrl": "/logo-horizontal.png",
+    "logoUrl": "https://images.ultraself.space/branding/logo/1765029929582-horizo-primebet.png",
     "mobileBannerUrl": "/banners/banner-default.jpg"
   },
   "experience": {
@@ -49,7 +49,7 @@
     },
     "media": {
       "logo": {
-        "url": "/logo-horizontal.png",
+        "url": "https://images.ultraself.space/branding/logo/1765029929582-horizo-primebet.png",
         "alt": "Logotipo PrimeBet"
       },
       "favicon": {
