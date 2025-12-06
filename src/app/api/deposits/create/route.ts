@@ -95,12 +95,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter URL base para webhook
-    // Prioridade: NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
+    // Prioridade: NEXT_PUBLIC_APP_URL > COOLIFY_URL > localhost
     let baseUrl = "http://localhost:3000";
     if (process.env.NEXT_PUBLIC_APP_URL) {
       baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    } else if (process.env.VERCEL_URL) {
-      baseUrl = `https://${process.env.VERCEL_URL}`;
+    } else if (process.env.COOLIFY_URL) {
+      baseUrl = process.env.COOLIFY_URL;
     }
 
     console.log("[Create Deposit] Using webhook baseUrl:", baseUrl);
