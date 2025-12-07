@@ -33,7 +33,20 @@ interface GameEvent {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: GameEvent = await request.json();
+    // Proteção contra body vazio ou malformado
+    let body: GameEvent;
+    try {
+      const text = await request.text();
+      if (!text || text.trim() === '') {
+        console.error("[WEBHOOK/EVENT] Body vazio recebido");
+        return NextResponse.json({ success: false, error: "Body vazio" }, { status: 400 });
+      }
+      body = JSON.parse(text);
+    } catch (parseError) {
+      console.error("[WEBHOOK/EVENT] Erro ao parsear JSON:", parseError);
+      return NextResponse.json({ success: false, error: "JSON inválido" }, { status: 400 });
+    }
+
     const { event, playerId, gameCode, data } = body;
 
     // Validar payload básico

@@ -11,7 +11,9 @@ import {
   Eye,
   RefreshCw,
   Loader2,
+  CheckCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Deposit {
@@ -93,6 +103,9 @@ export default function DepositosPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
+  const [approving, setApproving] = useState(false);
 
   const fetchDeposits = useCallback(async () => {
     try {
@@ -150,6 +163,38 @@ export default function DepositosPage() {
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date(dateString));
+  };
+
+  const handleApproveDeposit = async () => {
+    if (!selectedDeposit) return;
+    
+    setApproving(true);
+    try {
+      const response = await fetch(`/api/deposits/${selectedDeposit.id}/approve`, {
+        method: "POST",
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`Depósito de ${formatCurrency(selectedDeposit.amount)} aprovado com sucesso!`);
+        setApproveDialogOpen(false);
+        setSelectedDeposit(null);
+        fetchDeposits(); // Recarregar lista
+      } else {
+        toast.error(result.error || "Erro ao aprovar depósito");
+      }
+    } catch (error) {
+      console.error("Erro ao aprovar depósito:", error);
+      toast.error("Erro ao aprovar depósito");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const openApproveDialog = (deposit: Deposit) => {
+    setSelectedDeposit(deposit);
+    setApproveDialogOpen(true);
   };
 
   const stats = data?.stats || { today: { count: 0, amount: 0 }, pending: { count: 0, amount: 0 }, conversionRate: 0 };
@@ -333,6 +378,15 @@ export default function DepositosPage() {
                                 <Eye className="w-4 h-4 mr-2" />
                                 Ver detalhes
                               </DropdownMenuItem>
+                              {deposit.status === "PENDING" && (
+                                <DropdownMenuItem 
+                                  onClick={() => openApproveDialog(deposit)}
+                                  className="text-green-600 focus:text-green-600"
+                                >
+                                  <CheckCheck className="w-4 h-4 mr-2" />
+                                  Aprovar Depósito
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -345,6 +399,84 @@ export default function DepositosPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Approve Dialog */}
+      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Aprovar Depósito Manualmente</DialogTitle>
+            <DialogDescription>
+              Você está prestes a aprovar manualmente este depósito. Esta ação irá creditar o saldo na conta do usuário.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDeposit && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Usuário</p>
+                  <p className="font-medium">{selectedDeposit.user.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedDeposit.user.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Valor</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {formatCurrency(selectedDeposit.amount)}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">ID da Transação</p>
+                  <p className="font-mono text-sm">{selectedDeposit.id.slice(0, 16)}...</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Criado em</p>
+                  <p className="text-sm">{formatDate(selectedDeposit.createdAt)}</p>
+                </div>
+              </div>
+              {selectedDeposit.gatewayRef && (
+                <div>
+                  <p className="text-sm text-muted-foreground">TxID Gateway</p>
+                  <p className="font-mono text-xs">{selectedDeposit.gatewayRef}</p>
+                </div>
+              )}
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  ⚠️ <strong>Atenção:</strong> Só aprove manualmente se você confirmou que o pagamento foi recebido no gateway (PodPay). Esta ação não pode ser desfeita.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setApproveDialogOpen(false)}
+              disabled={approving}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleApproveDeposit}
+              disabled={approving}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {approving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Aprovando...
+                </>
+              ) : (
+                <>
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  Aprovar Depósito
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagination */}
       {data && data.pagination.totalPages > 1 && (

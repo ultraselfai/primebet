@@ -26,7 +26,20 @@ interface CreditRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreditRequest = await request.json();
+    // Proteção contra body vazio ou malformado
+    let body: CreditRequest;
+    try {
+      const text = await request.text();
+      if (!text || text.trim() === '') {
+        console.error("[WEBHOOK/CREDIT] Body vazio recebido");
+        return NextResponse.json({ success: false, error: "Body vazio" }, { status: 400 });
+      }
+      body = JSON.parse(text);
+    } catch (parseError) {
+      console.error("[WEBHOOK/CREDIT] Erro ao parsear JSON:", parseError);
+      return NextResponse.json({ success: false, error: "JSON inválido" }, { status: 400 });
+    }
+
     if (process.env.NODE_ENV === "development") {
       console.log("[WEBHOOK/CREDIT] Payload", body);
     }

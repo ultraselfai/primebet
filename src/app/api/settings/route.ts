@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { defaultExperience, defaultSettings } from "@/lib/settings/defaults";
 import { auth } from "@/lib/auth";
+
+// Força rota dinâmica - sem cache
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const withExperienceDefaults = (settings: Record<string, unknown>) => {
   if (settings.experience) {
@@ -103,6 +108,16 @@ export async function POST(request: NextRequest) {
       update: { data: payload },
       create: { id: "default", data: payload },
     });
+
+    // Invalidar cache do Next.js para forçar atualização
+    try {
+      revalidatePath("/", "layout"); // Revalida toda a aplicação
+      revalidatePath("/"); // Revalida a home
+      revalidateTag("settings"); // Tag para cache de settings
+      console.log("[Settings API] Cache invalidado com sucesso");
+    } catch (e) {
+      console.warn("[Settings API] Erro ao invalidar cache:", e);
+    }
     
     return NextResponse.json({ 
       success: true, 
