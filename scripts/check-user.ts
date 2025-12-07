@@ -40,7 +40,8 @@ async function checkUser() {
   if (user.walletInvest) {
     console.log(`📈 WalletInvest:`);
     console.log(`   ID: ${user.walletInvest.id}`);
-    console.log(`   Saldo: R$ ${Number(user.walletInvest.balance).toFixed(2)}`);
+    console.log(`   Principal: R$ ${Number(user.walletInvest.principal).toFixed(2)}`);
+    console.log(`   Rendimentos: R$ ${Number(user.walletInvest.yields).toFixed(2)}`);
   } else {
     console.log("❌ WalletInvest NÃO encontrada!");
   }
