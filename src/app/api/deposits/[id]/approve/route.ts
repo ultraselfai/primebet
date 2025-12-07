@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       select: { role: true },
     });
 
-    if (adminUser?.role !== "ADMIN") {
+    if (adminUser?.role !== "ADMIN" && adminUser?.role !== "SUPER_ADMIN") {
       return NextResponse.json(
         { success: false, error: "Acesso negado. Apenas administradores podem aprovar depósitos." },
         { status: 403 }

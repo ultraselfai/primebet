@@ -33,9 +33,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "JSON inválido" }, { status: 400 });
     }
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("[WEBHOOK/BALANCE] Payload", body);
-    }
+    // Log sempre em produção para debug
+    console.log("[WEBHOOK/BALANCE] Payload recebido:", JSON.stringify(body));
     const { playerId } = body;
 
     // Validar payload
@@ -48,8 +47,20 @@ export async function POST(request: NextRequest) {
     // Buscar saldo do usuário
     const wallet = await prisma.walletGame.findUnique({
       where: { userId: playerId },
-      select: { balance: true },
+      select: { balance: true, userId: true },
     });
+
+    // Log detalhado para debug
+    console.log(`[WEBHOOK/BALANCE] playerId: ${playerId}, wallet encontrada: ${wallet ? 'SIM' : 'NÃO'}, saldo: ${wallet ? Number(wallet.balance) : 0}`);
+
+    // Se não tem wallet, verificar se usuário existe
+    if (!wallet) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: playerId },
+        select: { id: true, email: true },
+      });
+      console.log(`[WEBHOOK/BALANCE] Usuário existe: ${userExists ? userExists.email : 'NÃO'}`);
+    }
 
     // Se não tem wallet, retornar saldo 0
     const balance = wallet ? Number(wallet.balance) : 0;

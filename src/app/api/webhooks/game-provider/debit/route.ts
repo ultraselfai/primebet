@@ -59,6 +59,30 @@ export async function POST(request: NextRequest) {
     });
 
     if (!wallet) {
+      // Log detalhado para debug - sempre logar em prod
+      console.error(`[WEBHOOK/DEBIT] Jogador não encontrado! playerId: ${playerId}, gameCode: ${gameCode}, roundId: ${roundId}`);
+      
+      // Tentar verificar se o usuário existe (pode ser problema de FK)
+      const userExists = await prisma.user.findUnique({
+        where: { id: playerId },
+        select: { id: true, email: true },
+      });
+      
+      if (userExists) {
+        console.error(`[WEBHOOK/DEBIT] Usuário existe (${userExists.email}) mas WalletGame não existe! Criando...`);
+        // Auto-criar wallet com saldo 0 para evitar erros futuros
+        await prisma.walletGame.create({
+          data: { userId: playerId, balance: 0 },
+        });
+        return NextResponse.json({ 
+          success: false, 
+          error: "Saldo insuficiente", 
+          playerId, 
+          balance: 0,
+          currency: "BRL",
+        });
+      }
+      
       return NextResponse.json({ success: false, error: "Jogador não encontrado" });
     }
 
