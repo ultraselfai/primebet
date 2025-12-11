@@ -152,10 +152,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Calcular tempo de expiração
-    const expirationDate = podpayTransaction.pix?.expirationDate 
-      ? new Date(podpayTransaction.pix.expirationDate)
-      : new Date(Date.now() + 30 * 60 * 1000); // 30 minutos default
+    // Calcular tempo de expiração (máximo 30 minutos para melhor UX)
+    const maxExpiration = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
+    let expirationDate: Date;
+    
+    if (podpayTransaction.pix?.expirationDate) {
+      const podpayExpiration = new Date(podpayTransaction.pix.expirationDate);
+      // Usar a menor entre a expiração do gateway e 30 minutos
+      expirationDate = podpayExpiration < maxExpiration ? podpayExpiration : maxExpiration;
+    } else {
+      expirationDate = maxExpiration;
+    }
 
     return NextResponse.json({
       success: true,

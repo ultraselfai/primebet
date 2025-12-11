@@ -42,6 +42,7 @@ interface GameProviderStatus {
   success: boolean;
   agentName?: string;
   spinCredits?: number;
+  allowedGames?: number;
   error?: string;
 }
 
@@ -65,7 +66,7 @@ export default function IntegracoesPage() {
   // Game Provider state
   const [gameProviderStatus, setGameProviderStatus] = useState<GameProviderStatus | null>(null);
   const [gameProviderLoading, setGameProviderLoading] = useState(true);
-  const [providerUrl, setProviderUrl] = useState("https://api.ultraself.space/api/v1");
+  const [providerUrl, setProviderUrl] = useState("https://api.gameprovider.fun/api/v1");
   const [providerApiKey, setProviderApiKey] = useState("");
   const [providerApiSecret, setProviderApiSecret] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
@@ -156,7 +157,7 @@ export default function IntegracoesPage() {
   const integrations: Integration[] = [
     {
       id: "game-provider",
-      name: "Game Provider (Ultraself)",
+      name: "Game Provider (PGSoft)",
       description: "Provedor de jogos - Slots Fortune Tiger, Ox, Rabbit e mais",
       category: "Jogos",
       icon: <Gamepad2 className="w-6 h-6" />,
@@ -169,8 +170,8 @@ export default function IntegracoesPage() {
       stats: gameProviderStatus?.success 
         ? {
             spinCredits: gameProviderStatus.spinCredits || 0,
-            jogos: 5,
-            ativos: gameProviderStatus.spinCredits && gameProviderStatus.spinCredits > 0 ? 5 : 0,
+            jogos: gameProviderStatus.allowedGames || 0,
+            ativos: gameProviderStatus.allowedGames || 0,
           }
         : null,
       errorMessage: gameProviderStatus?.error,
@@ -444,7 +445,7 @@ export default function IntegracoesPage() {
               Configurar Game Provider
             </DialogTitle>
             <DialogDescription>
-              Configure as credenciais de conexão com o provedor de jogos Ultraself
+              Configure as credenciais de conexão com o provedor de jogos PGSoft
             </DialogDescription>
           </DialogHeader>
 
@@ -467,7 +468,7 @@ export default function IntegracoesPage() {
                 type="text"
                 value={providerUrl}
                 onChange={(e) => setProviderUrl(e.target.value)}
-                placeholder="https://api.ultraself.space/api/v1"
+                placeholder="https://api.gameprovider.fun/api/v1"
                 className="font-mono text-sm"
               />
             </div>

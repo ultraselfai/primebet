@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'api.gameprovider.fun',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.gameprovider.fun',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.qrserver.com',
       },
     ],

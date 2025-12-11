@@ -154,6 +154,10 @@ export const defaultSettings = {
     // Se true, cobra taxa da transação do usuário (netPayout=true na PodPay)
     // Se false, a plataforma absorve a taxa (netPayout=false - padrão para bets)
     chargeTransactionFee: false,
+    // Limite para aprovação automática de saques (em reais)
+    // Saques até esse valor são processados automaticamente
+    // Saques acima desse valor precisam de aprovação manual do admin
+    autoApprovalLimit: 100,
   },
   branding: {
     logoUrl: "/logo-horizontal.png",

@@ -226,7 +226,7 @@ export default function DepositarPage() {
           <div className="flex items-center gap-2 text-yellow-500 mb-6">
             <Clock className="w-4 h-4" />
             <span className="text-sm">
-              {timeLeft === "Expirado" ? "PIX expirado" : `Expira em ${timeLeft} minutos`}
+              {timeLeft === "Expirado" ? "PIX expirado" : `Expira em ${timeLeft}`}
             </span>
             {checkingPayment && (
               <Loader2 className="w-4 h-4 animate-spin ml-2" />

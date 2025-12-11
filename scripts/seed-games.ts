@@ -1,206 +1,141 @@
-﻿import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-async function main() {
-  const games = [
-    {
-      providerId: 'pragmatic-gates-of-olympus',
-      providerName: 'Pragmatic Play',
-      name: 'Gates of Olympus',
-      slug: 'gates-of-olympus',
-      description: 'Entre no reino dos deuses gregos neste slot epico!',
-      thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400',
-      category: 'SLOTS' as const,
-      tags: ['popular', 'new'],
-      active: true,
-      featured: true,
-      rtp: 96.5,
-      volatility: 'HIGH' as const,
-    },
-    {
-      providerId: 'pragmatic-sweet-bonanza',
-      providerName: 'Pragmatic Play',
-      name: 'Sweet Bonanza',
-      slug: 'sweet-bonanza',
-      description: 'Doces explosivos trazem grandes premios!',
-      thumbnail: 'https://images.unsplash.com/photo-1499195333224-3ce974eecb47?w=400',
-      category: 'SLOTS' as const,
-      tags: ['popular'],
-      active: true,
-      featured: true,
-      rtp: 96.48,
-      volatility: 'HIGH' as const,
-    },
-    {
-      providerId: 'spribe-aviator',
-      providerName: 'Spribe',
-      name: 'Aviator',
-      slug: 'aviator',
-      description: 'Decole com o aviao e multiplique seus ganhos!',
-      thumbnail: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400',
-      category: 'CRASH' as const,
-      tags: ['popular', 'crash'],
-      active: true,
-      featured: true,
-      rtp: 97.0,
-      volatility: 'MEDIUM' as const,
-    },
-    {
-      providerId: 'pragmatic-big-bass-bonanza',
-      providerName: 'Pragmatic Play',
-      name: 'Big Bass Bonanza',
-      slug: 'big-bass-bonanza',
-      description: 'Pesque grandes premios neste slot de pesca!',
-      thumbnail: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400',
-      category: 'SLOTS' as const,
-      tags: ['fishing'],
-      active: true,
-      featured: false,
-      rtp: 96.71,
-      volatility: 'HIGH' as const,
-    },
-    {
-      providerId: 'spribe-mines',
-      providerName: 'Spribe',
-      name: 'Mines',
-      slug: 'mines',
-      description: 'Evite as minas e colete os diamantes!',
-      thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400',
-      category: 'OTHER' as const,
-      tags: ['mini-game', 'popular'],
-      active: true,
-      featured: true,
-      rtp: 97.0,
-      volatility: 'LOW' as const,
-    },
-    {
-      providerId: 'pragmatic-spaceman',
-      providerName: 'Pragmatic Play',
-      name: 'Spaceman',
-      slug: 'spaceman',
-      description: 'Viaje pelo espaco e multiplique seus ganhos!',
-      thumbnail: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400',
-      category: 'CRASH' as const,
-      tags: ['crash'],
-      active: true,
-      featured: false,
-      rtp: 96.5,
-      volatility: 'MEDIUM' as const,
-    },
-    {
-      providerId: 'pgsoft-fortune-tiger',
-      providerName: 'PG Soft',
-      name: 'Fortune Tiger',
-      slug: 'fortune-tiger',
-      description: 'O tigre da sorte traz prosperidade!',
-      thumbnail: 'https://images.unsplash.com/photo-1615963244664-5b845b2025ee?w=400',
-      category: 'SLOTS' as const,
-      tags: ['popular', 'asian'],
-      active: true,
-      featured: true,
-      rtp: 96.81,
-      volatility: 'MEDIUM' as const,
-    },
-    {
-      providerId: 'evolution-blackjack-vip',
-      providerName: 'Evolution',
-      name: 'Blackjack VIP',
-      slug: 'blackjack-vip',
-      description: 'Blackjack ao vivo com dealers reais!',
-      thumbnail: 'https://images.unsplash.com/photo-1541278107931-e006523892df?w=400',
-      category: 'LIVE_CASINO' as const,
-      tags: ['live', 'vip'],
-      active: true,
-      featured: false,
-      rtp: 99.5,
-      volatility: 'LOW' as const,
-    },
-    {
-      providerId: 'evolution-roleta-brasileira',
-      providerName: 'Evolution',
-      name: 'Roleta Brasileira',
-      slug: 'roleta-brasileira',
-      description: 'Roleta ao vivo com apresentadores brasileiros!',
-      thumbnail: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=400',
-      category: 'LIVE_CASINO' as const,
-      tags: ['live', 'brazilian'],
-      active: true,
-      featured: true,
-      rtp: 97.3,
-      volatility: 'MEDIUM' as const,
-    },
-    {
-      providerId: 'primebet-double',
-      providerName: 'PrimeBet',
-      name: 'Double',
-      slug: 'double',
-      description: 'Aposte na cor e dobre seus ganhos!',
-      thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400',
-      category: 'OTHER' as const,
-      tags: ['mini-game', 'original'],
-      active: true,
-      featured: false,
-      rtp: 95.0,
-      volatility: 'HIGH' as const,
-    },
-    {
-      providerId: 'pragmatic-wolf-gold',
-      providerName: 'Pragmatic Play',
-      name: 'Wolf Gold',
-      slug: 'wolf-gold',
-      description: 'Lobos selvagens trazem jackpots incriveis!',
-      thumbnail: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=400',
-      category: 'SLOTS' as const,
-      tags: ['jackpot'],
-      active: true,
-      featured: false,
-      rtp: 96.01,
-      volatility: 'MEDIUM' as const,
-    },
-    {
-      providerId: 'spribe-plinko',
-      providerName: 'Spribe',
-      name: 'Plinko',
-      slug: 'plinko',
-      description: 'Solte a bola e ganhe multiplicadores!',
-      thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400',
-      category: 'OTHER' as const,
-      tags: ['mini-game'],
-      active: true,
-      featured: false,
-      rtp: 99.0,
-      volatility: 'LOW' as const,
-    },
-  ]
+// Jogos reais do PGSoft Provider
+const realGames = [
+  {
+    providerId: 'fortunetiger',
+    providerName: 'PGSoft',
+    name: 'Fortune Tiger',
+    slug: 'fortune-tiger',
+    thumbnail: '/banners-slots/fortune-tiger.webp',
+    description: 'O tigre da sorte traz prosperidade e grandes premios!',
+    category: 'SLOTS' as const,
+    tags: ['Popular', 'Slots'],
+    active: true,
+    featured: true,
+    rtp: 96.81,
+    volatility: 'MEDIUM' as const,
+  },
+  {
+    providerId: 'fortuneox',
+    providerName: 'PGSoft',
+    name: 'Fortune Ox',
+    slug: 'fortune-ox',
+    thumbnail: '/banners-slots/fortune-ox.webp',
+    description: 'O boi da fortuna multiplica sua sorte!',
+    category: 'SLOTS' as const,
+    tags: ['Popular', 'Slots'],
+    active: true,
+    featured: true,
+    rtp: 96.75,
+    volatility: 'MEDIUM' as const,
+  },
+  {
+    providerId: 'fortunerabbit',
+    providerName: 'PGSoft',
+    name: 'Fortune Rabbit',
+    slug: 'fortune-rabbit',
+    thumbnail: '/banners-slots/fortune-rabbit.webp',
+    description: 'O coelho da sorte salta com grandes premios!',
+    category: 'SLOTS' as const,
+    tags: ['Popular', 'Slots'],
+    active: true,
+    featured: true,
+    rtp: 96.70,
+    volatility: 'MEDIUM' as const,
+  },
+  {
+    providerId: 'fortunepanda',
+    providerName: 'PGSoft',
+    name: 'Fortune Panda',
+    slug: 'fortune-panda',
+    thumbnail: '/banners-slots/fortune-panda.webp',
+    description: 'O panda traz fortuna e muita diversao!',
+    category: 'SLOTS' as const,
+    tags: ['Slots'],
+    active: true,
+    featured: false,
+    rtp: 96.65,
+    volatility: 'MEDIUM' as const,
+  },
+  {
+    providerId: 'fortunemouse',
+    providerName: 'PGSoft',
+    name: 'Fortune Mouse',
+    slug: 'fortune-mouse',
+    thumbnail: '/banners-slots/fortune-mouse.webp',
+    description: 'O ratinho da sorte distribui moedas de ouro!',
+    category: 'SLOTS' as const,
+    tags: ['Slots'],
+    active: true,
+    featured: false,
+    rtp: 96.50,
+    volatility: 'MEDIUM' as const,
+  },
+  {
+    providerId: 'phoenixrises',
+    providerName: 'PGSoft',
+    name: 'Phoenix Rises',
+    slug: 'phoenix-rises',
+    thumbnail: '/banners-slots/phoenix-rises.webp',
+    description: 'A fenix renasce das cinzas com multiplicadores epicos!',
+    category: 'SLOTS' as const,
+    tags: ['Slots'],
+    active: true,
+    featured: false,
+    rtp: 96.55,
+    volatility: 'HIGH' as const,
+  },
+  {
+    providerId: 'hoodvswoolf',
+    providerName: 'PGSoft',
+    name: 'Hood vs Woolf',
+    slug: 'hood-vs-woolf',
+    thumbnail: '/banners-slots/hood-vs-woolf.webp',
+    description: 'Chapeuzinho enfrenta o Lobo em busca de grandes premios!',
+    category: 'SLOTS' as const,
+    tags: ['Slots'],
+    active: true,
+    featured: false,
+    rtp: 96.60,
+    volatility: 'HIGH' as const,
+  },
+]
 
-  console.log('Seeding games...')
-  
-  for (const game of games) {
+async function main() {
+  console.log('Seeding jogos reais do PGSoft...\n')
+
+  for (const game of realGames) {
     await prisma.game.upsert({
       where: { slug: game.slug },
-      update: {
-        name: game.name,
-        description: game.description,
-        thumbnail: game.thumbnail,
-        category: game.category,
-        tags: game.tags,
-        active: game.active,
-        featured: game.featured,
-        rtp: game.rtp,
-        volatility: game.volatility,
-      },
+      update: game,
       create: game,
     })
-    console.log('Created/Updated:', game.name)
+    console.log(`Created/Updated: ${game.name}`)
   }
 
-  console.log('Seeding completed!')
+  // Remover jogos mockados antigos
+  const realSlugs = realGames.map(g => g.slug)
+  const deleted = await prisma.game.deleteMany({
+    where: {
+      slug: {
+        notIn: realSlugs
+      }
+    }
+  })
+
+  if (deleted.count > 0) {
+    console.log(`\nRemovidos ${deleted.count} jogos mockados antigos`)
+  }
+
+  console.log('\nSeed de jogos concluido!')
 }
 
 main()
   .catch((e) => {
-    console.error(e)
+    console.error('Erro no seed:', e)
     process.exit(1)
   })
   .finally(async () => {

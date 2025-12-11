@@ -38,7 +38,7 @@ interface CreateTransactionParams {
 interface CreateTransferParams {
   amount: number; // Em centavos
   pixKey: string;
-  pixKeyType: "cpf" | "cnpj" | "email" | "phone" | "evp";
+  pixKeyType: "cpf" | "cnpj" | "email" | "phone" | "evp" | "copypaste";
   postbackUrl?: string;
   externalRef?: string;
   description?: string;
@@ -89,9 +89,14 @@ interface PodPayTransfer {
 }
 
 interface PodPayBalance {
-  available: number;
-  pending: number;
-  currency: string;
+  amount: number;         // Saldo disponível em centavos (amount na API, não available)
+  available?: number;     // Alias para compatibilidade
+  waitingFunds: number;   // Valor em saldo a liberar
+  pending?: number;       // Alias para waitingFunds
+  maxAntecipable: number; // Valor máximo para antecipação
+  reserve: number;        // Saldo em reserva
+  recipientId: number;    // ID do recebedor
+  currency?: string;
 }
 
 interface PodPayError {
@@ -376,7 +381,7 @@ export async function testConnection(): Promise<{ success: boolean; message: str
 
   return { 
     success: true, 
-    message: `Conexão OK. Saldo disponível: R$ ${(result.balance.available / 100).toFixed(2)}` 
+    message: `Conexão OK. Saldo disponível: R$ ${((result.balance.amount || result.balance.available || 0) / 100).toFixed(2)}` 
   };
 }
 

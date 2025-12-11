@@ -20,7 +20,7 @@ export default function ConnectionSettings() {
   const [dbConnected, setDbConnected] = useState(true)
 
   // Game Provider state
-  const [providerUrl, setProviderUrl] = useState("https://api.ultraself.space/api/v1")
+  const [providerUrl, setProviderUrl] = useState("https://api.gameprovider.fun/api/v1")
   const [providerApiKey, setProviderApiKey] = useState("")
   const [providerApiSecret, setProviderApiSecret] = useState("")
   const [showApiKey, setShowApiKey] = useState(false)
@@ -97,7 +97,7 @@ export default function ConnectionSettings() {
                     )}
                   </CardTitle>
                   <CardDescription>
-                    Configurações de conexão com o provedor de jogos (Ultraself)
+                    Configurações de conexão com o provedor de jogos (PGSoft)
                   </CardDescription>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function ConnectionSettings() {
                 type="text"
                 value={providerUrl}
                 onChange={(e) => setProviderUrl(e.target.value)}
-                placeholder="https://api.ultraself.space/api/v1"
+                placeholder="https://api.gameprovider.fun/api/v1"
                 className="font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground">

@@ -125,7 +125,7 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="sua-chave-secreta-aqui"
 
 # Game Provider (opcional)
-GAME_PROVIDER_URL="https://api.ultraself.space/api/v1"
+GAME_PROVIDER_URL="https://api.gameprovider.fun/api/v1"
 GAME_PROVIDER_API_KEY=""
 GAME_PROVIDER_SECRET=""
 ```

@@ -1,7 +1,7 @@
 ﻿/**
- * Game Provider Service - Ultraself Integration
+ * Game Provider Service - Game Provider Integration
  * 
- * Documentação: https://api.ultraself.space/api/docs
+ * Documentação: https://api.gameprovider.fun/api/docs
  * 
  * Este serviço conecta a Bet com o Game Provider para:
  * 1. Autenticação (obter/renovar access token)
@@ -9,7 +9,7 @@
  * 3. Criar sessões de jogo para jogadores
  */
 
-const PROVIDER_API = process.env.GAME_PROVIDER_URL || 'https://api.ultraself.space/api/v1';
+const PROVIDER_API = process.env.GAME_PROVIDER_URL || 'https://api.gameprovider.fun/api/v1';
 const API_KEY = process.env.GAME_PROVIDER_API_KEY || '';
 const API_SECRET = process.env.GAME_PROVIDER_SECRET || '';
 
@@ -169,7 +169,7 @@ export async function createGameSession(params: {
   // Workaround: substituir localhost:3006 pela URL de produção do provider
   let launchUrl = data.data.launchUrl;
   if (launchUrl && launchUrl.includes('localhost:3006')) {
-    launchUrl = launchUrl.replace('http://localhost:3006', 'https://api.ultraself.space/originals');
+    launchUrl = launchUrl.replace('http://localhost:3006', 'https://api.gameprovider.fun/originals');
   }
   
   return {
@@ -186,6 +186,7 @@ export async function testConnection(): Promise<{
   success: boolean;
   agentName?: string;
   spinCredits?: number;
+  allowedGames?: number;
   error?: string;
 }> {
   try {
@@ -194,6 +195,7 @@ export async function testConnection(): Promise<{
       success: true,
       agentName: profile.name,
       spinCredits: profile.spinCredits,
+      allowedGames: profile.allowedGames?.length || 0,
     };
   } catch (error) {
     return {

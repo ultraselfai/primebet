@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -15,6 +15,8 @@ import {
 import {
   type ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
@@ -29,60 +31,37 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export const description = "An interactive area chart"
+export const description = "Gráfico financeiro interativo"
 
-// Dados zerados para ambiente de produção
-const chartData = [
-  { date: "2024-04-01", desktop: 0, mobile: 0 },
-  { date: "2024-04-02", desktop: 0, mobile: 0 },
-  { date: "2024-04-03", desktop: 0, mobile: 0 },
-  { date: "2024-04-04", desktop: 0, mobile: 0 },
-  { date: "2024-04-05", desktop: 0, mobile: 0 },
-  { date: "2024-04-06", desktop: 0, mobile: 0 },
-  { date: "2024-04-07", desktop: 0, mobile: 0 },
-  { date: "2024-04-08", desktop: 0, mobile: 0 },
-  { date: "2024-04-09", desktop: 0, mobile: 0 },
-  { date: "2024-04-10", desktop: 0, mobile: 0 },
-  { date: "2024-04-11", desktop: 0, mobile: 0 },
-  { date: "2024-04-12", desktop: 0, mobile: 0 },
-  { date: "2024-04-13", desktop: 0, mobile: 0 },
-  { date: "2024-04-14", desktop: 0, mobile: 0 },
-  { date: "2024-04-15", desktop: 0, mobile: 0 },
-  { date: "2024-04-16", desktop: 0, mobile: 0 },
-  { date: "2024-04-17", desktop: 0, mobile: 0 },
-  { date: "2024-04-18", desktop: 0, mobile: 0 },
-  { date: "2024-04-19", desktop: 0, mobile: 0 },
-  { date: "2024-04-20", desktop: 0, mobile: 0 },
-  { date: "2024-04-21", desktop: 0, mobile: 0 },
-  { date: "2024-04-22", desktop: 0, mobile: 0 },
-  { date: "2024-04-23", desktop: 0, mobile: 0 },
-  { date: "2024-04-24", desktop: 0, mobile: 0 },
-  { date: "2024-04-25", desktop: 0, mobile: 0 },
-  { date: "2024-04-26", desktop: 0, mobile: 0 },
-  { date: "2024-04-27", desktop: 0, mobile: 0 },
-  { date: "2024-04-28", desktop: 0, mobile: 0 },
-  { date: "2024-04-29", desktop: 0, mobile: 0 },
-  { date: "2024-04-30", desktop: 0, mobile: 0 },
-]
+interface ChartDataItem {
+  date: string;
+  receita: number;
+  premios: number;
+  saldo: number;
+}
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  receita: {
+    label: "Receita",
+    color: "hsl(142, 76%, 36%)", // verde
   },
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
+  premios: {
+    label: "Prêmios Pagos",
+    color: "hsl(45, 93%, 47%)", // amarelo/dourado
   },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
+  saldo: {
+    label: "Saldo Líquido",
+    color: "hsl(217, 91%, 60%)", // azul
   },
 } satisfies ChartConfig
 
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("90d")
+  const [timeRange, setTimeRange] = React.useState("30d")
+  const [chartData, setChartData] = React.useState<ChartDataItem[]>([])
+  const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
     if (isMobile) {
@@ -90,29 +69,43 @@ export function ChartAreaInteractive() {
     }
   }, [isMobile])
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30")
-    let daysToSubtract = 90
-    if (timeRange === "30d") {
-      daysToSubtract = 30
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7
+  React.useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        setLoading(true)
+        const days = timeRange === "90d" ? 90 : timeRange === "30d" ? 30 : 7
+        const response = await fetch(`/api/dashboard/chart?days=${days}`)
+        const data = await response.json()
+        
+        if (data.success) {
+          setChartData(data.data)
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do gráfico:", error)
+      } finally {
+        setLoading(false)
+      }
     }
-    const startDate = new Date(referenceDate)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
+
+    fetchChartData()
+  }, [timeRange])
+
+  const formatCurrency = (value: number) => {
+    if (value >= 1000) {
+      return `R$${(value / 1000).toFixed(1)}k`
+    }
+    return `R$${value.toFixed(0)}`
+  }
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total de Visitantes</CardTitle>
+        <CardTitle>Desempenho Financeiro</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total dos últimos 3 meses
+            Receita, prêmios pagos e saldo líquido
           </span>
-          <span className="@[540px]/card:hidden">Últimos 3 meses</span>
+          <span className="@[540px]/card:hidden">Visão financeira</span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -130,9 +123,9 @@ export function ChartAreaInteractive() {
             <SelectTrigger
               className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
               size="sm"
-              aria-label="Select a value"
+              aria-label="Selecione o período"
             >
-              <SelectValue placeholder="Últimos 3 meses" />
+              <SelectValue placeholder="Últimos 30 dias" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="90d" className="rounded-lg">
@@ -149,82 +142,125 @@ export function ChartAreaInteractive() {
         </CardAction>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
-          <AreaChart data={filteredData}>
-            <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={1.0}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }}
-                  indicator="dot"
-                />
-              }
-            />
-            <Area
-              dataKey="mobile"
-              type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
-              stackId="a"
-            />
-            <Area
-              dataKey="desktop"
-              type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
-              stackId="a"
-            />
-          </AreaChart>
-        </ChartContainer>
+        {loading ? (
+          <Skeleton className="h-[250px] w-full" />
+        ) : chartData.length === 0 ? (
+          <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+            Nenhum dado disponível para o período selecionado
+          </div>
+        ) : (
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[250px] w-full"
+          >
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="fillReceita" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-receita)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-receita)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillPremios" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-premios)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-premios)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillSaldo" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-saldo)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-saldo)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value)
+                  return date.toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "short",
+                  })
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={formatCurrency}
+                width={60}
+              />
+              <ChartTooltip
+                cursor={{ strokeDasharray: "3 3" }}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("pt-BR", {
+                        weekday: "short",
+                        day: "2-digit",
+                        month: "short",
+                      })
+                    }}
+                    formatter={(value, name) => {
+                      const formattedValue = new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(value as number)
+                      return [formattedValue, chartConfig[name as keyof typeof chartConfig]?.label || name]
+                    }}
+                    indicator="dot"
+                  />
+                }
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+              <Area
+                dataKey="receita"
+                type="monotone"
+                fill="url(#fillReceita)"
+                stroke="var(--color-receita)"
+                strokeWidth={2}
+              />
+              <Area
+                dataKey="premios"
+                type="monotone"
+                fill="url(#fillPremios)"
+                stroke="var(--color-premios)"
+                strokeWidth={2}
+              />
+              <Area
+                dataKey="saldo"
+                type="monotone"
+                fill="url(#fillSaldo)"
+                stroke="var(--color-saldo)"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )

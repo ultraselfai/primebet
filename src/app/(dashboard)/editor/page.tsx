@@ -602,6 +602,7 @@ export default function EditorPage() {
   const [avatars, setAvatars] = useState<Array<{ id: string; imageUrl: string; name?: string; isActive: boolean; _count: { users: number } }>>([]);
   const [loadingAvatars, setLoadingAvatars] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
   const experience = settings?.experience ?? ensureExperience(defaultExperience);
   const bottomNavItems = experience.navigation.bottomNav;
@@ -674,31 +675,61 @@ export default function EditorPage() {
   }, [fetchAvatars]);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const total = fileArray.length;
+    let successCount = 0;
+    let errorCount = 0;
 
     try {
       setUploadingAvatar(true);
-      const imageUrl = await uploadAsset(file, "avatars");
-      
-      // Criar avatar no banco
-      const response = await fetch("/api/admin/avatars", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl, name: file.name }),
-      });
+      setUploadProgress({ current: 0, total });
 
-      if (response.ok) {
-        toast.success("Avatar adicionado com sucesso!");
-        fetchAvatars();
-      } else {
-        throw new Error("Falha ao salvar avatar");
+      // Upload de cada arquivo em sequência
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i];
+        setUploadProgress({ current: i + 1, total });
+
+        try {
+          // Upload da imagem
+          const imageUrl = await uploadAsset(file, "avatars");
+          
+          // Criar avatar no banco
+          const response = await fetch("/api/admin/avatars", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl, name: file.name }),
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Erro ao fazer upload de ${file.name}:`, error);
+          errorCount++;
+        }
       }
+
+      // Mostrar resultado
+      if (successCount > 0 && errorCount === 0) {
+        toast.success(`${successCount} avatar${successCount > 1 ? 'es adicionados' : ' adicionado'} com sucesso!`);
+      } else if (successCount > 0 && errorCount > 0) {
+        toast.warning(`${successCount} adicionado${successCount > 1 ? 's' : ''}, ${errorCount} com erro`);
+      } else {
+        toast.error("Erro ao adicionar avatares");
+      }
+
+      fetchAvatars();
     } catch (error) {
-      console.error("Erro ao fazer upload do avatar:", error);
-      toast.error("Erro ao adicionar avatar");
+      console.error("Erro ao fazer upload de avatares:", error);
+      toast.error("Erro ao adicionar avatares");
     } finally {
       setUploadingAvatar(false);
+      setUploadProgress({ current: 0, total: 0 });
       event.target.value = "";
     }
   };
@@ -2905,17 +2936,22 @@ export default function EditorPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Upload de novo avatar */}
+                    {/* Upload de novos avatares - múltiplo */}
                     <div className="flex items-center gap-4">
                       <Label
                         htmlFor="avatar-upload"
                         className={cn(
-                          "flex h-24 w-24 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+                          "flex h-24 w-24 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-colors flex-col gap-1",
                           uploadingAvatar ? "opacity-50" : "hover:border-primary hover:bg-primary/5"
                         )}
                       >
                         {uploadingAvatar ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          <div className="flex flex-col items-center gap-1">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground">
+                              {uploadProgress.current}/{uploadProgress.total}
+                            </span>
+                          </div>
                         ) : (
                           <Plus className="h-6 w-6 text-muted-foreground" />
                         )}
@@ -2923,14 +2959,15 @@ export default function EditorPage() {
                           id="avatar-upload"
                           type="file"
                           accept="image/*"
+                          multiple
                           className="hidden"
                           onChange={handleAvatarUpload}
                           disabled={uploadingAvatar}
                         />
                       </Label>
                       <div>
-                        <p className="text-sm font-medium">Adicionar novo avatar</p>
-                        <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 500KB</p>
+                        <p className="text-sm font-medium">Adicionar avatares</p>
+                        <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 500KB cada. Selecione múltiplos arquivos.</p>
                       </div>
                     </div>
 

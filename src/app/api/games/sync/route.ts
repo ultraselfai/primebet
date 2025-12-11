@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           },
           create: {
             providerId: game.gameCode, 
-            providerName: 'Ultraself', 
+            providerName: 'PGSoft', 
             name: game.name,
             slug: generateSlug(game.name), 
             thumbnail: game.thumbnail,

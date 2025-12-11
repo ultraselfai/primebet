@@ -5,7 +5,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { WithdrawalStatus, Prisma } from "@prisma/client";
+import { WithdrawalStatus, Prisma, PixKeyType } from "@prisma/client";
+import { createWithdraw } from "@/services/podpay.service";
+
+// Mapear enum do Prisma para formato da API PodPay
+const pixKeyTypeToPodPay: Record<PixKeyType, "cpf" | "cnpj" | "email" | "phone" | "evp" | "copypaste"> = {
+  [PixKeyType.CPF]: "cpf",
+  [PixKeyType.CNPJ]: "cnpj",
+  [PixKeyType.EMAIL]: "email",
+  [PixKeyType.PHONE]: "phone",
+  [PixKeyType.RANDOM]: "evp", // PodPay usa 'evp' para chave aleatória
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -183,22 +193,69 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === "approve") {
-      // Aprovar saque
+      // Converter valor para centavos (PodPay trabalha em centavos)
+      const amountInCents = Math.round(Number(withdrawal.amount) * 100);
+      
+      // Mapear tipo de chave para formato PodPay
+      const podpayPixKeyType = pixKeyTypeToPodPay[withdrawal.pixKeyType];
+      
+      // URL do webhook para receber atualizações de status
+      const postbackUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/podpay/transfer`
+        : undefined;
+
+      console.log(`[Withdrawals] Processando saque ${id} via PodPay...`);
+      console.log(`[Withdrawals] Valor: R$ ${Number(withdrawal.amount)} (${amountInCents} centavos)`);
+      console.log(`[Withdrawals] Chave PIX (${podpayPixKeyType}): ${withdrawal.pixKey}`);
+
+      // Chamar API PodPay para processar o saque
+      const podpayResult = await createWithdraw({
+        amount: amountInCents,
+        pixKey: withdrawal.pixKey,
+        pixKeyType: podpayPixKeyType,
+        postbackUrl,
+        externalRef: withdrawal.id,
+        description: `Saque PrimeBet - ${withdrawal.user.name || withdrawal.user.email}`,
+      });
+
+      if (!podpayResult.success) {
+        console.error(`[Withdrawals] Erro PodPay: ${podpayResult.error}`);
+        return NextResponse.json(
+          { success: false, error: `Erro no gateway: ${podpayResult.error}` },
+          { status: 400 }
+        );
+      }
+
+      console.log(`[Withdrawals] PodPay Transfer ID: ${podpayResult.transfer.id}`);
+      console.log(`[Withdrawals] PodPay Status: ${podpayResult.transfer.status}`);
+
+      // Determinar status baseado na resposta da PodPay
+      // COMPLETED = já pago, PROCESSING/PENDING_ANALYSIS/PENDING_QUEUE = em processamento
+      const isPaid = podpayResult.transfer.status === "COMPLETED";
+      const newStatus = isPaid ? WithdrawalStatus.PAID : WithdrawalStatus.PROCESSING;
+
+      // Atualizar saque com dados da PodPay
       await prisma.withdrawal.update({
         where: { id },
         data: {
-          status: WithdrawalStatus.APPROVED,
+          status: newStatus,
           approvedAt: new Date(),
-          // approvedBy seria o ID do admin logado
+          paidAt: isPaid ? new Date() : null,
+          gatewayRef: podpayResult.transfer.id.toString(),
         },
       });
 
-      // TODO: Integrar com PodPay para processar pagamento
-      // const result = await createWithdraw({ ... })
-
       return NextResponse.json({
         success: true,
-        message: "Saque aprovado com sucesso",
+        message: isPaid 
+          ? "Saque aprovado e pago com sucesso!" 
+          : "Saque aprovado e enviado para processamento",
+        data: {
+          gatewayRef: podpayResult.transfer.id,
+          status: newStatus,
+          netAmount: podpayResult.transfer.netAmount / 100, // Converter de centavos
+          fee: podpayResult.transfer.fee / 100,
+        },
       });
     } else if (action === "reject") {
       if (!reason) {

@@ -1,10 +1,10 @@
 ﻿/**
  * Game Provider Service
- * Integração real com a API Ultraself
- * Documentação: https://api.ultraself.space/api/docs
+ * Integração real com a API Game Provider
+ * Documentação: https://api.gameprovider.fun/api/docs
  */
 
-const PROVIDER_API = process.env.GAME_PROVIDER_URL || 'https://api.ultraself.space/api/v1';
+const PROVIDER_API = process.env.GAME_PROVIDER_URL || 'https://api.gameprovider.fun/api/v1';
 const API_KEY = process.env.GAME_PROVIDER_API_KEY || '';
 const API_SECRET = process.env.GAME_PROVIDER_SECRET || '';
 

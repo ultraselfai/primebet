@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { invalidateBalanceCache } from "@/lib/balance-cache";
 
 /**
- * Webhook de Crédito (Ganho) - Ultraself Game Provider
+ * Webhook de Crédito (Ganho) - Game Provider
  * 
  * POST /api/webhooks/game-provider/credit
  * 

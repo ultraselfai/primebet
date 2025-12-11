@@ -461,7 +461,7 @@ export default function JogosPage() {
             <CardDescription>Provider</CardDescription>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Gamepad2 className="w-5 h-5" />
-              Ultraself
+              PGSoft
             </CardTitle>
           </CardHeader>
           <CardContent>

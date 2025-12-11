@@ -1,6 +1,6 @@
 // ============================================
 // PrimeBet - Create Withdrawal API
-// Cria solicitação de saque
+// Cria solicitação de saque com aprovação automática
 // ============================================
 
 import { NextRequest, NextResponse } from "next/server";
@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 import { WithdrawalStatus, WithdrawType, PixKeyType } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { defaultSettings } from "@/lib/settings/defaults";
+import { createWithdraw } from "@/services/podpay.service";
 
 interface CreateWithdrawalBody {
   amount: number;
@@ -16,13 +17,22 @@ interface CreateWithdrawalBody {
   pixKey: string;
 }
 
-// Mapear tipo de chave do frontend para o enum
+// Mapear tipo de chave do frontend para o enum do Prisma
 const pixKeyTypeMap: Record<string, PixKeyType> = {
   cpf: PixKeyType.CPF,
   cnpj: PixKeyType.CNPJ,
   email: PixKeyType.EMAIL,
   phone: PixKeyType.PHONE,
   random: PixKeyType.RANDOM,
+};
+
+// Mapear enum do Prisma para formato da API PodPay
+const pixKeyTypeToPodPay: Record<PixKeyType, "cpf" | "cnpj" | "email" | "phone" | "evp" | "copypaste"> = {
+  [PixKeyType.CPF]: "cpf",
+  [PixKeyType.CNPJ]: "cnpj",
+  [PixKeyType.EMAIL]: "email",
+  [PixKeyType.PHONE]: "phone",
+  [PixKeyType.RANDOM]: "evp", // PodPay usa 'evp' para chave aleatória
 };
 
 async function getFinancialSettings() {
@@ -37,6 +47,7 @@ async function getFinancialSettings() {
       return {
         minWithdrawal: financial?.minWithdrawal ?? defaultSettings.financial.minWithdrawal,
         maxWithdrawal: financial?.maxWithdrawal ?? defaultSettings.financial.maxWithdrawal,
+        autoApprovalLimit: financial?.autoApprovalLimit ?? defaultSettings.financial.autoApprovalLimit,
       };
     }
   } catch (error) {
@@ -46,6 +57,7 @@ async function getFinancialSettings() {
   return {
     minWithdrawal: defaultSettings.financial.minWithdrawal,
     maxWithdrawal: defaultSettings.financial.maxWithdrawal,
+    autoApprovalLimit: defaultSettings.financial.autoApprovalLimit,
   };
 }
 
@@ -132,6 +144,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verificar se deve aprovar automaticamente
+    const shouldAutoApprove = amount <= settings.autoApprovalLimit;
+    
+    console.log(`[Create Withdrawal] Valor: R$ ${amount} | Limite auto: R$ ${settings.autoApprovalLimit} | Auto-aprovar: ${shouldAutoApprove}`);
+
+    // Buscar dados do usuário para descrição
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
     // Criar saque em transação atômica
     const withdrawal = await prisma.$transaction(async (tx) => {
       // 1. Debitar saldo
@@ -144,7 +167,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // 2. Criar solicitação de saque
+      // 2. Criar solicitação de saque (status inicial depende se é auto ou manual)
       const newWithdrawal = await tx.withdrawal.create({
         data: {
           userId,
@@ -152,7 +175,8 @@ export async function POST(request: NextRequest) {
           type: WithdrawType.GAME_BALANCE,
           pixKeyType: pixKeyTypeMap[pixKeyType],
           pixKey,
-          status: WithdrawalStatus.PENDING,
+          status: shouldAutoApprove ? WithdrawalStatus.PROCESSING : WithdrawalStatus.PENDING,
+          approvedAt: shouldAutoApprove ? new Date() : null,
         },
       });
 
@@ -160,13 +184,14 @@ export async function POST(request: NextRequest) {
       await tx.auditLog.create({
         data: {
           userId,
-          action: "WITHDRAWAL_REQUESTED",
+          action: shouldAutoApprove ? "WITHDRAWAL_AUTO_APPROVED" : "WITHDRAWAL_REQUESTED",
           entity: "Withdrawal",
           entityId: newWithdrawal.id,
           newData: {
             amount,
             pixKeyType,
             pixKey,
+            autoApproved: shouldAutoApprove,
           },
           ip: request.headers.get("x-forwarded-for") || "unknown",
         },
@@ -175,8 +200,85 @@ export async function POST(request: NextRequest) {
       return newWithdrawal;
     });
 
-    console.log(`[Create Withdrawal] Saque criado: ${withdrawal.id} - R$ ${amount} - Usuário: ${userId}`);
+    console.log(`[Create Withdrawal] Saque criado: ${withdrawal.id} - R$ ${amount} - Auto: ${shouldAutoApprove}`);
 
+    // Se for aprovação automática, processar via PodPay imediatamente
+    if (shouldAutoApprove) {
+      const amountInCents = Math.round(amount * 100);
+      const podpayPixKeyType = pixKeyTypeToPodPay[pixKeyTypeMap[pixKeyType]];
+      const postbackUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/podpay/transfer`
+        : undefined;
+
+      console.log(`[Create Withdrawal] Processando saque automático via PodPay...`);
+
+      const podpayResult = await createWithdraw({
+        amount: amountInCents,
+        pixKey,
+        pixKeyType: podpayPixKeyType,
+        postbackUrl,
+        externalRef: withdrawal.id,
+        description: `Saque PrimeBet - ${user?.name || user?.email || userId}`,
+      });
+
+      if (podpayResult.success) {
+        // Atualizar saque com dados do gateway
+        const isPaid = podpayResult.transfer.status === "COMPLETED";
+        await prisma.withdrawal.update({
+          where: { id: withdrawal.id },
+          data: {
+            status: isPaid ? WithdrawalStatus.PAID : WithdrawalStatus.PROCESSING,
+            paidAt: isPaid ? new Date() : null,
+            gatewayRef: podpayResult.transfer.id.toString(),
+          },
+        });
+
+        console.log(`[Create Withdrawal] PodPay OK - ID: ${podpayResult.transfer.id} - Status: ${podpayResult.transfer.status}`);
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            withdrawalId: withdrawal.id,
+            amount: Number(withdrawal.amount),
+            status: isPaid ? "PAID" : "PROCESSING",
+            pixKeyType: withdrawal.pixKeyType,
+            pixKey: withdrawal.pixKey,
+            createdAt: withdrawal.createdAt.toISOString(),
+            autoApproved: true,
+            message: isPaid 
+              ? "Saque processado e enviado com sucesso!" 
+              : "Saque aprovado automaticamente e está sendo processado.",
+          },
+        });
+      } else {
+        // Falha no gateway - reverter saldo e marcar como falha
+        console.error(`[Create Withdrawal] Erro PodPay: ${podpayResult.error}`);
+        
+        await prisma.$transaction(async (tx) => {
+          // Devolver saldo
+          await tx.walletGame.update({
+            where: { userId },
+            data: { balance: { increment: amount } },
+          });
+          
+          // Marcar como falha
+          await tx.withdrawal.update({
+            where: { id: withdrawal.id },
+            data: {
+              status: WithdrawalStatus.FAILED,
+              rejectReason: `Erro no gateway: ${podpayResult.error}`,
+            },
+          });
+        });
+
+        return NextResponse.json(
+          { success: false, error: `Erro ao processar saque: ${podpayResult.error}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Saque precisa de aprovação manual
     return NextResponse.json({
       success: true,
       data: {
@@ -186,6 +288,8 @@ export async function POST(request: NextRequest) {
         pixKeyType: withdrawal.pixKeyType,
         pixKey: withdrawal.pixKey,
         createdAt: withdrawal.createdAt.toISOString(),
+        autoApproved: false,
+        message: "Solicitação de saque enviada para aprovação.",
       },
     });
   } catch (error) {

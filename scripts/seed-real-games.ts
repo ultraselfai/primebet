@@ -2,11 +2,11 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Jogos reais do Ultraself Provider
+// Jogos reais do PGSoft Provider
 const realGames = [
   {
     providerId: 'fortunetiger',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Fortune Tiger',
     slug: 'fortune-tiger',
     thumbnail: '/banners-slots/fortune-tiger.webp',
@@ -20,7 +20,7 @@ const realGames = [
   },
   {
     providerId: 'fortuneox',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Fortune Ox',
     slug: 'fortune-ox',
     thumbnail: '/banners-slots/fortune-ox.webp',
@@ -34,7 +34,7 @@ const realGames = [
   },
   {
     providerId: 'fortunemouse',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Fortune Mouse',
     slug: 'fortune-mouse',
     thumbnail: '/banners-slots/fortune-mouse.webp',
@@ -48,7 +48,7 @@ const realGames = [
   },
   {
     providerId: 'fortunepanda',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Fortune Panda',
     slug: 'fortune-panda',
     thumbnail: '/banners-slots/fortune-panda.webp',
@@ -62,7 +62,7 @@ const realGames = [
   },
   {
     providerId: 'fortunerabbit',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Fortune Rabbit',
     slug: 'fortune-rabbit',
     thumbnail: '/banners-slots/fortune-rabbit.webp',
@@ -76,7 +76,7 @@ const realGames = [
   },
   {
     providerId: 'phoenixrises',
-    providerName: 'Ultraself',
+    providerName: 'PGSoft',
     name: 'Phoenix Rises',
     slug: 'phoenix-rises',
     thumbnail: '/banners-slots/phoenix-rises.webp',
@@ -95,7 +95,7 @@ async function main() {
   const deleted = await prisma.game.deleteMany()
   console.log(`   Deletados: ${deleted.count} jogos`)
 
-  console.log('\n🎮 Criando jogos reais do Ultraself...')
+  console.log('\n🎮 Criando jogos reais do PGSoft...')
   for (const game of realGames) {
     const created = await prisma.game.create({
       data: game,

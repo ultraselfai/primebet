@@ -21,6 +21,9 @@ import { toast } from "sonner";
 // Valores rápidos para seleção
 const QUICK_VALUES = [10, 20, 40, 50, 60, 100, 200];
 
+// Limite máximo por saque definido pelo gateway PodPay
+const PODPAY_MAX_WITHDRAWAL = 2500;
+
 // Tipos de chave PIX
 const PIX_KEY_TYPES = [
   { value: "cpf", label: "CPF" },
@@ -39,6 +42,8 @@ export default function SacarPage() {
   const [pixKey, setPixKey] = useState("");
   const [step, setStep] = useState<1 | 2 | "success">(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [wasAutoApproved, setWasAutoApproved] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   
   // Configurações do sistema
   const [minWithdrawal, setMinWithdrawal] = useState(20); // Default, será sobrescrito pela API
@@ -119,6 +124,15 @@ export default function SacarPage() {
       return false;
     }
     
+    // Limite máximo do gateway PodPay (R$ 2.500 por saque)
+    if (numericAmount > PODPAY_MAX_WITHDRAWAL) {
+      toast.error(`Erro: Saque máximo permitido R$ ${formatCurrencyDisplay(PODPAY_MAX_WITHDRAWAL)}`, {
+        description: "O limite máximo por saque é de R$ 2.500,00. Para valores maiores, realize múltiplos saques.",
+        duration: 5000,
+      });
+      return false;
+    }
+    
     if (numericAmount > maxWithdrawal) {
       toast.error(`O valor máximo para saque é R$ ${formatCurrencyDisplay(maxWithdrawal)}`);
       return false;
@@ -171,6 +185,8 @@ export default function SacarPage() {
       const result = await response.json();
       
       if (result.success) {
+        setWasAutoApproved(result.data?.autoApproved || false);
+        setSuccessMessage(result.data?.message || "");
         setStep("success");
       } else {
         toast.error(result.error || "Erro ao solicitar saque");
@@ -189,15 +205,28 @@ export default function SacarPage() {
   if (step === "success") {
     return (
       <div className="min-h-screen bg-[#0a1628] flex flex-col items-center justify-center p-6">
-        <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-          <Check className="w-10 h-10 text-green-500" />
+        <div className={cn(
+          "w-20 h-20 rounded-full flex items-center justify-center mb-6",
+          wasAutoApproved ? "bg-green-500/20" : "bg-yellow-500/20"
+        )}>
+          {wasAutoApproved ? (
+            <Check className="w-10 h-10 text-green-500" />
+          ) : (
+            <Clock className="w-10 h-10 text-yellow-500" />
+          )}
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Saque Solicitado!</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">
+          {wasAutoApproved ? "Saque Aprovado!" : "Saque Solicitado!"}
+        </h1>
         <p className="text-white/60 text-center mb-2">
-          Sua solicitação foi enviada com sucesso.
+          {successMessage || (wasAutoApproved 
+            ? "Seu saque foi aprovado automaticamente e está sendo processado." 
+            : "Sua solicitação foi enviada para aprovação.")}
         </p>
         <p className="text-white/40 text-sm text-center mb-8">
-          O valor será creditado em até 24 horas úteis.
+          {wasAutoApproved 
+            ? "O valor será creditado em alguns minutos." 
+            : "O valor será creditado após aprovação (até 24 horas úteis)."}
         </p>
 
         <div className="w-full max-w-sm p-4 rounded-xl bg-white/5 mb-6">

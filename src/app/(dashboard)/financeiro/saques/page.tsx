@@ -11,6 +11,8 @@ import {
   Eye,
   RefreshCw,
   Loader2,
+  Settings,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +57,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface Withdrawal {
@@ -109,9 +112,34 @@ export default function SaquesPage() {
   
   // Dialog states
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // Config states
+  const [autoApprovalLimit, setAutoApprovalLimit] = useState(100);
+  const [tempLimit, setTempLimit] = useState("100");
+  const [configLoading, setConfigLoading] = useState(false);
+
+  // Buscar configuração de aprovação automática
+  const fetchConfig = useCallback(async () => {
+    try {
+      const response = await fetch("/api/settings/public");
+      if (response.ok) {
+        const data = await response.json();
+        const limit = data.financial?.autoApprovalLimit ?? 100;
+        setAutoApprovalLimit(limit);
+        setTempLimit(String(limit));
+      }
+    } catch (error) {
+      console.error("Erro ao buscar configuração:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   const fetchWithdrawals = useCallback(async () => {
     try {
@@ -230,6 +258,37 @@ export default function SaquesPage() {
 
   const stats = data?.stats || { pending: { count: 0, amount: 0 }, today: { count: 0, amount: 0 } };
 
+  const handleSaveConfig = async () => {
+    const newLimit = parseFloat(tempLimit.replace(/\./g, "").replace(",", "."));
+    if (isNaN(newLimit) || newLimit < 0) {
+      toast.error("Digite um valor válido");
+      return;
+    }
+
+    setConfigLoading(true);
+    try {
+      const response = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          financial: { autoApprovalLimit: newLimit },
+        }),
+      });
+
+      if (response.ok) {
+        setAutoApprovalLimit(newLimit);
+        setConfigDialogOpen(false);
+        toast.success(`Limite de aprovação automática alterado para R$ ${newLimit.toFixed(2)}`);
+      } else {
+        toast.error("Erro ao salvar configuração");
+      }
+    } catch {
+      toast.error("Erro de conexão");
+    } finally {
+      setConfigLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 px-4 lg:px-6">
       {/* Header */}
@@ -240,15 +299,42 @@ export default function SaquesPage() {
             Gerencie e aprove as solicitações de saque dos usuários
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchWithdrawals} disabled={loading}>
-          {loading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4 mr-2" />
-          )}
-          Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              setTempLimit(String(autoApprovalLimit));
+              setConfigDialogOpen(true);
+            }}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Configurar Aprovação
+          </Button>
+          <Button variant="outline" size="sm" onClick={fetchWithdrawals} disabled={loading}>
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Atualizar
+          </Button>
+        </div>
       </div>
+
+      {/* Info Banner - Auto Approval */}
+      <Card className="border-l-4 border-l-blue-500 bg-blue-500/5">
+        <CardContent className="py-3 px-4 flex items-center gap-3">
+          <Zap className="w-5 h-5 text-blue-500" />
+          <div className="flex-1">
+            <p className="text-sm">
+              <span className="font-medium">Aprovação automática ativada:</span>{" "}
+              Saques até <span className="font-semibold text-blue-600">R$ {autoApprovalLimit.toFixed(2)}</span> são processados automaticamente.
+              Valores acima aparecem aqui para aprovação manual.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -504,6 +590,52 @@ export default function SaquesPage() {
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
               Rejeitar Saque
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Config Dialog */}
+      <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurar Aprovação Automática</DialogTitle>
+            <DialogDescription>
+              Defina o limite para aprovação automática de saques. Saques até esse valor serão processados automaticamente pelo sistema.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="limit">Limite de aprovação automática (R$)</Label>
+              <Input
+                id="limit"
+                type="text"
+                placeholder="100,00"
+                value={tempLimit}
+                onChange={(e) => setTempLimit(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Saques até R$ {parseFloat(tempLimit.replace(/\./g, "").replace(",", ".")) || 0} serão aprovados automaticamente.
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-sm text-amber-600">
+                <strong>Atenção:</strong> Saques automáticos são enviados diretamente para o gateway de pagamento. Certifique-se de que o saldo da conta no gateway é suficiente.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfigDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSaveConfig}
+              disabled={configLoading}
+            >
+              {configLoading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
+              Salvar Configuração
             </Button>
           </DialogFooter>
         </DialogContent>

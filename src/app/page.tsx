@@ -93,7 +93,7 @@ function HomeContent() {
               id: game.id,
               name: game.name,
               thumbnail: game.thumbnail || "/placeholder-game.png",
-              provider: game.provider || "Ultraself",
+              provider: game.provider || "PGSoft",
               isHot: game.isHot || false,
               isNew: false,
               isFavorite: false,

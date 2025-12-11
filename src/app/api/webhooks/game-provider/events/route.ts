@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Webhook de Eventos Gerais - Ultraself Game Provider
+ * Webhook de Eventos Gerais - Game Provider
  * 
  * POST /api/webhooks/game-provider/events
  * 
