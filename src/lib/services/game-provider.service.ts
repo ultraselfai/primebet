@@ -11,6 +11,22 @@ const API_SECRET = process.env.GAME_PROVIDER_SECRET || '';
 let cachedToken: string | null = null;
 let tokenExpiresAt: Date | null = null;
 
+// Interface que reflete exatamente o que a API retorna
+export interface ProviderGameRaw {
+  id: string;
+  gameCode: string;
+  gameName: string;  // API retorna "gameName" não "name"
+  provider: string;
+  rtp: number;
+  volatility: string;
+  isActive: boolean;
+  // Campos opcionais que podem não vir
+  thumbnail?: string;
+  minBet?: number;
+  maxBet?: number;
+}
+
+// Interface normalizada para uso interno
 export interface ProviderGame {
   gameCode: string;
   name: string;
@@ -91,7 +107,19 @@ export async function getProviderGames(): Promise<ProviderGame[]> {
     throw new Error(data.message || 'Falha ao obter jogos do Provider');
   }
 
-  return data.data;
+  // Mapear os campos da API para o formato esperado internamente
+  const rawGames: ProviderGameRaw[] = data.data;
+  
+  return rawGames.map((game): ProviderGame => ({
+    gameCode: game.gameCode,
+    name: game.gameName,  // API retorna "gameName"
+    thumbnail: game.thumbnail || `/games/${game.gameCode}.webp`,  // Fallback para thumbnail local
+    rtp: game.rtp,
+    volatility: (game.volatility?.toLowerCase() || 'medium') as 'low' | 'medium' | 'high',
+    minBet: game.minBet || 0.5,
+    maxBet: game.maxBet || 1000,
+    isActive: game.isActive,
+  }));
 }
 
 export async function createGameSession(params: {

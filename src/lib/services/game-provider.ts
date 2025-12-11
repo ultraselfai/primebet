@@ -191,11 +191,14 @@ export async function testConnection(): Promise<{
 }> {
   try {
     const profile = await getAgentProfile();
+    // Buscar jogos da API para contar corretamente
+    // O campo allowedGames do profile pode estar vazio se não houver restrições
+    const games = await getGames();
     return {
       success: true,
       agentName: profile.name,
       spinCredits: profile.spinCredits,
-      allowedGames: profile.allowedGames?.length || 0,
+      allowedGames: games.length,
     };
   } catch (error) {
     return {
