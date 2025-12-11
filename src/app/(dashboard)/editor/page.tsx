@@ -687,14 +687,17 @@ export default function EditorPage() {
       setUploadingAvatar(true);
       setUploadProgress({ current: 0, total });
 
-      // Upload de cada arquivo em sequência
+      // Upload de cada arquivo em sequência com delay para evitar rate limiting
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i];
         setUploadProgress({ current: i + 1, total });
 
         try {
+          console.log(`[Avatar Upload] Iniciando upload ${i + 1}/${total}: ${file.name}`);
+          
           // Upload da imagem
           const imageUrl = await uploadAsset(file, "avatars");
+          console.log(`[Avatar Upload] Upload concluído: ${imageUrl}`);
           
           // Criar avatar no banco
           const response = await fetch("/api/admin/avatars", {
@@ -705,11 +708,19 @@ export default function EditorPage() {
 
           if (response.ok) {
             successCount++;
+            console.log(`[Avatar Upload] Avatar salvo no banco: ${file.name}`);
           } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error(`[Avatar Upload] Erro ao salvar no banco: ${file.name}`, errorData);
             errorCount++;
           }
+          
+          // Pequeno delay entre uploads para evitar sobrecarga
+          if (i < fileArray.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
         } catch (error) {
-          console.error(`Erro ao fazer upload de ${file.name}:`, error);
+          console.error(`[Avatar Upload] Erro ao fazer upload de ${file.name}:`, error);
           errorCount++;
         }
       }
@@ -2967,7 +2978,7 @@ export default function EditorPage() {
                       </Label>
                       <div>
                         <p className="text-sm font-medium">Adicionar avatares</p>
-                        <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 500KB cada. Selecione múltiplos arquivos.</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG ou WebP, máx. 5MB cada. Selecione múltiplos arquivos.</p>
                       </div>
                     </div>
 
