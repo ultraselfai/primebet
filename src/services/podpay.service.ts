@@ -42,8 +42,8 @@ interface CreateTransferParams {
   postbackUrl?: string;
   externalRef?: string;
   description?: string;
-  // Se true, a taxa é descontada do valor (usuário paga).
-  // Se false (padrão), a plataforma absorve a taxa (usuário recebe o valor integral).
+  // Se false, a taxa é descontada do valor solicitado (usuário paga).
+  // Se true (padrão), a taxa é adicionada ao total (plataforma absorve, usuário recebe integral).
   netPayout?: boolean;
 }
 
@@ -300,15 +300,15 @@ export async function getTransaction(transactionId: number): Promise<
 export async function createWithdraw(params: CreateTransferParams): Promise<
   { success: true; transfer: PodPayTransfer } | { success: false; error: string }
 > {
-  // netPayout: false = plataforma absorve a taxa (usuário recebe valor integral)
-  // netPayout: true = taxa descontada do valor (usuário paga a taxa)
+  // netPayout: false = taxa DESCONTADA do valor solicitado (usuário paga a taxa)
+  // netPayout: true = taxa ADICIONADA ao total (plataforma absorve, usuário recebe valor integral)
   const result = await podpayRequest<PodPayTransfer>("/transfers", {
     method: "POST",
     useWithdrawKey: true,
     body: {
       method: "fiat",
       amount: params.amount,
-      netPayout: params.netPayout ?? false, // Padrão: plataforma absorve
+      netPayout: params.netPayout ?? true, // Padrão: plataforma absorve (true = adiciona taxa ao total)
       pixKey: params.pixKey,
       pixKeyType: params.pixKeyType,
       postbackUrl: params.postbackUrl,

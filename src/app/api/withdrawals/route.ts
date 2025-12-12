@@ -238,9 +238,9 @@ export async function PATCH(request: NextRequest) {
         postbackUrl,
         externalRef: withdrawal.id,
         description: `Saque PrimeBet - ${withdrawal.user.name || withdrawal.user.email}`,
-        // netPayout: true = taxa descontada do usuário
-        // netPayout: false = plataforma absorve (usuário recebe valor integral)
-        netPayout: chargeTransactionFee,
+        // netPayout: false = taxa descontada do usuário (chargeTransactionFee=true)
+        // netPayout: true = plataforma absorve (chargeTransactionFee=false)
+        netPayout: !chargeTransactionFee,
       });
 
       if (!podpayResult.success) {
