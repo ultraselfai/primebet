@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 import { defaultExperience, defaultSettings } from "./defaults";
@@ -20,8 +19,9 @@ const defaultPublicSettings: PublicSettings = {
   experience: defaultExperience,
 };
 
-// Função interna que busca as settings do banco
-async function fetchPublicSettingsFromDb(): Promise<PublicSettings> {
+// Função que busca as settings diretamente do banco (sem cache intermediário)
+// O cache deve ser gerenciado apenas no cliente via PublicSettingsContext
+export async function loadPublicSettings(): Promise<PublicSettings> {
   try {
     const record = await prisma.siteSettings.findUnique({
       where: { id: "default" },
@@ -78,16 +78,5 @@ async function fetchPublicSettingsFromDb(): Promise<PublicSettings> {
     return defaultPublicSettings;
   }
 }
-
-// Função exportada com cache controlado por tag
-// Quando revalidateTag("settings") é chamado, o cache é limpo
-export const loadPublicSettings = unstable_cache(
-  fetchPublicSettingsFromDb,
-  ["public-settings"],
-  {
-    tags: ["settings"],
-    revalidate: 60, // Revalida a cada 60 segundos como fallback
-  }
-);
 
 export { defaultPublicSettings };

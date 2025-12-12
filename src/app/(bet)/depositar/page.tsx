@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Check, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,9 @@ interface PixData {
 }
 
 export default function DepositarPage() {
+  const router = useRouter();
   const { user, refreshBalance } = useBetAuth();
-  const { settings } = usePublicSettings();
+  const { settings, refresh: refreshSettings } = usePublicSettings();
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"amount" | "pix">("amount");
   const [copied, setCopied] = useState(false);
@@ -161,11 +163,14 @@ export default function DepositarPage() {
           toast.success("🎉 Pagamento confirmado! Seu saldo foi atualizado.", {
             duration: 5000,
           });
-          // Forçar refresh do saldo (sem cache)
-          await refreshBalance?.(true);
-          // Redirecionar para home após um breve delay
+          // Forçar refresh do saldo e settings (sem cache)
+          await Promise.all([
+            refreshBalance?.(true),
+            refreshSettings(),
+          ]);
+          // Redirecionar para home após um breve delay (usando router para manter estado React)
           setTimeout(() => {
-            window.location.href = "/";
+            router.push("/");
           }, 2000);
         }
       }
@@ -174,7 +179,7 @@ export default function DepositarPage() {
     } finally {
       setCheckingPayment(false);
     }
-  }, [pixData?.transactionId, checkingPayment, refreshBalance]);
+  }, [pixData?.transactionId, checkingPayment, refreshBalance, refreshSettings, router]);
 
   useEffect(() => {
     if (step !== "pix" || !pixData) return;

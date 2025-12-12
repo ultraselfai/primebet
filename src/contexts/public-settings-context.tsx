@@ -14,7 +14,13 @@ interface PublicSettingsContextValue {
 const PublicSettingsContext = React.createContext<PublicSettingsContextValue | undefined>(undefined);
 
 async function fetchPublicSettings(): Promise<PublicSettings> {
-  const response = await fetch("/api/settings/public", { cache: "no-store" });
+  const response = await fetch("/api/settings/public", { 
+    cache: "no-store",
+    // Adiciona timestamp para evitar cache do browser
+    headers: {
+      "Cache-Control": "no-cache",
+    },
+  });
   if (!response.ok) {
     throw new Error("Falha ao carregar configurações públicas");
   }
@@ -30,6 +36,7 @@ export function PublicSettingsProvider({ children, initialSettings = null }: Pub
   const [settings, setSettings] = React.useState<PublicSettings | null>(initialSettings);
   const [loading, setLoading] = React.useState(!initialSettings);
   const [error, setError] = React.useState<string | null>(null);
+  const [hasHydrated, setHasHydrated] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     try {
@@ -87,10 +94,48 @@ export function PublicSettingsProvider({ children, initialSettings = null }: Pub
   }, []);
 
   React.useEffect(() => {
-    if (!initialSettings) {
-      refresh();
+    // Sempre busca do servidor após hidratação para garantir dados atualizados
+    // Isso resolve o problema de cache stale do Next.js server-side
+    if (!hasHydrated) {
+      setHasHydrated(true);
+      // Se temos initialSettings, fazemos refresh silencioso em background
+      // Se não temos, fazemos refresh com loading state
+      if (initialSettings) {
+        // Refresh silencioso - não mostra loading, apenas atualiza se houver diferença
+        fetchPublicSettings()
+          .then((data) => {
+            setSettings(data);
+          })
+          .catch((err) => {
+            console.warn("[PublicSettings] Falha ao revalidar settings:", err);
+            // Mantém initialSettings em caso de erro
+          });
+      } else {
+        refresh();
+      }
     }
-  }, [initialSettings, refresh]);
+  }, [hasHydrated, initialSettings, refresh]);
+
+  // Revalida settings quando a janela volta ao foco
+  // Isso garante que após pagar PIX (que pode abrir app do banco), as settings estejam atualizadas
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && hasHydrated) {
+        fetchPublicSettings()
+          .then((data) => {
+            setSettings(data);
+          })
+          .catch((err) => {
+            console.warn("[PublicSettings] Falha ao revalidar no focus:", err);
+          });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [hasHydrated]);
 
   return (
     <PublicSettingsContext.Provider value={{ settings, loading, error, refresh, updateCache }}>
