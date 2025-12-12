@@ -386,16 +386,16 @@ export async function GET(request: NextRequest) {
       ? (depositsToday / totalDepositsAttempted) * 100 
       : 0;
     
-    // Gateway balance (PodPay)
+    // Gateway balance (PodPay) - valores vêm em centavos, converter para reais
     let gatewayBalance = null;
     try {
       const balanceResult = await gatewayBalancePromise;
       if (balanceResult && balanceResult.success && balanceResult.balance) {
         const bal = balanceResult.balance;
         gatewayBalance = {
-          available: Number(bal.amount || 0),
-          waitingFunds: Number(bal.waitingFunds || 0),
-          reserve: Number(bal.reserve || 0),
+          available: Number(bal.amount || 0) / 100,
+          waitingFunds: Number(bal.waitingFunds || 0) / 100,
+          reserve: Number(bal.reserve || 0) / 100,
         };
       }
     } catch (e) {
