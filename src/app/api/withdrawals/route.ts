@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { WithdrawalStatus, Prisma, PixKeyType } from "@prisma/client";
 import { createWithdraw } from "@/services/podpay.service";
+import { defaultSettings } from "@/lib/settings/defaults";
 
 // Mapear enum do Prisma para formato da API PodPay
 const pixKeyTypeToPodPay: Record<PixKeyType, "cpf" | "cnpj" | "email" | "phone" | "evp" | "copypaste"> = {
@@ -16,6 +17,23 @@ const pixKeyTypeToPodPay: Record<PixKeyType, "cpf" | "cnpj" | "email" | "phone" 
   [PixKeyType.PHONE]: "phone",
   [PixKeyType.RANDOM]: "evp", // PodPay usa 'evp' para chave aleatória
 };
+
+// Buscar configuração de taxa de transação
+async function getChargeTransactionFee(): Promise<boolean> {
+  try {
+    const record = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
+    if (record?.data) {
+      const data = record.data as Record<string, unknown>;
+      const financial = data.financial as Record<string, unknown> | undefined;
+      return (financial?.chargeTransactionFee as boolean) ?? defaultSettings.financial.chargeTransactionFee;
+    }
+  } catch (error) {
+    console.error("[Withdrawals] Erro ao buscar configurações:", error);
+  }
+  return defaultSettings.financial.chargeTransactionFee;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -204,9 +222,13 @@ export async function PATCH(request: NextRequest) {
         ? `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/podpay/transfer`
         : undefined;
 
+      // Buscar configuração de taxa
+      const chargeTransactionFee = await getChargeTransactionFee();
+
       console.log(`[Withdrawals] Processando saque ${id} via PodPay...`);
       console.log(`[Withdrawals] Valor: R$ ${Number(withdrawal.amount)} (${amountInCents} centavos)`);
       console.log(`[Withdrawals] Chave PIX (${podpayPixKeyType}): ${withdrawal.pixKey}`);
+      console.log(`[Withdrawals] netPayout (taxa do usuário): ${chargeTransactionFee}`);
 
       // Chamar API PodPay para processar o saque
       const podpayResult = await createWithdraw({
@@ -216,6 +238,9 @@ export async function PATCH(request: NextRequest) {
         postbackUrl,
         externalRef: withdrawal.id,
         description: `Saque PrimeBet - ${withdrawal.user.name || withdrawal.user.email}`,
+        // netPayout: true = taxa descontada do usuário
+        // netPayout: false = plataforma absorve (usuário recebe valor integral)
+        netPayout: chargeTransactionFee,
       });
 
       if (!podpayResult.success) {

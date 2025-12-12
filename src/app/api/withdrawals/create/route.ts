@@ -43,11 +43,13 @@ async function getFinancialSettings() {
     
     if (record?.data) {
       const data = record.data as Record<string, unknown>;
-      const financial = data.financial as Record<string, number> | undefined;
+      const financial = data.financial as Record<string, unknown> | undefined;
       return {
-        minWithdrawal: financial?.minWithdrawal ?? defaultSettings.financial.minWithdrawal,
-        maxWithdrawal: financial?.maxWithdrawal ?? defaultSettings.financial.maxWithdrawal,
-        autoApprovalLimit: financial?.autoApprovalLimit ?? defaultSettings.financial.autoApprovalLimit,
+        minWithdrawal: (financial?.minWithdrawal as number) ?? defaultSettings.financial.minWithdrawal,
+        maxWithdrawal: (financial?.maxWithdrawal as number) ?? defaultSettings.financial.maxWithdrawal,
+        autoApprovalLimit: (financial?.autoApprovalLimit as number) ?? defaultSettings.financial.autoApprovalLimit,
+        // chargeTransactionFee: true = usuário paga a taxa, false = plataforma absorve
+        chargeTransactionFee: (financial?.chargeTransactionFee as boolean) ?? defaultSettings.financial.chargeTransactionFee,
       };
     }
   } catch (error) {
@@ -58,6 +60,7 @@ async function getFinancialSettings() {
     minWithdrawal: defaultSettings.financial.minWithdrawal,
     maxWithdrawal: defaultSettings.financial.maxWithdrawal,
     autoApprovalLimit: defaultSettings.financial.autoApprovalLimit,
+    chargeTransactionFee: defaultSettings.financial.chargeTransactionFee,
   };
 }
 
@@ -210,7 +213,7 @@ export async function POST(request: NextRequest) {
         ? `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/podpay/transfer`
         : undefined;
 
-      console.log(`[Create Withdrawal] Processando saque automático via PodPay...`);
+      console.log(`[Create Withdrawal] Processando saque automático via PodPay... netPayout=${settings.chargeTransactionFee}`);
 
       const podpayResult = await createWithdraw({
         amount: amountInCents,
@@ -219,6 +222,9 @@ export async function POST(request: NextRequest) {
         postbackUrl,
         externalRef: withdrawal.id,
         description: `Saque PrimeBet - ${user?.name || user?.email || userId}`,
+        // netPayout: true = taxa descontada do usuário
+        // netPayout: false = plataforma absorve (usuário recebe valor integral)
+        netPayout: settings.chargeTransactionFee,
       });
 
       if (podpayResult.success) {
