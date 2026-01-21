@@ -1,0 +1,1918 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-01-20T18:24:44.532Z",
+  "stack": {
+    "primaryLanguage": "typescript",
+    "languages": [
+      "javascript",
+      "typescript"
+    ],
+    "frameworks": [
+      "nextjs"
+    ],
+    "buildTools": [
+      "docker-compose"
+    ],
+    "testFrameworks": [],
+    "packageManager": "pnpm",
+    "isMonorepo": false,
+    "hasDocker": true,
+    "hasCI": true
+  },
+  "structure": {
+    "totalFiles": 22542,
+    "topDirectories": [
+      {
+        "name": "components.json",
+        "fileCount": 1
+      },
+      {
+        "name": "coolify-mcp",
+        "fileCount": 15377
+      },
+      {
+        "name": "docker-compose.yml",
+        "fileCount": 1
+      },
+      {
+        "name": "docs",
+        "fileCount": 36
+      },
+      {
+        "name": "eslint.config.mjs",
+        "fileCount": 1
+      },
+      {
+        "name": "games-config.json",
+        "fileCount": 1
+      },
+      {
+        "name": "License.md",
+        "fileCount": 1
+      },
+      {
+        "name": "next-env.d.ts",
+        "fileCount": 1
+      },
+      {
+        "name": "next.config.ts",
+        "fileCount": 1
+      },
+      {
+        "name": "package-lock.json",
+        "fileCount": 1
+      },
+      {
+        "name": "package.json",
+        "fileCount": 1
+      },
+      {
+        "name": "pnpm-lock.yaml",
+        "fileCount": 1
+      },
+      {
+        "name": "postcss.config.mjs",
+        "fileCount": 1
+      },
+      {
+        "name": "prisma",
+        "fileCount": 4
+      },
+      {
+        "name": "public",
+        "fileCount": 65
+      },
+      {
+        "name": "README.md",
+        "fileCount": 1
+      },
+      {
+        "name": "scripts",
+        "fileCount": 10
+      },
+      {
+        "name": "settings.json",
+        "fileCount": 1
+      },
+      {
+        "name": "src",
+        "fileCount": 359
+      },
+      {
+        "name": "tsconfig.json",
+        "fileCount": 1
+      },
+      {
+        "name": "tsconfig.tsbuildinfo",
+        "fileCount": 1
+      },
+      {
+        "name": "vibe-check-mcp-server",
+        "fileCount": 6676
+      }
+    ],
+    "languageDistribution": [
+      {
+        "extension": ".js",
+        "count": 8513
+      },
+      {
+        "extension": ".ts",
+        "count": 5632
+      },
+      {
+        "extension": ".map",
+        "count": 2158
+      },
+      {
+        "extension": ".json",
+        "count": 1339
+      },
+      {
+        "extension": ".md",
+        "count": 1290
+      },
+      {
+        "extension": ".cjs",
+        "count": 835
+      },
+      {
+        "extension": ".cts",
+        "count": 809
+      },
+      {
+        "extension": ".mjs",
+        "count": 459
+      },
+      {
+        "extension": ".tsx",
+        "count": 244
+      },
+      {
+        "extension": ".mts",
+        "count": 64
+      }
+    ]
+  },
+  "architecture": {
+    "layers": [
+      {
+        "name": "Config",
+        "description": "Configuration and constants",
+        "directories": [
+          ".",
+          "vibe-check-mcp-server",
+          "src\\types",
+          "src\\hooks",
+          "src\\config",
+          "vibe-check-mcp-server\\tests",
+          "src\\contexts",
+          "coolify-mcp"
+        ],
+        "symbolCount": 21,
+        "dependsOn": []
+      },
+      {
+        "name": "Utils",
+        "description": "Shared utilities and helpers",
+        "directories": [
+          "src\\utils",
+          "src\\lib",
+          "vibe-check-mcp-server\\tests",
+          "src\\lib\\utils",
+          "src\\lib\\settings",
+          "vibe-check-mcp-server\\src\\utils",
+          "coolify-mcp\\src\\lib",
+          "vibe-check-mcp-server\\src\\cli\\clients",
+          "src\\app\\(dashboard)\\investimentos\\liberacoes"
+        ],
+        "symbolCount": 71,
+        "dependsOn": []
+      },
+      {
+        "name": "Services",
+        "description": "Business logic and orchestration",
+        "directories": [
+          "src\\services",
+          "src\\lib\\services"
+        ],
+        "symbolCount": 48,
+        "dependsOn": []
+      },
+      {
+        "name": "Components",
+        "description": "UI components and views",
+        "directories": [
+          "src\\hooks",
+          "src\\components",
+          "src\\components\\bet",
+          "src\\app",
+          "src\\components\\layouts",
+          "src\\components\\theme-customizer",
+          "src\\components\\landing",
+          "src\\components\\ui",
+          "src\\app\\landing",
+          "src\\app\\landing\\components",
+          "src\\app\\admin\\login",
+          "src\\app\\(dashboard)\\usuarios",
+          "src\\app\\(dashboard)\\users",
+          "src\\app\\(dashboard)\\tasks",
+          "src\\app\\(dashboard)\\pricing",
+          "src\\app\\(dashboard)\\mail",
+          "src\\app\\(dashboard)\\jogos",
+          "src\\app\\(dashboard)\\integracoes",
+          "src\\app\\(dashboard)\\gerenciar-promocoes",
+          "src\\app\\(dashboard)\\faqs",
+          "src\\app\\(dashboard)\\editor",
+          "src\\app\\(dashboard)\\dashboard-2",
+          "src\\app\\(dashboard)\\dashboard",
+          "src\\app\\(dashboard)\\configuracoes",
+          "src\\app\\(dashboard)\\chat",
+          "src\\app\\(dashboard)\\calendar",
+          "src\\app\\(dashboard)\\associados",
+          "src\\app\\(dashboard)\\aprovacoes",
+          "src\\app\\(auth)\\sign-up-3",
+          "src\\app\\(auth)\\sign-up-2",
+          "src\\app\\(auth)\\sign-up",
+          "src\\app\\(auth)\\sign-in-3",
+          "src\\app\\(auth)\\sign-in-2",
+          "src\\app\\(auth)\\sign-in",
+          "src\\app\\(auth)\\forgot-password-3",
+          "src\\app\\(auth)\\forgot-password-2",
+          "src\\app\\(auth)\\forgot-password",
+          "src\\app\\(bet)\\transferir",
+          "src\\app\\(bet)\\termos",
+          "src\\app\\(bet)\\sacar",
+          "src\\app\\(bet)\\promocoes",
+          "src\\app\\(bet)\\privacidade",
+          "src\\app\\(bet)\\perfil",
+          "src\\app\\(bet)\\login",
+          "src\\app\\(bet)\\depositar",
+          "src\\app\\(bet)\\crash",
+          "src\\app\\(bet)\\carteira",
+          "src\\app\\(bet)\\cadastro",
+          "src\\app\\(bet)\\ao-vivo",
+          "src\\app\\(bet)\\associado",
+          "src\\app\\(bet)\\ajuda",
+          "src\\app\\(dashboard)\\usuarios\\kyc",
+          "src\\app\\(dashboard)\\users\\components",
+          "src\\app\\(dashboard)\\tasks\\components",
+          "src\\app\\(dashboard)\\settings\\user",
+          "src\\app\\(dashboard)\\settings\\notifications",
+          "src\\app\\(dashboard)\\settings\\connections",
+          "src\\app\\(dashboard)\\settings\\billing",
+          "src\\app\\(dashboard)\\settings\\appearance",
+          "src\\app\\(dashboard)\\settings\\account",
+          "src\\app\\(dashboard)\\pricing\\components",
+          "src\\app\\(dashboard)\\mail\\components",
+          "src\\app\\(dashboard)\\investimentos\\rendimentos",
+          "src\\app\\(dashboard)\\investimentos\\carteiras",
+          "src\\app\\(dashboard)\\integracoes\\gateway",
+          "src\\app\\(dashboard)\\financeiro\\saques",
+          "src\\app\\(dashboard)\\financeiro\\extrato",
+          "src\\app\\(dashboard)\\financeiro\\depositos",
+          "src\\app\\(dashboard)\\faqs\\components",
+          "src\\app\\(dashboard)\\dashboard-2\\components",
+          "src\\app\\(dashboard)\\dashboard\\components",
+          "src\\app\\(dashboard)\\chat\\components",
+          "src\\app\\(dashboard)\\calendar\\components",
+          "src\\app\\(auth)\\sign-up-3\\components",
+          "src\\app\\(auth)\\sign-up-2\\components",
+          "src\\app\\(auth)\\sign-up\\components",
+          "src\\app\\(auth)\\sign-in-3\\components",
+          "src\\app\\(auth)\\sign-in-2\\components",
+          "src\\app\\(auth)\\sign-in\\components",
+          "src\\app\\(auth)\\forgot-password-3\\components",
+          "src\\app\\(auth)\\forgot-password-2\\components",
+          "src\\app\\(auth)\\forgot-password\\components",
+          "src\\app\\(auth)\\errors\\under-maintenance",
+          "src\\app\\(auth)\\errors\\unauthorized",
+          "src\\app\\(auth)\\errors\\not-found",
+          "src\\app\\(auth)\\errors\\internal-server-error",
+          "src\\app\\(auth)\\errors\\forbidden",
+          "src\\app\\(bet)\\perfil\\verificacao",
+          "src\\app\\(bet)\\perfil\\seguranca",
+          "src\\app\\(bet)\\perfil\\historico",
+          "src\\app\\(bet)\\perfil\\dados",
+          "src\\app\\(bet)\\jogo\\[id]",
+          "src\\app\\(dashboard)\\settings\\billing\\components",
+          "src\\app\\(auth)\\errors\\under-maintenance\\components",
+          "src\\app\\(auth)\\errors\\unauthorized\\components",
+          "src\\app\\(auth)\\errors\\not-found\\components",
+          "src\\app\\(auth)\\errors\\internal-server-error\\components",
+          "src\\app\\(auth)\\errors\\forbidden\\components"
+        ],
+        "symbolCount": 256,
+        "dependsOn": [
+          "Repositories",
+          "Models"
+        ]
+      },
+      {
+        "name": "Repositories",
+        "description": "Data access and persistence",
+        "directories": [
+          "src\\config",
+          "src\\app\\(dashboard)\\calendar",
+          "src\\app\\(dashboard)\\mail",
+          "src\\app\\(dashboard)\\users\\components",
+          "src\\app\\(dashboard)\\tasks\\data",
+          "src\\app\\(dashboard)\\tasks\\components",
+          "src\\app\\(dashboard)\\dashboard\\components"
+        ],
+        "symbolCount": 11,
+        "dependsOn": [
+          "Components",
+          "Models"
+        ]
+      },
+      {
+        "name": "Controllers",
+        "description": "Request handling and routing",
+        "directories": [
+          "src\\app\\api\\withdrawals",
+          "src\\app\\api\\upload",
+          "src\\app\\api\\transactions",
+          "src\\app\\api\\settings",
+          "src\\app\\api\\reports",
+          "src\\app\\api\\games",
+          "src\\app\\api\\deposits",
+          "src\\app\\api\\withdrawals\\create",
+          "src\\app\\api\\wallet\\game",
+          "src\\app\\api\\user\\push-subscription",
+          "src\\app\\api\\user\\profile",
+          "src\\app\\api\\user\\kyc",
+          "src\\app\\api\\user\\change-password",
+          "src\\app\\api\\user\\bet-history",
+          "src\\app\\api\\support\\terms",
+          "src\\app\\api\\support\\privacy",
+          "src\\app\\api\\support\\config",
+          "src\\app\\api\\settings\\public",
+          "src\\app\\api\\provider\\test",
+          "src\\app\\api\\provider\\profile",
+          "src\\app\\api\\provider\\games",
+          "src\\app\\api\\games\\[id]",
+          "src\\app\\api\\games\\sync",
+          "src\\app\\api\\games\\public",
+          "src\\app\\api\\games\\config",
+          "src\\app\\api\\deposits\\create",
+          "src\\app\\api\\dashboard\\stats",
+          "src\\app\\api\\dashboard\\chart",
+          "src\\app\\api\\auth\\[...nextauth]",
+          "src\\app\\api\\auth\\verify-password",
+          "src\\app\\api\\auth\\register",
+          "src\\app\\api\\auth\\logout",
+          "src\\app\\api\\admin\\users",
+          "src\\app\\api\\admin\\push-notifications",
+          "src\\app\\api\\admin\\kyc",
+          "src\\app\\api\\admin\\gateway",
+          "src\\app\\api\\admin\\avatars",
+          "src\\app\\api\\webhooks\\podpay\\transfer",
+          "src\\app\\api\\webhooks\\podpay\\transaction",
+          "src\\app\\api\\webhooks\\game-provider\\events",
+          "src\\app\\api\\webhooks\\game-provider\\debit",
+          "src\\app\\api\\webhooks\\game-provider\\credit",
+          "src\\app\\api\\webhooks\\game-provider\\balance",
+          "src\\app\\api\\deposits\\[id]\\approve",
+          "src\\app\\api\\admin\\users\\[id]",
+          "src\\app\\api\\admin\\users\\exit-impersonation",
+          "src\\app\\api\\admin\\gateway\\test",
+          "src\\app\\api\\provider\\games\\[gameId]\\launch",
+          "src\\app\\api\\admin\\users\\[id]\\impersonate",
+          "src\\app\\api\\admin\\users\\[id]\\balance"
+        ],
+        "symbolCount": 114,
+        "dependsOn": []
+      },
+      {
+        "name": "Models",
+        "description": "Data structures and domain objects",
+        "directories": [
+          "src\\app\\(dashboard)\\tasks\\data",
+          "src\\app\\(dashboard)\\dashboard\\schemas"
+        ],
+        "symbolCount": 2,
+        "dependsOn": []
+      }
+    ],
+    "patterns": [],
+    "entryPoints": [
+      "vibe-check-mcp-server\\src\\index.ts",
+      "coolify-mcp\\src\\index.ts",
+      "src\\components\\bet\\index.ts",
+      "vibe-check-mcp-server\\src\\cli\\index.ts",
+      "src\\components\\theme-customizer\\main.tsx",
+      "src\\components\\theme-customizer\\index.tsx",
+      "src\\app\\(dashboard)\\mail\\index.tsx"
+    ]
+  },
+  "symbols": {
+    "classes": [
+      {
+        "name": "MockTransport",
+        "kind": "class",
+        "file": "vibe-check-mcp-server\\tests\\jsonrpc-compat.test.ts",
+        "line": 17,
+        "exported": false
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "AgentProfile",
+        "kind": "interface",
+        "file": "src\\lib\\services\\game-provider.ts",
+        "line": 40,
+        "exported": true
+      },
+      {
+        "name": "AgentProfile",
+        "kind": "interface",
+        "file": "src\\lib\\services\\game-provider.service.ts",
+        "line": 47,
+        "exported": true
+      },
+      {
+        "name": "AgentSnapshot",
+        "kind": "interface",
+        "file": "vibe-check-mcp-server\\examples\\cpi-integration.ts",
+        "line": 7,
+        "exported": true
+      },
+      {
+        "name": "AgentStepCallback",
+        "kind": "interface",
+        "file": "vibe-check-mcp-server\\examples\\cpi-integration.ts",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "AnthropicConfig",
+        "kind": "interface",
+        "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "AnthropicHeaderInput",
+        "kind": "interface",
+        "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "Application",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 190,
+        "exported": true
+      },
+      {
+        "name": "ApplicationActionResponse",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 381,
+        "exported": true
+      },
+      {
+        "name": "ApplicationDiagnostic",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 993,
+        "exported": true
+      },
+      {
+        "name": "BackupExecution",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 696,
+        "exported": true
+      },
+      {
+        "name": "BannerItem",
+        "kind": "interface",
+        "file": "src\\types\\settings.ts",
+        "line": 74,
+        "exported": true
+      },
+      {
+        "name": "BatchOperationResult",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 1072,
+        "exported": true
+      },
+      {
+        "name": "BottomNavItem",
+        "kind": "interface",
+        "file": "src\\types\\settings.ts",
+        "line": 49,
+        "exported": true
+      },
+      {
+        "name": "BrandColor",
+        "kind": "interface",
+        "file": "src\\types\\theme-customizer.ts",
+        "line": 37,
+        "exported": true
+      },
+      {
+        "name": "BrandingSettings",
+        "kind": "interface",
+        "file": "src\\types\\settings.ts",
+        "line": 123,
+        "exported": true
+      },
+      {
+        "name": "BulkUpdateEnvVarsRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 430,
+        "exported": true
+      },
+      {
+        "name": "Calendar",
+        "kind": "interface",
+        "file": "src\\app\\(dashboard)\\calendar\\types.ts",
+        "line": 14,
+        "exported": true
+      },
+      {
+        "name": "CalendarEvent",
+        "kind": "interface",
+        "file": "src\\app\\(dashboard)\\calendar\\types.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "ClientAdapter",
+        "kind": "interface",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 40,
+        "exported": true
+      },
+      {
+        "name": "CloudToken",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 948,
+        "exported": true
+      },
+      {
+        "name": "CloudTokenValidation",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 969,
+        "exported": true
+      },
+      {
+        "name": "ColorTheme",
+        "kind": "interface",
+        "file": "src\\types\\theme-customizer.ts",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "Conversation",
+        "kind": "interface",
+        "file": "src\\app\\(dashboard)\\chat\\use-chat.ts",
+        "line": 31,
+        "exported": true
+      },
+      {
+        "name": "CoolifyConfig",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 10,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationDockerComposeRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 323,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationDockerfileRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 290,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationDockerImageRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 307,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationPrivateGHRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 272,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationPrivateKeyRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 281,
+        "exported": true
+      },
+      {
+        "name": "CreateApplicationPublicRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 249,
+        "exported": true
+      },
+      {
+        "name": "CreateClickhouseRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 635,
+        "exported": true
+      },
+      {
+        "name": "CreateCloudTokenRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 959,
+        "exported": true
+      },
+      {
+        "name": "CreateDatabaseBackupRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 670,
+        "exported": true
+      },
+      {
+        "name": "CreateDatabaseBaseRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 572,
+        "exported": true
+      },
+      {
+        "name": "CreateDatabaseResponse",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 644,
+        "exported": true
+      },
+      {
+        "name": "CreateDragonflyRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 640,
+        "exported": true
+      },
+      {
+        "name": "CreateEnvironmentRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 179,
+        "exported": true
+      },
+      {
+        "name": "CreateEnvVarRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 410,
+        "exported": true
+      },
+      {
+        "name": "CreateGitHubAppRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 905,
+        "exported": true
+      },
+      {
+        "name": "CreateKeydbRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 630,
+        "exported": true
+      },
+      {
+        "name": "CreateMariadbRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 610,
+        "exported": true
+      },
+      {
+        "name": "CreateMongodbRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 618,
+        "exported": true
+      },
+      {
+        "name": "CreateMysqlRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 602,
+        "exported": true
+      },
+      {
+        "name": "CreatePostgresqlRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 593,
+        "exported": true
+      },
+      {
+        "name": "CreatePrivateKeyRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 863,
+        "exported": true
+      },
+      {
+        "name": "CreateProjectRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 154,
+        "exported": true
+      },
+      {
+        "name": "CreateRedisRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 625,
+        "exported": true
+      },
+      {
+        "name": "CreateServerRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 118,
+        "exported": true
+      },
+      {
+        "name": "CreateServiceRequest",
+        "kind": "interface",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 740,
+        "exported": true
+      },
+      {
+        "name": "CustomIcons",
+        "kind": "interface",
+        "file": "src\\types\\settings.ts",
+        "line": 87,
+        "exported": true
+      }
+    ],
+    "functions": [
+      {
+        "name": "AddBalanceDialog",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\users\\components\\add-balance-dialog.tsx",
+        "line": 33,
+        "exported": true
+      },
+      {
+        "name": "addLearningEntry",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\utils\\storage.ts",
+        "line": 100,
+        "exported": true
+      },
+      {
+        "name": "addToHistory",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\utils\\state.ts",
+        "line": 48,
+        "exported": true
+      },
+      {
+        "name": "AdminAuthLayout",
+        "kind": "function",
+        "file": "src\\app\\admin\\login\\layout.tsx",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "AoVivoPage",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\ao-vivo\\page.tsx",
+        "line": 6,
+        "exported": true
+      },
+      {
+        "name": "applyJsonRpcCompatibility",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\utils\\jsonRpcCompat.ts",
+        "line": 41,
+        "exported": true
+      },
+      {
+        "name": "AssociadoBetPage",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\associado\\page.tsx",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "AssociadosAdminPage",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\associados\\page.tsx",
+        "line": 7,
+        "exported": true
+      },
+      {
+        "name": "AuthLayout",
+        "kind": "function",
+        "file": "src\\app\\(auth)\\layout.tsx",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "AuthProvider",
+        "kind": "function",
+        "file": "src\\components\\auth-provider.tsx",
+        "line": 6,
+        "exported": true
+      },
+      {
+        "name": "BetAuthProvider",
+        "kind": "function",
+        "file": "src\\contexts\\bet-auth-context.tsx",
+        "line": 59,
+        "exported": true
+      },
+      {
+        "name": "BetLoading",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\loading.tsx",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "BetRootLayout",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\layout.tsx",
+        "line": 7,
+        "exported": true
+      },
+      {
+        "name": "BillingHistoryCard",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\settings\\billing\\components\\billing-history-card.tsx",
+        "line": 17,
+        "exported": true
+      },
+      {
+        "name": "BillingSettings",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\settings\\billing\\page.tsx",
+        "line": 12,
+        "exported": true
+      },
+      {
+        "name": "buildAnthropicHeaders",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+        "line": 35,
+        "exported": true
+      },
+      {
+        "name": "CadastroPage",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\cadastro\\page.tsx",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "Calendar",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\calendar\\components\\calendar.tsx",
+        "line": 15,
+        "exported": true
+      },
+      {
+        "name": "CalendarPage",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\calendar\\page.tsx",
+        "line": 4,
+        "exported": true
+      },
+      {
+        "name": "CalendarSidebar",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\calendar\\components\\calendar-sidebar.tsx",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "cancelDeposit",
+        "kind": "function",
+        "file": "src\\services\\deposit.service.ts",
+        "line": 167,
+        "exported": true
+      },
+      {
+        "name": "cancelTransfer",
+        "kind": "function",
+        "file": "src\\services\\podpay.service.ts",
+        "line": 347,
+        "exported": true
+      },
+      {
+        "name": "CarteirasInvestimentoPage",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\investimentos\\carteiras\\page.tsx",
+        "line": 56,
+        "exported": true
+      },
+      {
+        "name": "ChatPage",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\chat\\page.tsx",
+        "line": 13,
+        "exported": true
+      },
+      {
+        "name": "checkNodeVersion",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\cli\\doctor.ts",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "cn",
+        "kind": "function",
+        "file": "src\\lib\\utils.ts",
+        "line": 4,
+        "exported": true
+      },
+      {
+        "name": "ColorPicker",
+        "kind": "function",
+        "file": "src\\components\\color-picker.tsx",
+        "line": 15,
+        "exported": true
+      },
+      {
+        "name": "confirmDeposit",
+        "kind": "function",
+        "file": "src\\services\\deposit.service.ts",
+        "line": 90,
+        "exported": true
+      },
+      {
+        "name": "CrashPage",
+        "kind": "function",
+        "file": "src\\app\\(bet)\\crash\\page.tsx",
+        "line": 6,
+        "exported": true
+      },
+      {
+        "name": "createCliProgram",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 478,
+        "exported": true
+      },
+      {
+        "name": "createDeposit",
+        "kind": "function",
+        "file": "src\\services\\deposit.service.ts",
+        "line": 30,
+        "exported": true
+      },
+      {
+        "name": "createGameSession",
+        "kind": "function",
+        "file": "src\\lib\\services\\game-provider.ts",
+        "line": 134,
+        "exported": true
+      },
+      {
+        "name": "createGameSession",
+        "kind": "function",
+        "file": "src\\lib\\services\\game-provider.service.ts",
+        "line": 125,
+        "exported": true
+      },
+      {
+        "name": "createMcpServer",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\index.ts",
+        "line": 64,
+        "exported": true
+      },
+      {
+        "name": "createPixDeposit",
+        "kind": "function",
+        "file": "src\\services\\podpay.service.ts",
+        "line": 219,
+        "exported": true
+      },
+      {
+        "name": "createRequestScopedTransport",
+        "kind": "function",
+        "file": "vibe-check-mcp-server\\src\\utils\\httpTransportWrapper.ts",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "createWithdraw",
+        "kind": "function",
+        "file": "src\\services\\podpay.service.ts",
+        "line": 300,
+        "exported": true
+      },
+      {
+        "name": "CTASection",
+        "kind": "function",
+        "file": "src\\app\\landing\\components\\cta-section.tsx",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "CurrentPlanCard",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\settings\\billing\\components\\current-plan-card.tsx",
+        "line": 23,
+        "exported": true
+      },
+      {
+        "name": "Dashboard2",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\dashboard-2\\page.tsx",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "DashboardHeader",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\dashboard-2\\components\\dashboard-header.tsx",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "DashboardLoading",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\loading.tsx",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "DatePicker",
+        "kind": "function",
+        "file": "src\\app\\(dashboard)\\calendar\\components\\date-picker.tsx",
+        "line": 12,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\user\\push-subscription\\route.ts",
+        "line": 63,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\admin\\push-notifications\\route.ts",
+        "line": 174,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\admin\\gateway\\route.ts",
+        "line": 182,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\admin\\avatars\\route.ts",
+        "line": 61,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\admin\\users\\[id]\\route.ts",
+        "line": 150,
+        "exported": true
+      },
+      {
+        "name": "DELETE",
+        "kind": "function",
+        "file": "src\\app\\api\\admin\\users\\[id]\\impersonate\\route.ts",
+        "line": 106,
+        "exported": true
+      },
+      {
+        "name": "deleteFromR2",
+        "kind": "function",
+        "file": "src\\lib\\services\\r2-storage.ts",
+        "line": 86,
+        "exported": true
+      }
+    ],
+    "types": [
+      {
+        "name": "Account",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\mail\\data.tsx",
+        "line": 215,
+        "exported": true
+      },
+      {
+        "name": "BuildPack",
+        "kind": "type",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 188,
+        "exported": true
+      },
+      {
+        "name": "ChartConfig",
+        "kind": "type",
+        "file": "src\\components\\ui\\chart.tsx",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "ClientDescription",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 29,
+        "exported": true
+      },
+      {
+        "name": "CloudProvider",
+        "kind": "type",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 946,
+        "exported": true
+      },
+      {
+        "name": "Contact",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\mail\\data.tsx",
+        "line": 300,
+        "exported": true
+      },
+      {
+        "name": "DatabaseType",
+        "kind": "type",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 446,
+        "exported": true
+      },
+      {
+        "name": "DiagnosticHealthStatus",
+        "kind": "type",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 991,
+        "exported": true
+      },
+      {
+        "name": "JsonRecord",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "LearningType",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\utils\\storage.ts",
+        "line": 10,
+        "exported": true
+      },
+      {
+        "name": "Mail",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\mail\\data.tsx",
+        "line": 174,
+        "exported": true
+      },
+      {
+        "name": "MergeOpts",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 12,
+        "exported": true
+      },
+      {
+        "name": "MergeResult",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 23,
+        "exported": true
+      },
+      {
+        "name": "PeriodType",
+        "kind": "type",
+        "file": "src\\components\\ui\\date-range-picker.tsx",
+        "line": 25,
+        "exported": true
+      },
+      {
+        "name": "ServiceType",
+        "kind": "type",
+        "file": "coolify-mcp\\src\\types\\coolify.ts",
+        "line": 719,
+        "exported": true
+      },
+      {
+        "name": "Task",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\tasks\\data\\schema.ts",
+        "line": 13,
+        "exported": true
+      },
+      {
+        "name": "Task",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\dashboard\\schemas\\task-schema.ts",
+        "line": 13,
+        "exported": true
+      },
+      {
+        "name": "ThemePreset",
+        "kind": "type",
+        "file": "src\\types\\theme.ts",
+        "line": 53,
+        "exported": true
+      },
+      {
+        "name": "ThemeProviderState",
+        "kind": "type",
+        "file": "src\\contexts\\theme-context.ts",
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "ThemeStyleProps",
+        "kind": "type",
+        "file": "src\\types\\theme.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "ThemeStyles",
+        "kind": "type",
+        "file": "src\\types\\theme.ts",
+        "line": 48,
+        "exported": true
+      },
+      {
+        "name": "TransportKind",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+        "line": 10,
+        "exported": true
+      },
+      {
+        "name": "AccountFormValues",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\settings\\account\\page.tsx",
+        "line": 29,
+        "exported": false
+      },
+      {
+        "name": "ActionResult",
+        "kind": "type",
+        "file": "src\\app\\actions\\auth.ts",
+        "line": 35,
+        "exported": false
+      },
+      {
+        "name": "AppearanceFormValues",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\settings\\appearance\\page.tsx",
+        "line": 26,
+        "exported": false
+      },
+      {
+        "name": "ChartContextProps",
+        "kind": "type",
+        "file": "src\\components\\ui\\chart.tsx",
+        "line": 19,
+        "exported": false
+      },
+      {
+        "name": "ClientFixture",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\tests\\cli-install-dry-run.test.ts",
+        "line": 9,
+        "exported": false
+      },
+      {
+        "name": "DoctorOptions",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 40,
+        "exported": false
+      },
+      {
+        "name": "DocumentType",
+        "kind": "type",
+        "file": "src\\app\\(bet)\\perfil\\verificacao\\page.tsx",
+        "line": 18,
+        "exported": false
+      },
+      {
+        "name": "EnsureEnvOptions",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\env.ts",
+        "line": 36,
+        "exported": false
+      },
+      {
+        "name": "EnsureEnvResult",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\env.ts",
+        "line": 43,
+        "exported": false
+      },
+      {
+        "name": "FaqItem",
+        "kind": "type",
+        "file": "src\\app\\landing\\components\\faq-section.tsx",
+        "line": 8,
+        "exported": false
+      },
+      {
+        "name": "FormFieldContextValue",
+        "kind": "type",
+        "file": "src\\components\\ui\\form.tsx",
+        "line": 21,
+        "exported": false
+      },
+      {
+        "name": "FormItemContextValue",
+        "kind": "type",
+        "file": "src\\components\\ui\\form.tsx",
+        "line": 68,
+        "exported": false
+      },
+      {
+        "name": "InstallOptions",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 45,
+        "exported": false
+      },
+      {
+        "name": "KycStatus",
+        "kind": "type",
+        "file": "src\\app\\(bet)\\perfil\\verificacao\\page.tsx",
+        "line": 17,
+        "exported": false
+      },
+      {
+        "name": "LocateFn",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\claude.ts",
+        "line": 15,
+        "exported": false
+      },
+      {
+        "name": "LoginFormValues",
+        "kind": "type",
+        "file": "src\\app\\admin\\login\\page.tsx",
+        "line": 35,
+        "exported": false
+      },
+      {
+        "name": "LoginFormValues",
+        "kind": "type",
+        "file": "src\\app\\(auth)\\sign-in\\components\\login-form-1.tsx",
+        "line": 30,
+        "exported": false
+      },
+      {
+        "name": "ManualInstallArgs",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 415,
+        "exported": false
+      },
+      {
+        "name": "MergeFn",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\claude.ts",
+        "line": 19,
+        "exported": false
+      },
+      {
+        "name": "NotificationsFormValues",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\settings\\notifications\\page.tsx",
+        "line": 51,
+        "exported": false
+      },
+      {
+        "name": "PackageJson",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 24,
+        "exported": false
+      },
+      {
+        "name": "ReadFn",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\clients\\claude.ts",
+        "line": 17,
+        "exported": false
+      },
+      {
+        "name": "RegisteredClient",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 74,
+        "exported": false
+      },
+      {
+        "name": "SidebarContextProps",
+        "kind": "type",
+        "file": "src\\components\\ui\\sidebar.tsx",
+        "line": 34,
+        "exported": false
+      },
+      {
+        "name": "SignupFormValues",
+        "kind": "type",
+        "file": "src\\app\\(auth)\\sign-up\\components\\signup-form-1.tsx",
+        "line": 38,
+        "exported": false
+      },
+      {
+        "name": "StartOptions",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\src\\cli\\index.ts",
+        "line": 33,
+        "exported": false
+      },
+      {
+        "name": "StorageModule",
+        "kind": "type",
+        "file": "vibe-check-mcp-server\\tests\\storage-utils.test.ts",
+        "line": 6,
+        "exported": false
+      },
+      {
+        "name": "TaskFormData",
+        "kind": "type",
+        "file": "src\\app\\(dashboard)\\tasks\\components\\add-task-modal.tsx",
+        "line": 41,
+        "exported": false
+      }
+    ],
+    "enums": []
+  },
+  "publicAPI": [
+    {
+      "name": "Account",
+      "kind": "type",
+      "file": "src\\app\\(dashboard)\\mail\\data.tsx",
+      "line": 215,
+      "exported": true
+    },
+    {
+      "name": "AddBalanceDialog",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\users\\components\\add-balance-dialog.tsx",
+      "line": 33,
+      "exported": true
+    },
+    {
+      "name": "addLearningEntry",
+      "kind": "function",
+      "file": "vibe-check-mcp-server\\src\\utils\\storage.ts",
+      "line": 100,
+      "exported": true
+    },
+    {
+      "name": "addToHistory",
+      "kind": "function",
+      "file": "vibe-check-mcp-server\\src\\utils\\state.ts",
+      "line": 48,
+      "exported": true
+    },
+    {
+      "name": "AdminAuthLayout",
+      "kind": "function",
+      "file": "src\\app\\admin\\login\\layout.tsx",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "AgentProfile",
+      "kind": "interface",
+      "file": "src\\lib\\services\\game-provider.ts",
+      "line": 40,
+      "exported": true
+    },
+    {
+      "name": "AgentProfile",
+      "kind": "interface",
+      "file": "src\\lib\\services\\game-provider.service.ts",
+      "line": 47,
+      "exported": true
+    },
+    {
+      "name": "AgentSnapshot",
+      "kind": "interface",
+      "file": "vibe-check-mcp-server\\examples\\cpi-integration.ts",
+      "line": 7,
+      "exported": true
+    },
+    {
+      "name": "AgentStepCallback",
+      "kind": "interface",
+      "file": "vibe-check-mcp-server\\examples\\cpi-integration.ts",
+      "line": 19,
+      "exported": true
+    },
+    {
+      "name": "AnthropicConfig",
+      "kind": "interface",
+      "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "AnthropicHeaderInput",
+      "kind": "interface",
+      "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "AoVivoPage",
+      "kind": "function",
+      "file": "src\\app\\(bet)\\ao-vivo\\page.tsx",
+      "line": 6,
+      "exported": true
+    },
+    {
+      "name": "Application",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 190,
+      "exported": true
+    },
+    {
+      "name": "ApplicationActionResponse",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 381,
+      "exported": true
+    },
+    {
+      "name": "ApplicationDiagnostic",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 993,
+      "exported": true
+    },
+    {
+      "name": "applyJsonRpcCompatibility",
+      "kind": "function",
+      "file": "vibe-check-mcp-server\\src\\utils\\jsonRpcCompat.ts",
+      "line": 41,
+      "exported": true
+    },
+    {
+      "name": "AssociadoBetPage",
+      "kind": "function",
+      "file": "src\\app\\(bet)\\associado\\page.tsx",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "AssociadosAdminPage",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\associados\\page.tsx",
+      "line": 7,
+      "exported": true
+    },
+    {
+      "name": "AuthLayout",
+      "kind": "function",
+      "file": "src\\app\\(auth)\\layout.tsx",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "AuthProvider",
+      "kind": "function",
+      "file": "src\\components\\auth-provider.tsx",
+      "line": 6,
+      "exported": true
+    },
+    {
+      "name": "BackupExecution",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 696,
+      "exported": true
+    },
+    {
+      "name": "BannerItem",
+      "kind": "interface",
+      "file": "src\\types\\settings.ts",
+      "line": 74,
+      "exported": true
+    },
+    {
+      "name": "BatchOperationResult",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 1072,
+      "exported": true
+    },
+    {
+      "name": "BetAuthProvider",
+      "kind": "function",
+      "file": "src\\contexts\\bet-auth-context.tsx",
+      "line": 59,
+      "exported": true
+    },
+    {
+      "name": "BetLoading",
+      "kind": "function",
+      "file": "src\\app\\(bet)\\loading.tsx",
+      "line": 3,
+      "exported": true
+    },
+    {
+      "name": "BetRootLayout",
+      "kind": "function",
+      "file": "src\\app\\(bet)\\layout.tsx",
+      "line": 7,
+      "exported": true
+    },
+    {
+      "name": "BillingHistoryCard",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\settings\\billing\\components\\billing-history-card.tsx",
+      "line": 17,
+      "exported": true
+    },
+    {
+      "name": "BillingSettings",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\settings\\billing\\page.tsx",
+      "line": 12,
+      "exported": true
+    },
+    {
+      "name": "BottomNavItem",
+      "kind": "interface",
+      "file": "src\\types\\settings.ts",
+      "line": 49,
+      "exported": true
+    },
+    {
+      "name": "BrandColor",
+      "kind": "interface",
+      "file": "src\\types\\theme-customizer.ts",
+      "line": 37,
+      "exported": true
+    },
+    {
+      "name": "BrandingSettings",
+      "kind": "interface",
+      "file": "src\\types\\settings.ts",
+      "line": 123,
+      "exported": true
+    },
+    {
+      "name": "buildAnthropicHeaders",
+      "kind": "function",
+      "file": "vibe-check-mcp-server\\src\\utils\\anthropic.ts",
+      "line": 35,
+      "exported": true
+    },
+    {
+      "name": "BuildPack",
+      "kind": "type",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 188,
+      "exported": true
+    },
+    {
+      "name": "BulkUpdateEnvVarsRequest",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 430,
+      "exported": true
+    },
+    {
+      "name": "CadastroPage",
+      "kind": "function",
+      "file": "src\\app\\(bet)\\cadastro\\page.tsx",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "Calendar",
+      "kind": "interface",
+      "file": "src\\app\\(dashboard)\\calendar\\types.ts",
+      "line": 14,
+      "exported": true
+    },
+    {
+      "name": "Calendar",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\calendar\\components\\calendar.tsx",
+      "line": 15,
+      "exported": true
+    },
+    {
+      "name": "CalendarEvent",
+      "kind": "interface",
+      "file": "src\\app\\(dashboard)\\calendar\\types.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "CalendarPage",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\calendar\\page.tsx",
+      "line": 4,
+      "exported": true
+    },
+    {
+      "name": "CalendarSidebar",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\calendar\\components\\calendar-sidebar.tsx",
+      "line": 19,
+      "exported": true
+    },
+    {
+      "name": "cancelDeposit",
+      "kind": "function",
+      "file": "src\\services\\deposit.service.ts",
+      "line": 167,
+      "exported": true
+    },
+    {
+      "name": "cancelTransfer",
+      "kind": "function",
+      "file": "src\\services\\podpay.service.ts",
+      "line": 347,
+      "exported": true
+    },
+    {
+      "name": "CarteirasInvestimentoPage",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\investimentos\\carteiras\\page.tsx",
+      "line": 56,
+      "exported": true
+    },
+    {
+      "name": "ChartConfig",
+      "kind": "type",
+      "file": "src\\components\\ui\\chart.tsx",
+      "line": 9,
+      "exported": true
+    },
+    {
+      "name": "ChatPage",
+      "kind": "function",
+      "file": "src\\app\\(dashboard)\\chat\\page.tsx",
+      "line": 13,
+      "exported": true
+    },
+    {
+      "name": "checkNodeVersion",
+      "kind": "function",
+      "file": "vibe-check-mcp-server\\src\\cli\\doctor.ts",
+      "line": 9,
+      "exported": true
+    },
+    {
+      "name": "ClientAdapter",
+      "kind": "interface",
+      "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+      "line": 40,
+      "exported": true
+    },
+    {
+      "name": "ClientDescription",
+      "kind": "type",
+      "file": "vibe-check-mcp-server\\src\\cli\\clients\\shared.ts",
+      "line": 29,
+      "exported": true
+    },
+    {
+      "name": "CloudProvider",
+      "kind": "type",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 946,
+      "exported": true
+    },
+    {
+      "name": "CloudToken",
+      "kind": "interface",
+      "file": "coolify-mcp\\src\\types\\coolify.ts",
+      "line": 948,
+      "exported": true
+    }
+  ],
+  "dependencies": {
+    "mostImported": [
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\mail\\data.tsx",
+        "importedBy": 7
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\calendar\\types.ts",
+        "importedBy": 6
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\tasks\\data\\schema.ts",
+        "importedBy": 6
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\chat\\use-chat.ts",
+        "importedBy": 6
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\users\\page.tsx",
+        "importedBy": 5
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\lib\\prisma.ts",
+        "importedBy": 4
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\tasks\\data\\data.tsx",
+        "importedBy": 4
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\calendar\\data\\events.json",
+        "importedBy": 3
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\calendar\\data\\calendars.json",
+        "importedBy": 2
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\components\\theme-customizer\\circular-transition.css",
+        "importedBy": 2
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\mail\\components\\mail.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\mail\\use-mail.ts",
+        "importedBy": 2
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\lib\\utils\\generate-player-id.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\types\\theme.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\lib\\settings\\defaults.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\(dashboard)\\calendar\\data\\event-dates.json",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\components\\logo.tsx",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\app\\globals.css",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\components\\theme-customizer\\theme-tab.tsx",
+        "importedBy": 1
+      },
+      {
+        "file": "Z:\\dev\\Projects\\bet-primebet\\src\\components\\theme-customizer\\layout-tab.tsx",
+        "importedBy": 1
+      }
+    ]
+  },
+  "stats": {
+    "totalSymbols": 785,
+    "exportedSymbols": 420,
+    "analysisTimeMs": 3588
+  }
+}

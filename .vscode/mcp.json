@@ -1,5 +1,24 @@
 {
 	"servers": {
+		"ai-context": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@ai-coders/context",
+				"mcp"
+			]
+		},
+		"coolify": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"z:/dev/Projects/bet-primebet/coolify-mcp/dist/index.js"
+			],
+			"env": {
+				"COOLIFY_BASE_URL": "https://coolify.decode.ink",
+				"COOLIFY_ACCESS_TOKEN": "1|rKRQFzxsVemQvgFhkzovm1d6lxUIt2va33SdJgyta35c780c"
+			}
+		},
 		"Linear": {
 			"type": "stdio",
 			"command": "npx",
