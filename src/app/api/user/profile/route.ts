@@ -21,6 +21,7 @@ export async function GET() {
         cpf: true,
         playerId: true,
         kycStatus: true,
+        role: true,
         createdAt: true,
         avatar: {
           select: { imageUrl: true }

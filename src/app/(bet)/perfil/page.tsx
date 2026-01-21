@@ -8,7 +8,8 @@ import {
   ChevronRight, Settings, HelpCircle, FileText,
   Verified,
   Edit2,
-  Loader2
+  Loader2,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ interface UserProfile {
   cpf: string | null;
   isKycVerified: boolean;
   createdAt: string;
+  role: string;
 }
 
 // Formatar telefone para exibição
@@ -75,6 +77,7 @@ export default function PerfilPage() {
               cpf: data.user.cpf,
               isKycVerified: data.user.kycStatus === "APPROVED",
               createdAt: data.user.createdAt,
+              role: data.user.role,
             });
           }
         }
@@ -220,6 +223,19 @@ export default function PerfilPage() {
                 Editar Perfil
               </Button>
             </Link>
+
+            {/* Botão de Link de Convite - só aparece para INFLUENCER */}
+            {profile?.role === "INFLUENCER" && (
+              <Link href="/associado">
+                <Button 
+                  size="sm"
+                  className="mt-2 w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white border-0"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Link de Convite
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
