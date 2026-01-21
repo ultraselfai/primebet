@@ -21,6 +21,7 @@ interface BetAuthContextType {
   // Auth Modal
   isAuthModalOpen: boolean;
   authModalTab: "login" | "cadastro";
+  authReferralCode: string;
   openAuthModal: (tab?: "login" | "cadastro") => void;
   closeAuthModal: () => void;
   
@@ -62,6 +63,7 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
   // Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "cadastro">("login");
+  const [authReferralCode, setAuthReferralCode] = useState<string>("");
   
   // Toast State
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -216,9 +218,13 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
     // Verificar query params
     const urlParams = new URLSearchParams(window.location.search);
     const authParam = urlParams.get("auth");
+    const refParam = urlParams.get("ref");
     
     if (authParam === "login" || authParam === "cadastro") {
       setAuthModalTab(authParam);
+      if (refParam) {
+        setAuthReferralCode(refParam);
+      }
       setIsAuthModalOpen(true);
       window.history.replaceState({}, "", "/");
       return;
@@ -244,6 +250,7 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
 
   const closeAuthModal = useCallback(() => {
     setIsAuthModalOpen(false);
+    setAuthReferralCode(""); // Limpar código ao fechar
   }, []);
 
   const showToast = useCallback((message: string, type: Toast["type"] = "info") => {
@@ -258,6 +265,7 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
   const value: BetAuthContextType = {
     isAuthModalOpen,
     authModalTab,
+    authReferralCode,
     openAuthModal,
     closeAuthModal,
     showToast,

@@ -68,7 +68,8 @@ export function BetLayout({ children }: BetLayoutProps) {
     showToast,
     isAuthModalOpen,
     closeAuthModal,
-    authModalTab
+    authModalTab,
+    authReferralCode
   } = useBetAuth();
   const { settings: publicSettings, loading: publicSettingsLoading } = usePublicSettings();
   const [isGameFullscreen, setIsGameFullscreen] = React.useState(false);
@@ -410,6 +411,7 @@ export function BetLayout({ children }: BetLayoutProps) {
         isOpen={isAuthModalOpen} 
         onClose={closeAuthModal}
         defaultTab={authModalTab}
+        referralCode={authReferralCode}
       />
     </div>
   );

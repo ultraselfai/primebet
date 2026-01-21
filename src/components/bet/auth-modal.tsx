@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { 
   Eye, EyeOff, Lock, Mail, User, Loader2, Check, X as XIcon 
 } from "lucide-react";
@@ -18,17 +18,14 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: "login" | "cadastro";
+  referralCode?: string;
 }
 
-export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultTab = "login", referralCode = "" }: AuthModalProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { settings: publicSettings } = usePublicSettings();
   const logoUrl = publicSettings?.experience.media.logo.url || publicSettings?.branding.logoUrl || "/logo-horizontal.png";
   const [activeTab, setActiveTab] = useState<"login" | "cadastro">(defaultTab);
-  
-  // Capturar código de indicação da URL
-  const referralCode = searchParams.get("ref") || "";
 
   // Sincronizar com defaultTab quando mudar
   useEffect(() => {
