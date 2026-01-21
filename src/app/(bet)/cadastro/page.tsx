@@ -3,29 +3,40 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { AuthModal } from "@/components/bet/auth-modal";
 
-// Esta página redireciona para home com parâmetro de modal
+// Esta página mostra o modal de cadastro diretamente
 export default function CadastroPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
+  const referralCode = searchParams.get("ref") || "";
 
+  // Se já está autenticado, redireciona para home
   useEffect(() => {
-    if (status === "loading") return;
-    
     if (status === "authenticated") {
       router.replace("/");
-    } else {
-      // Preservar código de indicação na URL
-      const ref = searchParams.get("ref");
-      const refParam = ref ? `&ref=${ref}` : "";
-      router.replace(`/?auth=cadastro${refParam}`);
     }
-  }, [status, router, searchParams]);
+  }, [status, router]);
 
+  // Se está carregando, mostra loader
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#00faff] border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Mostra o modal de cadastro diretamente
   return (
-    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#00faff] border-t-transparent" />
+    <div className="min-h-screen bg-[#0a1628]">
+      <AuthModal 
+        isOpen={true} 
+        onClose={() => router.push("/")}
+        defaultTab="cadastro"
+        referralCode={referralCode}
+      />
     </div>
   );
 }
