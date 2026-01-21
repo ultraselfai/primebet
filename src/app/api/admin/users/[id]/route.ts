@@ -120,9 +120,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (role !== undefined) updateData.role = role as Role
     if (status !== undefined) updateData.status = status as UserStatus
 
-    // Se está mudando para INFLUENCER e não tem código de indicação, gerar um
-    if (role === 'INFLUENCER' && currentUser.role !== 'INFLUENCER' && !currentUser.referralCode) {
+    // Se o role é INFLUENCER e não tem código de indicação, gerar um
+    if (role === 'INFLUENCER' && !currentUser.referralCode) {
       updateData.referralCode = await generateUniqueReferralCode()
+      console.log(`[INFLUENCER] Gerando código para usuário ${id}: ${updateData.referralCode}`)
     }
 
     // Se senha foi fornecida, fazer hash

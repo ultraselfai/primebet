@@ -99,15 +99,29 @@ export async function POST(request: NextRequest) {
 
     // Verificar código de indicação (se fornecido)
     let referredById: string | null = null;
-    if (referralCode && isValidReferralCode(referralCode)) {
-      const influencer = await prisma.user.findUnique({
-        where: { referralCode: referralCode.toUpperCase() },
-        select: { id: true, role: true },
-      });
+    if (referralCode) {
+      console.log(`[REGISTER] Código de indicação recebido: "${referralCode}"`)
       
-      // Só vincula se o usuário existe e é INFLUENCER
-      if (influencer && influencer.role === 'INFLUENCER') {
-        referredById = influencer.id;
+      if (isValidReferralCode(referralCode)) {
+        const codeUpperCase = referralCode.toUpperCase();
+        console.log(`[REGISTER] Buscando influencer com código: "${codeUpperCase}"`)
+        
+        const influencer = await prisma.user.findUnique({
+          where: { referralCode: codeUpperCase },
+          select: { id: true, role: true, name: true, referralCode: true },
+        });
+        
+        console.log(`[REGISTER] Influencer encontrado:`, influencer)
+        
+        // Só vincula se o usuário existe e é INFLUENCER
+        if (influencer && influencer.role === 'INFLUENCER') {
+          referredById = influencer.id;
+          console.log(`[REGISTER] Vinculando novo usuário ao influencer: ${influencer.name} (${influencer.id})`)
+        } else if (influencer) {
+          console.log(`[REGISTER] Usuário encontrado mas não é INFLUENCER: role=${influencer.role}`)
+        }
+      } else {
+        console.log(`[REGISTER] Código de indicação inválido: "${referralCode}"`)
       }
     }
 
@@ -140,13 +154,20 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         email: true,
+        referredById: true,
       },
     });
+
+    console.log(`[REGISTER] Usuário criado: ${user.id}, nome: ${user.name}, referredById: ${user.referredById}`)
 
     return NextResponse.json({
       success: true,
       message: "Conta criada com sucesso!",
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
     });
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
