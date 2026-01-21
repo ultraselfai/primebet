@@ -1,0 +1,14 @@
+{
+  "active": [
+    {
+      "slug": "influencer-system",
+      "path": "plans/influencer-system.md",
+      "title": "🎯 Sistema de Influenciadores e Comissionamento",
+      "summary": "Implementar sistema completo de influenciadores com links de indicação, tracking de depósitos dos indicados e comissionamento baseado em regras configuráveis pelo admin",
+      "linkedAt": "2026-01-21T21:16:54.614Z",
+      "status": "active"
+    }
+  ],
+  "completed": [],
+  "primary": "influencer-system"
+}

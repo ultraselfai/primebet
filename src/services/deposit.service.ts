@@ -151,6 +151,9 @@ export async function confirmDeposit(transactionId: string, gatewayRef?: string)
           },
         },
       });
+
+      // 4. Atualizar comissão do influencer (se usuário foi indicado)
+      await updateInfluencerCommission(tx, userId, amount);
     });
 
     console.log(`Depósito confirmado: ${transactionId} - R$ ${amount}`);
@@ -190,6 +193,98 @@ export async function cancelDeposit(transactionId: string, reason: string = "EXP
   } catch (error) {
     console.error("Erro ao cancelar depósito:", error);
     return false;
+  }
+}
+
+// ============================================
+// Funções de Comissão de Influenciadores
+// ============================================
+
+/**
+ * Atualiza a comissão do influencer quando um indicado faz depósito
+ */
+async function updateInfluencerCommission(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  userId: string,
+  depositAmount: Decimal
+): Promise<void> {
+  try {
+    // Buscar usuário e verificar se foi indicado por alguém
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { 
+        referredById: true,
+        referredBy: {
+          select: { role: true }
+        }
+      },
+    });
+
+    // Se não foi indicado ou o referrer não é INFLUENCER, não faz nada
+    if (!user?.referredById || user.referredBy?.role !== 'INFLUENCER') {
+      return;
+    }
+
+    const influencerId = user.referredById;
+
+    // Buscar configuração de comissão ativa
+    const config = await tx.commissionConfig.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!config) {
+      console.warn('Nenhuma configuração de comissão ativa encontrada');
+      return;
+    }
+
+    // Upsert do registro de comissão
+    const existingCommission = await tx.referralCommission.findUnique({
+      where: {
+        influencerId_referredUserId: {
+          influencerId,
+          referredUserId: userId,
+        },
+      },
+    });
+
+    const newTotalDeposits = existingCommission 
+      ? new Decimal(existingCommission.totalDeposits).plus(depositAmount)
+      : depositAmount;
+
+    // Calcular comissão apenas se atingiu o mínimo
+    let commissionEarned = new Decimal(0);
+    if (newTotalDeposits.greaterThanOrEqualTo(config.minDepositAmount)) {
+      // Comissão = totalDeposits * (percent / 100)
+      commissionEarned = newTotalDeposits.times(config.commissionPercent).dividedBy(100);
+    }
+
+    await tx.referralCommission.upsert({
+      where: {
+        influencerId_referredUserId: {
+          influencerId,
+          referredUserId: userId,
+        },
+      },
+      update: {
+        totalDeposits: newTotalDeposits,
+        commissionEarned,
+        lastDepositAt: new Date(),
+      },
+      create: {
+        influencerId,
+        referredUserId: userId,
+        totalDeposits: depositAmount,
+        commissionEarned,
+        commissionPaid: 0,
+        lastDepositAt: new Date(),
+      },
+    });
+
+    console.log(`Comissão atualizada: Influencer ${influencerId}, Indicado ${userId}, Depósito R$ ${depositAmount}, Total R$ ${newTotalDeposits}, Comissão R$ ${commissionEarned}`);
+  } catch (error) {
+    console.error('Erro ao atualizar comissão do influencer:', error);
+    // Não lançar erro para não interromper a confirmação do depósito
   }
 }
 

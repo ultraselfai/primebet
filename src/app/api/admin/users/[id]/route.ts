@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { auth } from '@/lib/auth'
 import { Role, UserStatus } from '@prisma/client'
+import { generateUniqueReferralCode } from '@/lib/utils/generate-referral-code'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -87,6 +88,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
     const { name, email, phone, cpf, role, status, password } = body
 
+    // Buscar usuário atual para verificar mudança de role
+    const currentUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true, referralCode: true },
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Usuário não encontrado' },
+        { status: 404 }
+      )
+    }
+
     // Preparar dados para atualização
     const updateData: {
       name?: string
@@ -96,6 +110,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       role?: Role
       status?: UserStatus
       passwordHash?: string
+      referralCode?: string
     } = {}
 
     if (name !== undefined) updateData.name = name
@@ -104,6 +119,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (cpf !== undefined) updateData.cpf = cpf || null
     if (role !== undefined) updateData.role = role as Role
     if (status !== undefined) updateData.status = status as UserStatus
+
+    // Se está mudando para INFLUENCER e não tem código de indicação, gerar um
+    if (role === 'INFLUENCER' && currentUser.role !== 'INFLUENCER' && !currentUser.referralCode) {
+      updateData.referralCode = await generateUniqueReferralCode()
+    }
 
     // Se senha foi fornecida, fazer hash
     if (password && password.length >= 6) {

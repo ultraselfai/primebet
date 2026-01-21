@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 // Esta página redireciona para home com parâmetro de modal
 export default function CadastroPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { status } = useSession();
 
   useEffect(() => {
@@ -15,10 +16,12 @@ export default function CadastroPage() {
     if (status === "authenticated") {
       router.replace("/");
     } else {
-      // Redirecionar para home com parâmetro para abrir modal
-      router.replace("/?auth=cadastro");
+      // Preservar código de indicação na URL
+      const ref = searchParams.get("ref");
+      const refParam = ref ? `&ref=${ref}` : "";
+      router.replace(`/?auth=cadastro${refParam}`);
     }
-  }, [status, router]);
+  }, [status, router, searchParams]);
 
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">

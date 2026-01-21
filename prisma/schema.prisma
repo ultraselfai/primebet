@@ -78,6 +78,10 @@ model User {
   isKycVerified Boolean   @default(false) @map("is_kyc_verified")
   kycVerifiedAt DateTime? @map("kyc_verified_at")
   
+  // Sistema de Indicação (Influenciadores)
+  referralCode  String?   @unique @map("referral_code") @db.VarChar(8)
+  referredById  String?   @map("referred_by_id")
+  
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -92,6 +96,14 @@ model User {
   avatar        Avatar?   @relation(fields: [avatarId], references: [id])
   kycDocuments  KycDocument[]
   pushSubscriptions UserPushSubscription[]
+  
+  // Relações de indicação
+  referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals     User[]    @relation("UserReferrals")
+  
+  // Comissões como influencer
+  influencerCommissions ReferralCommission[] @relation("InfluencerCommissions")
+  referredCommissions   ReferralCommission[] @relation("ReferredCommissions")
 
   @@map("users")
 }
@@ -114,6 +126,7 @@ model Avatar {
 
 enum Role {
   PLAYER
+  INFLUENCER
   ADMIN
   SUPER_ADMIN
 }
@@ -653,4 +666,38 @@ model SiteSettings {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
+}
+
+// ============================================
+// SISTEMA DE INFLUENCIADORES E COMISSÕES
+// ============================================
+
+model CommissionConfig {
+  id                String   @id @default(cuid())
+  minDepositAmount  Decimal  @db.Decimal(18, 2) @map("min_deposit_amount")
+  commissionPercent Decimal  @db.Decimal(5, 2) @map("commission_percent")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  @@map("commission_configs")
+}
+
+model ReferralCommission {
+  id               String    @id @default(cuid())
+  influencerId     String    @map("influencer_id")
+  referredUserId   String    @map("referred_user_id")
+  totalDeposits    Decimal   @default(0) @db.Decimal(18, 2) @map("total_deposits")
+  commissionEarned Decimal   @default(0) @db.Decimal(18, 2) @map("commission_earned")
+  commissionPaid   Decimal   @default(0) @db.Decimal(18, 2) @map("commission_paid")
+  lastDepositAt    DateTime? @map("last_deposit_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  influencer       User      @relation("InfluencerCommissions", fields: [influencerId], references: [id], onDelete: Cascade)
+  referredUser     User      @relation("ReferredCommissions", fields: [referredUserId], references: [id], onDelete: Cascade)
+  
+  @@unique([influencerId, referredUserId])
+  @@index([influencerId])
+  @@map("referral_commissions")
 }

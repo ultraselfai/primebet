@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getRandomAvatarId } from "@/lib/utils/avatar";
+import { isValidReferralCode } from "@/lib/utils/generate-referral-code";
 
 // Gerar Player ID único de 8 dígitos
 async function generateUniquePlayerId(): Promise<string> {
@@ -23,7 +24,7 @@ async function generateUniquePlayerId(): Promise<string> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, cpf, password } = body;
+    const { name, email, phone, cpf, password, referralCode } = body;
 
     // Validações básicas
     if (!name || !email || !phone || !cpf || !password) {
@@ -96,6 +97,20 @@ export async function POST(request: NextRequest) {
     // Buscar avatar aleatório
     const avatarId = await getRandomAvatarId();
 
+    // Verificar código de indicação (se fornecido)
+    let referredById: string | null = null;
+    if (referralCode && isValidReferralCode(referralCode)) {
+      const influencer = await prisma.user.findUnique({
+        where: { referralCode: referralCode.toUpperCase() },
+        select: { id: true, role: true },
+      });
+      
+      // Só vincula se o usuário existe e é INFLUENCER
+      if (influencer && influencer.role === 'INFLUENCER') {
+        referredById = influencer.id;
+      }
+    }
+
     // Criar usuário com carteiras
     const user = await prisma.user.create({
       data: {
@@ -108,6 +123,7 @@ export async function POST(request: NextRequest) {
         avatarId,
         role: "PLAYER",
         status: "ACTIVE",
+        referredById,
         walletGame: {
           create: {
             balance: 0,
