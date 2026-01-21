@@ -91,14 +91,15 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // /login e /cadastro redirecionam para home com modal
+    // /login redireciona para home com modal (cadastro agora renderiza diretamente)
     if (pathname === "/login") {
       if (token) return NextResponse.redirect(new URL("/", request.url));
       return NextResponse.redirect(new URL("/?auth=login", request.url));
     }
-    if (pathname === "/cadastro") {
-      if (token) return NextResponse.redirect(new URL("/", request.url));
-      return NextResponse.redirect(new URL("/?auth=register", request.url));
+    
+    // /cadastro - se autenticado, redireciona para home (senão deixa a página renderizar o modal)
+    if (pathname === "/cadastro" && token) {
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 

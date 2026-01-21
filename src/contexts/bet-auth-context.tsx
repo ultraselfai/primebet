@@ -220,8 +220,10 @@ export function BetAuthProvider({ children }: { children: React.ReactNode }) {
     const authParam = urlParams.get("auth");
     const refParam = urlParams.get("ref");
     
-    if (authParam === "login" || authParam === "cadastro") {
-      setAuthModalTab(authParam);
+    // Aceitar "register" como alias de "cadastro" para compatibilidade
+    if (authParam === "login" || authParam === "cadastro" || authParam === "register") {
+      const tab = authParam === "register" ? "cadastro" : authParam;
+      setAuthModalTab(tab);
       if (refParam) {
         setAuthReferralCode(refParam);
       }
