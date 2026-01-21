@@ -236,8 +236,7 @@ export function EditUserDialog({ user, open, onOpenChange, onUserUpdated }: Edit
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PLAYER">Jogador</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                    <SelectItem value="INFLUENCER">Influenciador</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

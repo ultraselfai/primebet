@@ -131,12 +131,14 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser, onAddBal
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "SUPER_ADMIN":
+      case "INFLUENCER":
         return "text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/20"
-      case "ADMIN":
-        return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
       case "PLAYER":
         return "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
+      case "ADMIN":
+        return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
+      case "SUPER_ADMIN":
+        return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20"
       default:
         return "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20"
     }
@@ -144,9 +146,10 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser, onAddBal
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case "SUPER_ADMIN": return "Super Admin"
-      case "ADMIN": return "Admin"
+      case "INFLUENCER": return "Influenciador"
       case "PLAYER": return "Jogador"
+      case "ADMIN": return "Admin"
+      case "SUPER_ADMIN": return "Super Admin"
       default: return role
     }
   }
@@ -430,9 +433,8 @@ export function DataTable({ users, onDeleteUser, onEditUser, onAddUser, onAddBal
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as Funções</SelectItem>
-              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
               <SelectItem value="PLAYER">Jogador</SelectItem>
+              <SelectItem value="INFLUENCER">Influenciador</SelectItem>
             </SelectContent>
           </Select>
         </div>

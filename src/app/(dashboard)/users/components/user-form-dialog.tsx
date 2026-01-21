@@ -168,9 +168,8 @@ export function UserFormDialog({ onAddUser }: UserFormDialogProps) {
                   <SelectValue placeholder="Selecionar função" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PLAYER">Player</SelectItem>
-                  <SelectItem value="ADMIN">Influencer</SelectItem>
-                  <SelectItem value="SUPER_ADMIN">Associado</SelectItem>
+                  <SelectItem value="PLAYER">Jogador</SelectItem>
+                  <SelectItem value="INFLUENCER">Influenciador</SelectItem>
                 </SelectContent>
               </Select>
             </div>
