@@ -27,6 +27,13 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login", referralCode 
   const logoUrl = publicSettings?.experience.media.logo.url || publicSettings?.branding.logoUrl || "/logo-horizontal.png";
   const [activeTab, setActiveTab] = useState<"login" | "cadastro">(defaultTab);
 
+  // Debug log para referralCode
+  useEffect(() => {
+    if (referralCode) {
+      console.log("[AUTH MODAL] referralCode recebido:", referralCode);
+    }
+  }, [referralCode]);
+
   // Sincronizar com defaultTab quando mudar
   useEffect(() => {
     setActiveTab(defaultTab);
@@ -116,6 +123,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login", referralCode 
 
     setIsLoading(true);
     setError(null);
+
+    // Log para debug
+    console.log("[AUTH MODAL] Enviando cadastro com referralCode:", referralCode);
 
     try {
       // Chamar API de cadastro
