@@ -131,3 +131,58 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PATCH - Atualização parcial das configurações
+export async function PATCH(request: NextRequest) {
+  try {
+    // Verificar autenticação - apenas admins podem salvar
+    const session = await auth();
+    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const partialSettings = await request.json();
+    console.log("[Settings API] PATCH - Atualizando parcialmente:", JSON.stringify(partialSettings));
+    
+    // Buscar configurações atuais
+    const currentSettings = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
+
+    // Combinar com configurações atuais ou defaults
+    const currentData = (currentSettings?.data as Record<string, unknown>) || {};
+    
+    // Deep merge para preservar configurações existentes
+    const updatedData = {
+      ...currentData,
+      ...partialSettings,
+      financial: {
+        ...(currentData.financial as Record<string, unknown> || {}),
+        ...(partialSettings.financial || {}),
+      },
+    };
+
+    // Upsert com os dados atualizados
+    await prisma.siteSettings.upsert({
+      where: { id: "default" },
+      update: { data: updatedData },
+      create: { id: "default", data: updatedData },
+    });
+
+    console.log("[Settings API] PATCH - Configurações atualizadas com sucesso");
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: "Configurações atualizadas com sucesso" 
+    });
+  } catch (error) {
+    console.error("[Settings API] Erro no PATCH:", error);
+    return NextResponse.json(
+      { success: false, error: "Erro ao atualizar configurações" },
+      { status: 500 }
+    );
+  }
+}
